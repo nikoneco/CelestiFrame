@@ -481,6 +481,10 @@ main { min-height: 100dvh; }
   .search-result { grid-template-columns: 78px 1fr 36px; gap: 7px; }
 }
 
+@media (max-width: 759px) {
+  .app-shell.is-controls-collapsed ~ .toast { bottom: calc(68px + env(safe-area-inset-bottom)); }
+}
+
 .camera-marker { width: 20px; height: 20px; border: 3px solid var(--ink); border-radius: 50% 50% 50% 0; background: var(--horizon); transform: rotate(-45deg); box-shadow: 0 3px 12px rgba(0, 0, 0, 0.44); }
 .camera-marker::after { content: ""; position: absolute; inset: 4px; border: 1px solid rgba(7, 17, 31, 0.8); border-radius: 50%; }
 .subject-marker { width: 19px; height: 19px; border: 3px solid var(--text); background: var(--danger); box-shadow: 0 3px 12px rgba(0, 0, 0, 0.44); transform: rotate(45deg); }
