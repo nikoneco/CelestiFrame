@@ -1,6 +1,7 @@
 import { createStore } from "./state.js";
 import { createMapController } from "./map/map-controller.js?v=5";
 import { bindDateTimeControls } from "./ui/datetime-controls.js";
+import { normalizeThemePreference, resolveThemePreference, themeColor } from "./ui/theme.js?v=6";
 import { calculateSunData } from "./astronomy/sun-service.js";
 import { calculateMoonData } from "./astronomy/moon-service.js?v=5";
 
@@ -9,6 +10,18 @@ const mapStage = document.querySelector(".map-stage");
 const setLocationButton = document.querySelector("#set-location-button");
 let mapController;
 let isArmingLocation = false;
+const systemThemeQuery = window.matchMedia("(prefers-color-scheme: light)");
+
+function applyTheme(preference) {
+  const normalized = normalizeThemePreference(preference);
+  const resolved = resolveThemePreference(normalized, systemThemeQuery.matches);
+  document.documentElement.dataset.theme = resolved;
+  document.documentElement.dataset.themePreference = normalized;
+  document.querySelector('meta[name="theme-color"]').content = themeColor(resolved);
+  document.querySelectorAll('input[name="theme"]').forEach((input) => {
+    input.checked = input.value === normalized;
+  });
+}
 
 const formatAngle = (value) => value.toFixed(1);
 const formatTime = (date) => date
@@ -149,7 +162,21 @@ document.querySelector("#locate-button").addEventListener("click", () => {
 });
 
 document.querySelector("#settings-button").addEventListener("click", () => {
-  showToast("詳細設定は次のフェーズで追加します");
+  document.querySelector("#settings-dialog").showModal();
+});
+
+document.querySelectorAll('input[name="theme"]').forEach((input) => {
+  input.addEventListener("change", () => {
+    if (!input.checked) return;
+    store.setState((state) => ({
+      ...state,
+      settings: { ...state.settings, theme: input.value },
+    }));
+  });
+});
+
+systemThemeQuery.addEventListener("change", () => {
+  if (store.getState().settings.theme === "system") applyTheme("system");
 });
 
 document.querySelectorAll("[data-body]").forEach((button) => {
@@ -160,6 +187,7 @@ document.querySelectorAll("[data-body]").forEach((button) => {
 });
 
 store.subscribe((state) => {
+  applyTheme(state.settings.theme);
   document.querySelector("#coordinates").value = `${state.cameraLocation.latitude.toFixed(5)}, ${state.cameraLocation.longitude.toFixed(5)}`;
   document.querySelectorAll("[data-body]").forEach((button) => button.classList.toggle("is-active", button.dataset.body === state.selectedBody));
   document.querySelectorAll("[data-card]").forEach((card) => {

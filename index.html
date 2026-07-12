@@ -9,7 +9,7 @@
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./assets/icon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-    <link rel="stylesheet" href="./css/app.css?v=5">
+    <link rel="stylesheet" href="./css/app.css?v=6">
   </head>
   <body>
     <div class="app-shell">
@@ -25,7 +25,7 @@
           <button class="icon-button" id="locate-button" type="button" aria-label="現在地へ移動" title="現在地へ移動">
             <span aria-hidden="true">⌖</span>
           </button>
-          <button class="icon-button" id="settings-button" type="button" aria-label="設定" title="設定">
+          <button class="icon-button" id="settings-button" type="button" aria-label="設定" title="設定" aria-haspopup="dialog">
             <span aria-hidden="true">◐</span>
           </button>
         </div>
@@ -142,10 +142,49 @@
             </article>
           </div>
 
-          <p class="phase-note">Phase 3 — 太陽と月の撮影方位</p>
+          <p class="phase-note">Phase 4 — 撮影現場の表示と操作</p>
         </section>
       </main>
     </div>
+
+    <dialog class="settings-dialog" id="settings-dialog" aria-labelledby="settings-title">
+      <form method="dialog" class="settings-panel">
+        <header>
+          <div>
+            <span class="eyebrow">FIELD DISPLAY</span>
+            <h2 id="settings-title">表示設定</h2>
+          </div>
+          <button class="dialog-close" type="submit" aria-label="設定を閉じる">×</button>
+        </header>
+
+        <fieldset class="theme-options">
+          <legend>画面テーマ</legend>
+          <label class="theme-option theme-option-system">
+            <input type="radio" name="theme" value="system">
+            <span class="theme-preview" aria-hidden="true"><i></i><i></i></span>
+            <strong>端末設定</strong><small>端末の明暗設定に追従</small>
+          </label>
+          <label class="theme-option theme-option-light">
+            <input type="radio" name="theme" value="light">
+            <span class="theme-preview" aria-hidden="true"><i></i><i></i></span>
+            <strong>ライト</strong><small>日中の地図確認向け</small>
+          </label>
+          <label class="theme-option theme-option-dark">
+            <input type="radio" name="theme" value="dark">
+            <span class="theme-preview" aria-hidden="true"><i></i><i></i></span>
+            <strong>ダーク</strong><small>夜間の標準表示</small>
+          </label>
+          <label class="theme-option theme-option-red">
+            <input type="radio" name="theme" value="red">
+            <span class="theme-preview" aria-hidden="true"><i></i><i></i></span>
+            <strong>赤色ナイト</strong><small>暗所で眩しさを抑える</small>
+          </label>
+        </fieldset>
+
+        <p class="settings-note">地図タイルにもテーマに合わせた表示フィルターを適用します。</p>
+        <button class="settings-done" type="submit">設定を閉じる</button>
+      </form>
+    </dialog>
 
     <div class="toast" id="toast" role="status" aria-live="polite" hidden>
       <span id="toast-message"></span>
@@ -154,6 +193,6 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script src="./js/vendor/suncalc.js"></script>
-    <script type="module" src="./js/app.js?v=5"></script>
+    <script type="module" src="./js/app.js?v=6"></script>
   </body>
 </html>
