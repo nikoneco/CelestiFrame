@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#07111f">
+    <meta name="description" content="太陽と月の位置から、写真の一瞬を計画するPWA。">
+    <title>CelestiFrame</title>
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="icon" href="./assets/icon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+    <link rel="stylesheet" href="./css/app.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand" aria-label="CelestiFrame">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <span>
+            <strong>CelestiFrame</strong>
+            <small>PHOTO EPHEMERIS</small>
+          </span>
+        </div>
+        <div class="topbar-actions">
+          <button class="icon-button" id="locate-button" type="button" aria-label="現在地へ移動" title="現在地へ移動">
+            <span aria-hidden="true">⌖</span>
+          </button>
+          <button class="icon-button" id="settings-button" type="button" aria-label="設定" title="設定">
+            <span aria-hidden="true">◐</span>
+          </button>
+        </div>
+      </header>
+
+      <main>
+        <section class="map-stage" aria-label="撮影地点の地図">
+          <div id="map" role="application" aria-label="撮影地点を選ぶ地図"></div>
+          <div class="map-fallback" id="map-fallback" hidden>
+            <strong>地図を読み込めませんでした</strong>
+            <span>通信を確認してください。日時操作はそのまま使えます。</span>
+          </div>
+
+          <div class="reticle" aria-hidden="true">
+            <span class="reticle-ring"></span>
+            <span class="reticle-cross reticle-cross-x"></span>
+            <span class="reticle-cross reticle-cross-y"></span>
+          </div>
+
+          <div class="map-status" aria-live="polite">
+            <span class="status-dot"></span>
+            <span id="location-label">東京駅付近</span>
+            <output id="coordinates">35.68124, 139.76712</output>
+          </div>
+
+          <button class="set-location-button" id="set-location-button" type="button">
+            <span aria-hidden="true">＋</span>
+            撮影地点を設定
+          </button>
+        </section>
+
+        <section class="control-deck" aria-label="撮影日時と天体情報">
+          <div class="deck-handle" aria-hidden="true"></div>
+
+          <div class="body-selector" role="group" aria-label="表示する天体">
+            <button type="button" data-body="sun">太陽</button>
+            <button type="button" data-body="moon" class="is-active">月</button>
+            <button type="button" data-body="both">両方</button>
+          </div>
+
+          <div class="time-panel">
+            <div class="time-heading">
+              <div>
+                <span class="eyebrow">撮影日時</span>
+                <strong id="date-summary">—</strong>
+              </div>
+              <span class="timezone" id="timezone-label">LOCAL</span>
+            </div>
+
+            <div class="datetime-inputs">
+              <label>
+                <span>日付</span>
+                <input id="date-input" type="date">
+              </label>
+              <label>
+                <span>時刻</span>
+                <input id="time-input" type="time" step="60">
+              </label>
+              <button class="now-button" id="now-button" type="button">現在</button>
+            </div>
+
+            <div class="time-nudges" aria-label="時刻を調整">
+              <button type="button" data-minutes="-60">−1h</button>
+              <button type="button" data-minutes="-10">−10m</button>
+              <button type="button" data-minutes="-1">−1m</button>
+              <button type="button" data-minutes="1">＋1m</button>
+              <button type="button" data-minutes="10">＋10m</button>
+              <button type="button" data-minutes="60">＋1h</button>
+            </div>
+
+            <label class="time-slider-label" for="time-slider">
+              <span>一日の時刻</span>
+              <output id="slider-output">—</output>
+            </label>
+            <input id="time-slider" class="time-slider" type="range" min="0" max="1439" step="1">
+          </div>
+
+          <div class="celestial-grid">
+            <article class="celestial-card celestial-card-moon" data-card="moon">
+              <header>
+                <span class="celestial-symbol moon-symbol" aria-hidden="true"></span>
+                <div>
+                  <span class="eyebrow">MOON VECTOR</span>
+                  <h2>月</h2>
+                </div>
+                <span class="horizon-state">計算準備中</span>
+              </header>
+              <div class="metric-pair">
+                <div><span>方位角</span><strong>—<small>°</small></strong></div>
+                <div><span>高度角</span><strong>—<small>°</small></strong></div>
+              </div>
+              <footer><span>月齢 —</span><span>照度 —</span></footer>
+            </article>
+
+            <article class="celestial-card celestial-card-sun" data-card="sun" hidden>
+              <header>
+                <span class="celestial-symbol sun-symbol" aria-hidden="true"></span>
+                <div>
+                  <span class="eyebrow">SOLAR VECTOR</span>
+                  <h2>太陽</h2>
+                </div>
+                <span class="horizon-state">計算準備中</span>
+              </header>
+              <div class="metric-pair">
+                <div><span>方位角</span><strong>—<small>°</small></strong></div>
+                <div><span>高度角</span><strong>—<small>°</small></strong></div>
+              </div>
+              <footer><span>日の出 —</span><span>日の入り —</span></footer>
+            </article>
+          </div>
+
+          <p class="phase-note">Phase 1 — 地図と撮影日時の土台を構築中</p>
+        </section>
+      </main>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden>
+      <span id="toast-message"></span>
+      <button id="toast-action" type="button" hidden>今すぐ更新</button>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script type="module" src="./js/app.js"></script>
+  </body>
+</html>

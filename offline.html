@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#07111f">
+    <title>オフライン | CelestiFrame</title>
+    <style>
+      :root { color-scheme: dark; font-family: "Yu Gothic UI", system-ui, sans-serif; }
+      body { min-height: 100vh; margin: 0; display: grid; place-items: center; padding: 28px; background: radial-gradient(circle at 50% 35%, #1a314b, #07111f 65%); color: #f3f7fc; }
+      main { max-width: 420px; text-align: center; }
+      .moon { width: 72px; height: 72px; margin: 0 auto 24px; border: 5px solid #dceaff; border-left-color: transparent; border-radius: 50%; transform: rotate(-25deg); }
+      h1 { margin: 0 0 10px; font-size: 22px; } p { color: #93a4b8; line-height: 1.8; }
+      button { margin-top: 12px; padding: 12px 20px; border: 1px solid #62d5c7; border-radius: 999px; background: transparent; color: #62d5c7; font: inherit; font-weight: 700; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="moon" aria-hidden="true"></div>
+      <h1>現在オフラインです</h1>
+      <p>通信が戻ったら、もう一度読み込んでください。保存済みの地点と日時は端末に残っています。</p>
+      <button type="button" onclick="location.reload()">もう一度読み込む</button>
+    </main>
+  </body>
+</html>

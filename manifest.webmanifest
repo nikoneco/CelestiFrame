@@ -1,0 +1,20 @@
+{
+  "name": "CelestiFrame — 太陽と月の撮影計画",
+  "short_name": "CelestiFrame",
+  "description": "太陽と月の位置から、写真の一瞬を計画するPWA。",
+  "lang": "ja",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#07111f",
+  "theme_color": "#07111f",
+  "icons": [
+    {
+      "src": "./assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
