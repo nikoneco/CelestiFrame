@@ -1,5 +1,5 @@
-import { createStore } from "./state.js?v=24";
-import { createMapController } from "./map/map-controller.js?v=14";
+import { createStore } from "./state.js?v=27";
+import { createMapController } from "./map/map-controller.js?v=27";
 import { bindPlaceSearch } from "./map/place-search.js?v=14";
 import { bindDateTimeControls } from "./ui/datetime-controls.js?v=11";
 import { normalizeThemePreference, resolveThemePreference, themeColor } from "./ui/theme.js?v=6";
@@ -105,7 +105,18 @@ function renderMoon(state) {
     horizonState.classList.toggle("is-above", moonData.isAboveHorizon);
     horizonState.classList.toggle("is-below", !moonData.isAboveHorizon);
     if (state.selectedBody === "moon" || state.selectedBody === "both") {
-      mapController?.setMoonDirection(state.cameraLocation, moonData);
+      const directions = [];
+      if (state.settings.directionLineOrigin !== "subject") {
+        directions.push({ location: state.cameraLocation, data: moonData, origin: "camera" });
+      }
+      if (state.subjectLocation && state.settings.directionLineOrigin !== "camera") {
+        directions.push({
+          location: state.subjectLocation,
+          data: calculateMoonData(selectedDate, state.subjectLocation),
+          origin: "subject",
+        });
+      }
+      mapController?.setMoonDirections(directions);
     } else {
       mapController?.clearMoonDirection();
     }
@@ -128,7 +139,18 @@ function renderSun(state) {
     horizonState.classList.toggle("is-above", sunData.isAboveHorizon);
     horizonState.classList.toggle("is-below", !sunData.isAboveHorizon);
     if (state.selectedBody === "sun" || state.selectedBody === "both") {
-      mapController?.setSunDirection(state.cameraLocation, sunData);
+      const directions = [];
+      if (state.settings.directionLineOrigin !== "subject") {
+        directions.push({ location: state.cameraLocation, data: sunData, origin: "camera" });
+      }
+      if (state.subjectLocation && state.settings.directionLineOrigin !== "camera") {
+        directions.push({
+          location: state.subjectLocation,
+          data: calculateSunData(new Date(state.selectedDateTime), state.subjectLocation),
+          origin: "subject",
+        });
+      }
+      mapController?.setSunDirections(directions);
     } else {
       mapController?.clearSunDirection();
     }
@@ -417,6 +439,16 @@ document.querySelectorAll('input[name="theme"]').forEach((input) => {
   });
 });
 
+document.querySelectorAll('input[name="direction-line-origin"]').forEach((input) => {
+  input.addEventListener("change", () => {
+    if (!input.checked) return;
+    store.setState((state) => ({
+      ...state,
+      settings: { ...state.settings, directionLineOrigin: input.value },
+    }));
+  });
+});
+
 systemThemeQuery.addEventListener("change", () => {
   if (store.getState().settings.theme === "system") applyTheme("system");
 });
@@ -433,6 +465,12 @@ bindElevationControls(store, showToast);
 
 store.subscribe((state) => {
   applyTheme(state.settings.theme);
+  const directionLineOrigin = ["camera", "subject", "both"].includes(state.settings.directionLineOrigin)
+    ? state.settings.directionLineOrigin
+    : "both";
+  document.querySelectorAll('input[name="direction-line-origin"]').forEach((input) => {
+    input.checked = input.value === directionLineOrigin;
+  });
   document.querySelector("#coordinates").value = `${state.cameraLocation.latitude.toFixed(5)}, ${state.cameraLocation.longitude.toFixed(5)}`;
   document.querySelectorAll("[data-body]").forEach((button) => {
     const isActive = button.dataset.body === state.selectedBody;

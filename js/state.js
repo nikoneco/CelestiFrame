@@ -38,6 +38,7 @@ const defaultState = {
   },
   settings: {
     theme: "dark",
+    directionLineOrigin: "both",
     timeStepMinutes: 1,
     coordinateFormat: "decimal",
   },

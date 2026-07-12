@@ -26,8 +26,8 @@ export function createMapController({ elementId, initialLocation, initialZoom, o
     icon: markerIcon,
     title: "撮影地点",
   }).addTo(map);
-  let directionLine = null;
-  let moonDirectionLine = null;
+  let directionLines = [];
+  let moonDirectionLines = [];
   let subjectMarker = null;
   let subjectLine = null;
   const subjectMarkerIcon = L.divIcon({
@@ -101,49 +101,53 @@ export function createMapController({ elementId, initialLocation, initialZoom, o
       subjectMarker = null;
       subjectLine = null;
     },
-    setSunDirection(location, sunData) {
-      directionLine?.remove();
-      const destination = destinationPoint(location, sunData.azimuth, 35000);
-      directionLine = L.polyline(
-        [
-          [location.latitude, location.longitude],
-          [destination.latitude, destination.longitude],
-        ],
-        {
-          color: "#ffb44a",
-          weight: 3,
-          opacity: sunData.isAboveHorizon ? 0.9 : 0.38,
-          dashArray: sunData.isAboveHorizon ? null : "7 8",
-          interactive: false,
-          className: "sun-direction-line",
-        },
-      ).addTo(map);
+    setSunDirections(directions) {
+      directionLines.forEach((line) => line.remove());
+      directionLines = directions.map(({ location, data, origin }) => {
+        const destination = destinationPoint(location, data.azimuth, 35000);
+        return L.polyline(
+          [
+            [location.latitude, location.longitude],
+            [destination.latitude, destination.longitude],
+          ],
+          {
+            color: "#ffb44a",
+            weight: origin === "subject" ? 2.5 : 3,
+            opacity: data.isAboveHorizon ? (origin === "subject" ? 0.72 : 0.9) : 0.38,
+            dashArray: origin === "subject" ? "2 7" : data.isAboveHorizon ? null : "7 8",
+            interactive: false,
+            className: `sun-direction-line ${origin}-origin-line`,
+          },
+        ).addTo(map);
+      });
     },
     clearSunDirection() {
-      directionLine?.remove();
-      directionLine = null;
+      directionLines.forEach((line) => line.remove());
+      directionLines = [];
     },
-    setMoonDirection(location, moonData) {
-      moonDirectionLine?.remove();
-      const destination = destinationPoint(location, moonData.azimuth, 35000);
-      moonDirectionLine = L.polyline(
-        [
-          [location.latitude, location.longitude],
-          [destination.latitude, destination.longitude],
-        ],
-        {
-          color: "#91b8ec",
-          weight: 3,
-          opacity: moonData.isAboveHorizon ? 0.9 : 0.38,
-          dashArray: moonData.isAboveHorizon ? null : "7 8",
-          interactive: false,
-          className: "moon-direction-line",
-        },
-      ).addTo(map);
+    setMoonDirections(directions) {
+      moonDirectionLines.forEach((line) => line.remove());
+      moonDirectionLines = directions.map(({ location, data, origin }) => {
+        const destination = destinationPoint(location, data.azimuth, 35000);
+        return L.polyline(
+          [
+            [location.latitude, location.longitude],
+            [destination.latitude, destination.longitude],
+          ],
+          {
+            color: "#91b8ec",
+            weight: origin === "subject" ? 2.5 : 3,
+            opacity: data.isAboveHorizon ? (origin === "subject" ? 0.72 : 0.9) : 0.38,
+            dashArray: origin === "subject" ? "2 7" : data.isAboveHorizon ? null : "7 8",
+            interactive: false,
+            className: `moon-direction-line ${origin}-origin-line`,
+          },
+        ).addTo(map);
+      });
     },
     clearMoonDirection() {
-      moonDirectionLine?.remove();
-      moonDirectionLine = null;
+      moonDirectionLines.forEach((line) => line.remove());
+      moonDirectionLines = [];
     },
   };
 }
