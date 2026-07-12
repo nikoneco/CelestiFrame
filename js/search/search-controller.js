@@ -145,6 +145,22 @@ export function bindSearchControls(store, showToast) {
     progress.value = 0;
     progressLabel.textContent = "方位を走査しています…";
     resultsContainer.replaceChildren();
+    const handleWorkerFailure = (message) => {
+      console.error("Alignment search worker failed", message);
+      submitButton.disabled = false;
+      cancelButton.hidden = true;
+      progressLabel.textContent = "検索Workerを起動できませんでした";
+      showToast(`日時検索を開始できません: ${message}`);
+      worker?.terminate();
+      worker = null;
+    };
+    worker.addEventListener("error", (error) => {
+      error.preventDefault();
+      handleWorkerFailure(error.message || "Worker script error");
+    });
+    worker.addEventListener("messageerror", () => {
+      handleWorkerFailure("Worker message error");
+    });
     worker.addEventListener("message", (message) => {
       if (message.data.type === "progress") {
         const percent = Math.round(message.data.progress * 100);
