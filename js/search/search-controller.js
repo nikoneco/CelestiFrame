@@ -143,7 +143,12 @@ export function bindSearchControls(store, showToast) {
 
   Array.from(form.elements.target).forEach((input) => {
     input.addEventListener("change", () => {
+      if (!input.checked) return;
       form.elements.minIllumination.disabled = input.value !== "moon";
+      form.elements.startTime.value = input.value === "sun" ? "04:00" : "18:00";
+      form.elements.endTime.value = input.value === "sun" ? "20:00" : "06:00";
+      form.elements.matchTargetAltitude.checked = input.value === "sun";
+      updateOvernightBadge();
       updateDiamondControls();
     });
   });

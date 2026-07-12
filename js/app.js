@@ -7,7 +7,7 @@ import { calculateSunData } from "./astronomy/sun-service.js";
 import { calculateMoonData } from "./astronomy/moon-service.js?v=5";
 import { subjectGeometry } from "./geometry/bearing.js?v=7";
 import { signedAngleDifference } from "./geometry/angle.js";
-import { bindSearchControls } from "./search/search-controller.js?v=24";
+import { bindSearchControls } from "./search/search-controller.js?v=25";
 import { bindPlanManager } from "./plans/plan-manager.js?v=24";
 import { parseSharedState } from "./plans/plan-data.js?v=24";
 import { calculateComposition, focalLengthForFill, SENSOR_PRESETS } from "./composition/composition.js?v=19";
