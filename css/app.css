@@ -378,6 +378,8 @@ main { min-height: 100dvh; }
 .composition-subject::before { content: ""; position: absolute; left: 50%; bottom: 100%; width: 1px; height: min(18px, 20%); background: var(--danger); }
 .composition-subject b { position: absolute; left: 50%; bottom: 100%; max-width: 150px; margin-bottom: 5px; overflow: hidden; color: var(--text); font: 8px var(--data); text-overflow: ellipsis; white-space: nowrap; transform: translateX(-50%); }
 .composition-subject.is-clipped { border-top-style: dashed; }
+.composition-subject.is-terrain-point { width: 13px; min-height: 13px; border: 2px solid var(--danger); border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 4px color-mix(in srgb, var(--danger) 18%, transparent), 0 0 18px color-mix(in srgb, var(--danger) 34%, transparent); transform: translate(-50%, 50%); }
+.composition-subject.is-terrain-point::before { bottom: 50%; height: 24px; }
 .composition-body { position: absolute; z-index: 4; display: grid; justify-items: center; gap: 3px; transform: translate(-50%, -50%); transition: left 180ms ease, top 180ms ease; }
 .composition-body i { display: block; width: 17px; height: 17px; border-radius: 50%; }
 .composition-body b { padding: 2px 4px; border-radius: 3px; background: color-mix(in srgb, var(--ink) 72%, transparent); font: 7px var(--data); }
@@ -392,10 +394,31 @@ main { min-height: 100dvh; }
 .composition-metrics span, .composition-metrics strong { display: block; }
 .composition-metrics span { color: var(--muted); font-size: 10px; }
 .composition-metrics strong { margin-top: 3px; overflow: hidden; font: 10px var(--data); text-overflow: ellipsis; white-space: nowrap; }
+.terrain-metrics { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--horizon) 4%, transparent); }
+.terrain-metrics > div { min-width: 0; padding: 8px 6px; text-align: center; }
+.terrain-metrics > div + div { border-left: 1px solid var(--line); }
+.terrain-metrics span, .terrain-metrics strong { display: block; }
+.terrain-metrics span { color: var(--muted); font-size: 9px; }
+.terrain-metrics strong { margin-top: 3px; overflow: hidden; color: var(--horizon); font: 10px var(--data); text-overflow: ellipsis; white-space: nowrap; }
 .composition-message { margin: 0; padding: 9px 13px; color: var(--muted); font-size: 10px; line-height: 1.55; }
 .composition-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 11px 13px; border-top: 1px solid var(--line); background: color-mix(in srgb, var(--ink) 24%, transparent); }
-.composition-form label > span:first-child, .composition-orientation > span { display: block; margin: 0 0 4px 2px; color: var(--muted); font-size: 10px; }
+.composition-form label > span:first-child, .composition-orientation > span, .target-mode-control > span { display: block; margin: 0 0 4px 2px; color: var(--muted); font-size: 10px; }
 .composition-form input, .composition-form select { width: 100%; height: 44px; padding: 0 8px; border: 1px solid var(--line); border-radius: 7px; background: color-mix(in srgb, var(--ink) 48%, transparent); color: var(--text); font: 11px var(--data); }
+.target-mode-control { grid-column: 1 / -1; }
+.target-mode-control > div { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; padding: 3px; border: 1px solid var(--line); border-radius: 9px; }
+.target-mode-control button { display: grid; gap: 2px; min-height: 48px; place-content: center; border: 0; border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; }
+.target-mode-control button b { font-size: 11px; }
+.target-mode-control button small { font-size: 8px; }
+.target-mode-control button.is-active { background: var(--panel-raised); color: var(--horizon); box-shadow: inset 0 0 0 1px var(--line); }
+.composition-form.is-terrain-target .subject-height-field { display: none; }
+.elevation-field > span:first-child { display: flex !important; align-items: center; justify-content: space-between; gap: 5px; }
+.elevation-field > span:first-child b { padding: 2px 5px; border: 1px solid var(--line); border-radius: 4px; color: var(--muted); font: 8px var(--data); }
+.elevation-field > span:first-child b[data-status="ready"] { border-color: color-mix(in srgb, var(--horizon) 48%, var(--line)); color: var(--horizon); }
+.elevation-field > span:first-child b[data-status="loading"] { color: var(--moon-blue); }
+.elevation-field > span:first-child b[data-status="manual"] { color: var(--solar); }
+.elevation-input-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px; }
+.elevation-input-row button { min-height: 44px; padding: 0 8px; border: 1px solid var(--line); border-radius: 7px; background: transparent; color: var(--horizon); font-size: 9px; cursor: pointer; }
+.elevation-field > small { display: block; margin: 4px 2px 0; overflow: hidden; color: var(--muted); font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
 .composition-orientation > div { display: grid; grid-template-columns: repeat(2, 1fr); gap: 3px; padding: 3px; border: 1px solid var(--line); border-radius: 7px; }
 .composition-orientation button { min-height: 36px; border: 0; border-radius: 5px; background: transparent; color: var(--muted); font-size: 10px; cursor: pointer; }
 .composition-orientation button.is-active { background: var(--panel-raised); color: var(--horizon); }
@@ -489,6 +512,13 @@ main { min-height: 100dvh; }
 .overnight-note { margin: 8px 2px 0; color: var(--muted); font-size: 9px; line-height: 1.55; }
 .search-grid input, .search-step select { width: 100%; height: 44px; padding: 0 9px; border: 1px solid var(--line); border-radius: 7px; background: color-mix(in srgb, var(--ink) 46%, transparent); color: var(--text); font: 11px var(--data); color-scheme: inherit; }
 .search-grid input:disabled { opacity: 0.38; }
+.diamond-toggle { display: flex; align-items: center; gap: 10px; margin-top: 11px; padding: 10px; border: 1px solid color-mix(in srgb, var(--solar) 42%, var(--line)); border-radius: 9px; background: color-mix(in srgb, var(--solar) 5%, transparent); cursor: pointer; }
+.diamond-toggle input { flex: 0 0 auto; width: 18px; height: 18px; accent-color: var(--solar); }
+.diamond-toggle span, .diamond-toggle b, .diamond-toggle small { display: block; }
+.diamond-toggle b { color: var(--text); font-size: 11px; }
+.diamond-toggle small { margin-top: 2px; color: var(--muted); font-size: 9px; }
+.diamond-tolerance { display: grid; grid-template-columns: 1fr 110px; align-items: center; gap: 8px; margin-top: 9px; color: var(--muted); font-size: 9px; }
+.diamond-tolerance input { width: 100%; height: 40px; padding: 0 25px 0 8px; border: 1px solid var(--line); border-radius: 7px; background: color-mix(in srgb, var(--ink) 46%, transparent); color: var(--text); font: 11px var(--data); }
 .search-step { display: grid; grid-template-columns: 1fr 110px; align-items: center; margin-top: 9px; }
 .search-step > span:first-child { margin: 0; }
 .input-unit { position: relative; display: block; }
@@ -530,6 +560,9 @@ main { min-height: 100dvh; }
   .composition-metrics { grid-template-columns: repeat(2, 1fr); }
   .composition-metrics > div:nth-child(3) { border-left: 0; }
   .composition-metrics > div:nth-child(n + 3) { border-top: 1px solid var(--line); }
+  .terrain-metrics { grid-template-columns: repeat(2, 1fr); }
+  .terrain-metrics > div:nth-child(3) { border-left: 0; }
+  .terrain-metrics > div:nth-child(n + 3) { border-top: 1px solid var(--line); }
   .plans-dialog { width: calc(100vw - 12px); height: calc(100dvh - 12px); border-radius: 16px; }
   .plans-panel { padding: 14px; }
   .plans-header { top: -14px; margin: -14px -14px 14px; padding: 14px; }

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import SunCalc from "suncalc";
 import "../js/search/search-core.js";
 import { normalizeOvernightEndMinute, validateSearchInput } from "../js/search/search-controller.js";
+import { apparentSolarAltitude } from "../js/geometry/target-altitude.js";
 
 const baseInput = {
   target: "sun",
@@ -44,4 +45,25 @@ test("overnight windows continue into the following date", () => {
   assert.equal(results.length, 4);
   assert.ok(results.some((result) => new Date(result.iso).getDate() === 13));
   assert.deepEqual(validateSearchInput(overnightInput), []);
+});
+
+test("diamond search matches both bearing and target altitude", () => {
+  const calculator = {
+    getPosition: () => ({ azimuth: 0, altitude: 2 * Math.PI / 180 }),
+  };
+  const results = globalThis.CelestiSearchCore.searchCandidates({
+    ...baseInput,
+    startMinute: 360,
+    endMinute: 360,
+    stepMinutes: 1,
+    toleranceDegrees: 1,
+    minAltitude: -10,
+    maxAltitude: 10,
+    matchTargetAltitude: true,
+    targetAltitude: apparentSolarAltitude(2),
+    verticalToleranceDegrees: 0.3,
+  }, calculator);
+  assert.equal(results.length, 1);
+  assert.equal(results[0].diamondState, "center");
+  assert.ok(results[0].angularSeparation < 0.01);
 });

@@ -10,15 +10,24 @@ export function bindCompositionControls(store) {
       if (input.type === "number" && !Number.isFinite(value)) return;
       store.setState((state) => ({
         ...state,
-        composition: { ...state.composition, [field]: value },
+        composition: {
+          ...state.composition,
+          [field]: value,
+          ...(field === "cameraElevationMeters" ? { cameraElevationMode: "manual", cameraElevationStatus: "manual", cameraElevationSource: "手入力" } : {}),
+        },
       }));
     }
     if (input.dataset.subjectField) {
       const value = Number(input.value);
       if (!Number.isFinite(value)) return;
+      const field = input.dataset.subjectField;
       store.setState((state) => ({
         ...state,
-        subject: { ...state.subject, [input.dataset.subjectField]: value },
+        subject: {
+          ...state.subject,
+          [field]: value,
+          ...(field === "groundElevationMeters" ? { groundElevationMode: "manual", groundElevationStatus: "manual", groundElevationSource: "手入力" } : {}),
+        },
       }));
     }
   }
@@ -31,6 +40,15 @@ export function bindCompositionControls(store) {
       store.setState((state) => ({
         ...state,
         composition: { ...state.composition, orientation: button.dataset.compositionOrientation },
+      }));
+    });
+  });
+
+  document.querySelectorAll("[data-target-mode]").forEach((button) => {
+    button.addEventListener("click", () => {
+      store.setState((state) => ({
+        ...state,
+        subject: { ...state.subject, targetMode: button.dataset.targetMode },
       }));
     });
   });
@@ -48,6 +66,12 @@ export function bindCompositionControls(store) {
         button.classList.toggle("is-active", active);
         button.setAttribute("aria-pressed", String(active));
       });
+      document.querySelectorAll("[data-target-mode]").forEach((button) => {
+        const active = button.dataset.targetMode === state.subject.targetMode;
+        button.classList.toggle("is-active", active);
+        button.setAttribute("aria-pressed", String(active));
+      });
+      form.classList.toggle("is-terrain-target", state.subject.targetMode === "terrain");
     },
   };
 }

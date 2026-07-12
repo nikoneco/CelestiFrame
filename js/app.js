@@ -1,4 +1,4 @@
-import { createStore } from "./state.js?v=20";
+import { createStore } from "./state.js?v=24";
 import { createMapController } from "./map/map-controller.js?v=14";
 import { bindPlaceSearch } from "./map/place-search.js?v=14";
 import { bindDateTimeControls } from "./ui/datetime-controls.js?v=11";
@@ -7,11 +7,13 @@ import { calculateSunData } from "./astronomy/sun-service.js";
 import { calculateMoonData } from "./astronomy/moon-service.js?v=5";
 import { subjectGeometry } from "./geometry/bearing.js?v=7";
 import { signedAngleDifference } from "./geometry/angle.js";
-import { bindSearchControls } from "./search/search-controller.js?v=11";
-import { bindPlanManager } from "./plans/plan-manager.js?v=19";
-import { parseSharedState } from "./plans/plan-data.js?v=19";
+import { bindSearchControls } from "./search/search-controller.js?v=24";
+import { bindPlanManager } from "./plans/plan-manager.js?v=24";
+import { parseSharedState } from "./plans/plan-data.js?v=24";
 import { calculateComposition, focalLengthForFill, SENSOR_PRESETS } from "./composition/composition.js?v=19";
-import { bindCompositionControls } from "./ui/composition-controls.js?v=20";
+import { bindCompositionControls } from "./ui/composition-controls.js?v=24";
+import { bindElevationControls } from "./elevation/elevation-controller.js?v=24";
+import { apparentSolarAltitude, calculateTargetAltitude } from "./geometry/target-altitude.js?v=24";
 
 const store = createStore();
 const mapStage = document.querySelector(".map-stage");
@@ -199,10 +201,19 @@ function renderComposition(state) {
     const sunData = calculateSunData(selectedDate, state.cameraLocation);
     const moonData = calculateMoonData(selectedDate, state.cameraLocation);
     const sensor = SENSOR_PRESETS[state.composition.sensorPreset] || SENSOR_PRESETS["full-frame"];
+    const targetAltitude = calculateTargetAltitude({
+      distanceMeters: geometry.distanceMeters,
+      cameraElevationMeters: state.composition.cameraElevationMeters,
+      cameraHeightMeters: state.composition.cameraHeightMeters,
+      targetElevationMeters: state.subject.groundElevationMeters,
+      targetHeightMeters: state.subject.heightMeters,
+      targetMode: state.subject.targetMode,
+    });
+    const visualHeightMeters = state.subject.targetMode === "terrain" ? 0.1 : state.subject.heightMeters;
     const composition = calculateComposition({
       distanceMeters: geometry.distanceMeters,
-      subjectHeightMeters: state.subject.heightMeters,
-      cameraElevationMeters: state.composition.cameraElevationMeters,
+      subjectHeightMeters: visualHeightMeters,
+      cameraElevationMeters: targetAltitude.cameraAbsoluteMeters,
       subjectElevationMeters: state.subject.groundElevationMeters,
       focalLengthMm: state.composition.focalLengthMm,
       sensorWidthMm: sensor.widthMm,
@@ -215,7 +226,7 @@ function renderComposition(state) {
     });
 
     card.classList.remove("has-composition-error");
-    document.querySelector('[data-composition-field="status"]').textContent = composition.framing;
+    document.querySelector('[data-composition-field="status"]').textContent = state.subject.targetMode === "terrain" ? "地形照準点" : composition.framing;
     document.querySelector('[data-composition-field="horizontal-fov"]').textContent = `${composition.horizontalDegrees.toFixed(1)}°`;
     document.querySelector('[data-composition-field="vertical-fov"]').textContent = `${composition.verticalDegrees.toFixed(1)}°`;
     document.querySelector('[data-composition-field="fill"]').textContent = composition.verticalFillPercent > 0 && composition.verticalFillPercent < 1
@@ -225,7 +236,14 @@ function renderComposition(state) {
     document.querySelector('[data-composition-field="suggested-focal"]').textContent = suggestedFocal
       ? suggestedFocal > 2000 ? "2000 mm超" : `${Math.round(suggestedFocal)} mm`
       : "—";
-    document.querySelector('[data-composition-field="message"]').textContent = `${state.subject.name || "被写体"}は垂直画角の${composition.verticalFillPercent.toFixed(0)}%。中心仰角は${composition.centerAltitudeDegrees.toFixed(1)}°です。`;
+    document.querySelector('[data-terrain-field="camera-elevation"]').textContent = `${targetAltitude.cameraAbsoluteMeters.toFixed(1)} m`;
+    document.querySelector('[data-terrain-field="target-elevation"]').textContent = `${targetAltitude.targetAbsoluteMeters.toFixed(1)} m`;
+    document.querySelector('[data-terrain-field="target-altitude"]').textContent = `${targetAltitude.altitudeDegrees.toFixed(2)}°`;
+    const planningSunAltitude = apparentSolarAltitude(sunData.altitude);
+    document.querySelector('[data-terrain-field="sun-vertical-difference"]').textContent = `${(planningSunAltitude - targetAltitude.altitudeDegrees).toFixed(2)}°`;
+    document.querySelector('[data-composition-field="message"]').textContent = state.subject.targetMode === "terrain"
+      ? `${state.subject.name || "地形点"}の推定仰角は${targetAltitude.altitudeDegrees.toFixed(2)}°（幾何学値 ${targetAltitude.geometricAltitudeDegrees.toFixed(2)}°）。`
+      : `${state.subject.name || "被写体"}は垂直画角の${composition.verticalFillPercent.toFixed(0)}%。上端の推定仰角は${targetAltitude.altitudeDegrees.toFixed(2)}°（幾何学値 ${targetAltitude.geometricAltitudeDegrees.toFixed(2)}°）です。`;
     document.querySelector("#composition-frame-label").textContent = `${sensor.name.toUpperCase()} · ${state.composition.focalLengthMm}mm · ${state.composition.orientation === "portrait" ? "縦" : "横"}`;
     document.querySelector("#composition-viewfinder").classList.toggle("is-portrait", state.composition.orientation === "portrait");
     document.querySelector("#composition-subject-label").textContent = state.subject.name || "被写体";
@@ -236,6 +254,7 @@ function renderComposition(state) {
     subjectElement.style.top = `${top}%`;
     subjectElement.style.height = `${Math.max(2, bottom - top)}%`;
     subjectElement.classList.toggle("is-clipped", composition.verticalFillPercent > 100);
+    subjectElement.classList.toggle("is-terrain-point", state.subject.targetMode === "terrain");
     const horizon = document.querySelector("#composition-horizon");
     horizon.style.top = `${clampPercent(composition.horizonPercent)}%`;
     horizon.classList.toggle("is-outside", composition.horizonPercent < 0 || composition.horizonPercent > 100);
@@ -410,6 +429,7 @@ document.querySelectorAll("[data-body]").forEach((button) => {
 });
 
 const compositionControls = bindCompositionControls(store);
+bindElevationControls(store, showToast);
 
 store.subscribe((state) => {
   applyTheme(state.settings.theme);

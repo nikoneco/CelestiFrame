@@ -9,7 +9,7 @@
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./assets/icon.svg?v=22" type="image/svg+xml">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-    <link rel="stylesheet" href="./css/app.css?v=23">
+    <link rel="stylesheet" href="./css/app.css?v=24">
   </head>
   <body>
     <div class="app-shell">
@@ -216,20 +216,42 @@
               <div><span>被写体占有</span><strong data-composition-field="fill">—</strong></div>
               <div><span>70%の目安</span><strong data-composition-field="suggested-focal">—</strong></div>
             </div>
+            <div class="terrain-metrics" aria-label="標高と照準仰角">
+              <div><span>カメラ標高</span><strong data-terrain-field="camera-elevation">—</strong></div>
+              <div><span>照準標高</span><strong data-terrain-field="target-elevation">—</strong></div>
+              <div><span>照準仰角</span><strong data-terrain-field="target-altitude">—</strong></div>
+              <div><span>太陽との差</span><strong data-terrain-field="sun-vertical-difference">—</strong></div>
+            </div>
             <p class="composition-message" data-composition-field="message">被写体地点と高さから構図を計算します。</p>
 
             <form class="composition-form" id="composition-form">
+              <div class="target-mode-control">
+                <span>照準点</span>
+                <div role="group" aria-label="被写体の照準点">
+                  <button type="button" data-target-mode="terrain" aria-pressed="false"><b>地形点</b><small>山頂・地表</small></button>
+                  <button type="button" data-target-mode="structure" class="is-active" aria-pressed="true"><b>建造物</b><small>地表＋高さ</small></button>
+                </div>
+              </div>
               <label><span>センサー</span><select data-composition-field="sensorPreset"><option value="full-frame">フルサイズ</option><option value="aps-c">APS-C</option><option value="mft">マイクロフォーサーズ</option><option value="one-inch">1型</option></select></label>
               <label><span>焦点距離</span><span class="input-unit"><input type="number" data-composition-field="focalLengthMm" min="1" max="2000" step="1"><i>mm</i></span></label>
               <div class="composition-orientation"><span>構図方向</span><div><button type="button" data-composition-orientation="landscape" aria-pressed="true">横</button><button type="button" data-composition-orientation="portrait" aria-pressed="false">縦</button></div></div>
-              <label><span>被写体の高さ</span><span class="input-unit"><input type="number" data-subject-field="heightMeters" min="0.1" max="10000" step="0.1"><i>m</i></span></label>
-              <label><span>撮影地点の標高</span><span class="input-unit"><input type="number" data-composition-field="cameraElevationMeters" min="-500" max="9000" step="1"><i>m</i></span></label>
-              <label><span>被写体地点の標高</span><span class="input-unit"><input type="number" data-subject-field="groundElevationMeters" min="-500" max="9000" step="1"><i>m</i></span></label>
+              <label class="subject-height-field"><span>建造物の高さ</span><span class="input-unit"><input type="number" data-subject-field="heightMeters" min="0" max="10000" step="0.1"><i>m</i></span></label>
+              <label><span>カメラ高</span><span class="input-unit"><input type="number" data-composition-field="cameraHeightMeters" min="0" max="100" step="0.1"><i>m</i></span></label>
+              <label class="elevation-field">
+                <span>撮影地点の標高 <b data-elevation-status="camera">未取得</b></span>
+                <span class="elevation-input-row"><span class="input-unit"><input type="number" data-composition-field="cameraElevationMeters" min="-500" max="9000" step="0.1"><i>m</i></span><button type="button" data-elevation-retry="camera">再取得</button></span>
+                <small data-elevation-source="camera">国土地理院DEM</small>
+              </label>
+              <label class="elevation-field">
+                <span>被写体地点の標高 <b data-elevation-status="subject">未取得</b></span>
+                <span class="elevation-input-row"><span class="input-unit"><input type="number" data-subject-field="groundElevationMeters" min="-500" max="9000" step="0.1"><i>m</i></span><button type="button" data-elevation-retry="subject">再取得</button></span>
+                <small data-elevation-source="subject">国土地理院DEM</small>
+              </label>
             </form>
-            <p class="composition-note">標高と被写体高は手入力の概算値です。ファインダーは被写体の高さ中央へ向けた場合を表示します。</p>
+            <p class="composition-note">標高は国土地理院DEMによる推定値です。建物・樹木・積雪・実際の大気状態は反映しません。</p>
           </article>
 
-          <p class="phase-note">Phase 8 — 光学画角と簡易構図計画</p>
+          <p class="phase-note">Phase 9 — 標高連動とダイヤモンド判定</p>
           </div>
         </section>
       </main>
@@ -337,6 +359,11 @@
               <label><span>最低高度</span><span class="input-unit"><input type="number" name="minAltitude" value="0" min="-90" max="90" step="1"><i>°</i></span></label>
               <label><span>最高高度</span><span class="input-unit"><input type="number" name="maxAltitude" value="45" min="-90" max="90" step="1"><i>°</i></span></label>
             </div>
+            <label class="diamond-toggle" id="diamond-toggle">
+              <input type="checkbox" name="matchTargetAltitude" checked>
+              <span><b>照準点の高度も合わせる</b><small id="diamond-target-summary">標高取得後にダイヤ候補を判定</small></span>
+            </label>
+            <label class="diamond-tolerance" id="diamond-tolerance"><span>太陽円盤外の許容差</span><span class="input-unit"><input type="number" name="verticalToleranceDegrees" value="0.3" min="0" max="5" step="0.1"><i>°</i></span></label>
           </section>
 
           <div class="search-progress-panel" id="search-progress-panel" hidden>
@@ -366,6 +393,6 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script src="./js/vendor/suncalc.js"></script>
-    <script type="module" src="./js/app.js?v=23"></script>
+    <script type="module" src="./js/app.js?v=24"></script>
   </body>
 </html>

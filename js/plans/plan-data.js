@@ -1,4 +1,4 @@
-export const PLAN_FILE_VERSION = 2;
+export const PLAN_FILE_VERSION = 3;
 
 const BODIES = new Set(["sun", "moon", "both"]);
 
@@ -10,6 +10,8 @@ function cloneLocation(location) {
   if (!Number.isFinite(longitude) || longitude < -180 || longitude > 180) throw new Error("経度が正しくありません");
   return { latitude, longitude };
 }
+
+const locationKey = (location) => location ? `${Number(location.latitude).toFixed(6)},${Number(location.longitude).toFixed(6)}` : "";
 
 export function defaultPlanName(state) {
   const date = new Date(state.selectedDateTime);
@@ -35,9 +37,19 @@ export function snapshotPlanState(state) {
       groundElevationMeters: state.subject?.groundElevationMeters != null && Number.isFinite(Number(state.subject.groundElevationMeters))
         ? Number(state.subject.groundElevationMeters)
         : 0,
+      groundElevationStatus: ["ready", "manual"].includes(state.subject?.groundElevationStatus) ? state.subject.groundElevationStatus : "manual",
+      groundElevationSource: String(state.subject?.groundElevationSource || ""),
+      groundElevationMode: state.subject?.groundElevationMode === "auto" ? "auto" : "manual",
+      groundElevationKey: String(state.subject?.groundElevationKey || locationKey(state.subjectLocation)),
+      targetMode: state.subject?.targetMode === "terrain" ? "terrain" : "structure",
     },
     composition: {
       cameraElevationMeters: Number(state.composition?.cameraElevationMeters) || 0,
+      cameraHeightMeters: Math.min(100, Math.max(0, state.composition?.cameraHeightMeters == null ? 1.5 : Number(state.composition.cameraHeightMeters) || 0)),
+      cameraElevationStatus: ["ready", "manual"].includes(state.composition?.cameraElevationStatus) ? state.composition.cameraElevationStatus : "manual",
+      cameraElevationSource: String(state.composition?.cameraElevationSource || ""),
+      cameraElevationMode: state.composition?.cameraElevationMode === "auto" ? "auto" : "manual",
+      cameraElevationKey: String(state.composition?.cameraElevationKey || locationKey(state.cameraLocation)),
       focalLengthMm: Math.min(2000, Math.max(1, Number(state.composition?.focalLengthMm) || 50)),
       sensorPreset: ["full-frame", "aps-c", "mft", "one-inch"].includes(state.composition?.sensorPreset)
         ? state.composition.sensorPreset : "full-frame",
@@ -109,12 +121,14 @@ export function buildShareUrl(state, baseUrl = location.href) {
   url.searchParams.set("sensor", snapshot.composition.sensorPreset);
   url.searchParams.set("orientation", snapshot.composition.orientation);
   url.searchParams.set("ce", String(snapshot.composition.cameraElevationMeters));
+  url.searchParams.set("ch", String(snapshot.composition.cameraHeightMeters));
   if (snapshot.subjectLocation) {
     url.searchParams.set("slat", snapshot.subjectLocation.latitude.toFixed(6));
     url.searchParams.set("slng", snapshot.subjectLocation.longitude.toFixed(6));
     url.searchParams.set("subject", snapshot.subject.name);
     url.searchParams.set("height", String(snapshot.subject.heightMeters ?? 10));
     url.searchParams.set("se", String(snapshot.subject.groundElevationMeters));
+    url.searchParams.set("tm", snapshot.subject.targetMode);
   }
   return url.toString();
 }
@@ -138,9 +152,19 @@ export function parseSharedState(urlValue) {
       name: url.searchParams.get("subject")?.slice(0, 120) || "被写体",
       heightMeters: Math.max(0.1, Number(url.searchParams.get("height")) || 10),
       groundElevationMeters: Number(url.searchParams.get("se")) || 0,
+      groundElevationStatus: "manual",
+      groundElevationSource: "共有計画",
+      groundElevationMode: "manual",
+      groundElevationKey: locationKey(subjectLocation),
+      targetMode: url.searchParams.get("tm") === "terrain" ? "terrain" : "structure",
     },
     composition: {
       cameraElevationMeters: Number(url.searchParams.get("ce")) || 0,
+      cameraHeightMeters: Math.min(100, Math.max(0, Number(url.searchParams.get("ch")) || 1.5)),
+      cameraElevationStatus: "manual",
+      cameraElevationSource: "共有計画",
+      cameraElevationMode: "manual",
+      cameraElevationKey: locationKey(cameraLocation),
       focalLengthMm: Math.min(2000, Math.max(1, Number(url.searchParams.get("f")) || 50)),
       sensorPreset: ["full-frame", "aps-c", "mft", "one-inch"].includes(url.searchParams.get("sensor"))
         ? url.searchParams.get("sensor") : "full-frame",

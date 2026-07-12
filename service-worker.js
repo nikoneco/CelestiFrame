@@ -1,30 +1,33 @@
-const CACHE_VERSION = "celestiframe-shell-v23";
+const CACHE_VERSION = "celestiframe-shell-v24";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./offline.html",
   "./manifest.webmanifest",
   "./assets/icon.svg?v=22",
-  "./css/app.css?v=23",
-  "./js/app.js?v=23",
-  "./js/state.js?v=20",
+  "./css/app.css?v=24",
+  "./js/app.js?v=24",
+  "./js/state.js?v=24",
   "./js/astronomy/sun-service.js",
   "./js/astronomy/moon-service.js?v=5",
   "./js/geometry/angle.js",
   "./js/geometry/bearing.js?v=7",
   "./js/geometry/destination.js",
+  "./js/geometry/target-altitude.js?v=24",
+  "./js/elevation/elevation-service.js?v=24",
+  "./js/elevation/elevation-controller.js?v=24",
   "./js/map/geocoder.js?v=12",
   "./js/map/map-controller.js?v=14",
   "./js/map/place-search.js?v=14",
-  "./js/plans/plan-data.js?v=19",
-  "./js/plans/plan-manager.js?v=19",
+  "./js/plans/plan-data.js?v=24",
+  "./js/plans/plan-manager.js?v=24",
   "./js/plans/plan-repository.js?v=14",
   "./js/composition/composition.js?v=19",
-  "./js/search/search-controller.js?v=11",
+  "./js/search/search-controller.js?v=24",
   "./js/search/search-core.js",
-  "./js/search/search-worker.js?v=10",
+  "./js/search/search-worker.js?v=24",
   "./js/ui/datetime-controls.js?v=11",
-  "./js/ui/composition-controls.js?v=20",
+  "./js/ui/composition-controls.js?v=24",
   "./js/ui/theme.js?v=6",
   "./js/vendor/suncalc.js",
 ];
@@ -54,6 +57,10 @@ self.addEventListener("fetch", (event) => {
   }
 
   const requestUrl = new URL(event.request.url);
+  if (requestUrl.hostname === "cyberjapandata2.gsi.go.jp") {
+    event.respondWith(fetch(event.request));
+    return;
+  }
   const isVersionedSource = requestUrl.origin === self.location.origin
     && (event.request.destination === "script" || event.request.destination === "style");
 

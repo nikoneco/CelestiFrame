@@ -1,4 +1,5 @@
 import { subjectGeometry } from "../geometry/bearing.js?v=7";
+import { calculateTargetAltitude } from "../geometry/target-altitude.js?v=24";
 
 const DAY_MS = 86400000;
 const pad = (value) => String(value).padStart(2, "0");
@@ -27,6 +28,7 @@ export function validateSearchInput(input) {
   if (input.toleranceDegrees < 0.1 || input.toleranceDegrees > 180) errors.push("許容方位差は0.1〜180°にしてください");
   if (input.minAltitude < -90 || input.maxAltitude > 90 || input.minAltitude > input.maxAltitude) errors.push("高度範囲を確認してください");
   if (input.minIllumination < 0 || input.minIllumination > 100) errors.push("月照度は0〜100%にしてください");
+  if (input.matchTargetAltitude && (!Number.isFinite(input.targetAltitude) || input.verticalToleranceDegrees < 0 || input.verticalToleranceDegrees > 5)) errors.push("照準点の高度条件を確認してください");
   return errors;
 }
 
@@ -54,9 +56,13 @@ function renderResults(results, container, onSelect) {
     const dateText = new Intl.DateTimeFormat("ja-JP", { month: "numeric", day: "numeric", weekday: "short" }).format(date);
     const timeText = new Intl.DateTimeFormat("ja-JP", { hour: "2-digit", minute: "2-digit", hour12: false }).format(date);
     const illuminationText = result.illumination === null ? "" : `照度 ${result.illumination.toFixed(0)}%`;
+    const diamondLabels = { center: "中心付近", disk: "太陽円盤内", near: "円盤に接近", "azimuth-only": "方位のみ一致" };
+    const secondaryText = result.diamondState
+      ? `${diamondLabels[result.diamondState]}・高度差 ${Math.abs(result.verticalDifference).toFixed(2)}°`
+      : `高度 ${result.altitude.toFixed(1)}° ${illuminationText}`;
     button.innerHTML = `
       <span class="result-date"><b>${dateText}</b><strong>${timeText}</strong></span>
-      <span class="result-metrics"><b>方位差 ${formatDifference(result.difference)}</b><span>高度 ${result.altitude.toFixed(1)}° ${illuminationText}</span></span>
+      <span class="result-metrics"><b>方位差 ${formatDifference(result.difference)}</b><span>${secondaryText}</span></span>
       <span class="result-score">${Math.round(result.score)}</span>
     `;
     button.addEventListener("click", () => onSelect(result));
@@ -74,7 +80,38 @@ export function bindSearchControls(store, showToast) {
   const submitButton = document.querySelector("#search-submit");
   const cancelButton = document.querySelector("#search-cancel");
   const overnightBadge = document.querySelector("#overnight-badge");
+  const diamondToggle = document.querySelector("#diamond-toggle");
+  const diamondTolerance = document.querySelector("#diamond-tolerance");
+  const diamondSummary = document.querySelector("#diamond-target-summary");
   let worker = null;
+
+  function targetAltitudeForState(state) {
+    if (!state.subjectLocation) return null;
+    const geometry = subjectGeometry(state.cameraLocation, state.subjectLocation);
+    return calculateTargetAltitude({
+      distanceMeters: geometry.distanceMeters,
+      cameraElevationMeters: state.composition.cameraElevationMeters,
+      cameraHeightMeters: state.composition.cameraHeightMeters,
+      targetElevationMeters: state.subject.groundElevationMeters,
+      targetHeightMeters: state.subject.heightMeters,
+      targetMode: state.subject.targetMode,
+    });
+  }
+
+  function updateDiamondControls() {
+    const isSun = form.elements.target.value === "sun";
+    diamondToggle.hidden = !isSun;
+    diamondTolerance.hidden = !isSun || !form.elements.matchTargetAltitude.checked;
+    if (!isSun) return;
+    try {
+      const target = targetAltitudeForState(store.getState());
+      diamondSummary.textContent = target
+        ? `照準仰角 ${target.altitudeDegrees.toFixed(2)}°・太陽円盤との重なりを判定`
+        : "先に被写体地点を設定してください";
+    } catch {
+      diamondSummary.textContent = "標高と高さを確認してください";
+    }
+  }
 
   function updateOvernightBadge() {
     if (!form.elements.startTime.value || !form.elements.endTime.value) return;
@@ -96,7 +133,9 @@ export function bindSearchControls(store, showToast) {
     form.elements.minIllumination.disabled = target !== "moon";
     form.elements.startTime.value = target === "moon" ? "18:00" : "04:00";
     form.elements.endTime.value = target === "moon" ? "06:00" : "20:00";
+    form.elements.matchTargetAltitude.checked = target === "sun";
     updateOvernightBadge();
+    updateDiamondControls();
     resultsContainer.replaceChildren();
     progressPanel.hidden = true;
     dialog.showModal();
@@ -105,8 +144,11 @@ export function bindSearchControls(store, showToast) {
   Array.from(form.elements.target).forEach((input) => {
     input.addEventListener("change", () => {
       form.elements.minIllumination.disabled = input.value !== "moon";
+      updateDiamondControls();
     });
   });
+
+  form.elements.matchTargetAltitude.addEventListener("change", updateDiamondControls);
 
   form.elements.startTime.addEventListener("change", updateOvernightBadge);
   form.elements.endTime.addEventListener("change", updateOvernightBadge);
@@ -138,6 +180,14 @@ export function bindSearchControls(store, showToast) {
     const geometry = subjectGeometry(state.cameraLocation, state.subjectLocation);
     const data = new FormData(form);
     const startMinute = minutesFromTime(data.get("startTime"));
+    const matchTargetAltitude = data.get("target") === "sun" && data.get("matchTargetAltitude") === "on";
+    let targetAltitude = null;
+    if (matchTargetAltitude) {
+      const elevationsReady = [state.composition.cameraElevationStatus, state.subject.groundElevationStatus]
+        .every((status) => status === "ready" || status === "manual");
+      if (!elevationsReady) return showToast("撮影地点と被写体地点の標高を取得してください");
+      targetAltitude = targetAltitudeForState(state);
+    }
     const input = {
       target: data.get("target"),
       cameraLocation: state.cameraLocation,
@@ -151,12 +201,15 @@ export function bindSearchControls(store, showToast) {
       minAltitude: Number(data.get("minAltitude")),
       maxAltitude: Number(data.get("maxAltitude")),
       minIllumination: Number(data.get("minIllumination") || 0),
+      matchTargetAltitude,
+      targetAltitude: targetAltitude?.altitudeDegrees ?? null,
+      verticalToleranceDegrees: Number(data.get("verticalToleranceDegrees") || 0.3),
     };
     const errors = validateSearchInput(input);
     if (errors.length) return showToast(errors[0]);
 
     worker?.terminate();
-    worker = new Worker(new URL("./search-worker.js?v=10", import.meta.url));
+    worker = new Worker(new URL("./search-worker.js?v=24", import.meta.url));
     submitButton.disabled = true;
     cancelButton.hidden = false;
     progressPanel.hidden = false;

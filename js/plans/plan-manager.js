@@ -1,4 +1,4 @@
-import { buildShareUrl, createPlan, defaultPlanName, normalizePlan, parsePlansFile, serializePlans } from "./plan-data.js?v=19";
+import { buildShareUrl, createPlan, defaultPlanName, normalizePlan, parsePlansFile, serializePlans } from "./plan-data.js?v=24";
 import { createPlanRepository } from "./plan-repository.js?v=14";
 
 const formatDateTime = (value) => new Intl.DateTimeFormat("ja-JP", {
