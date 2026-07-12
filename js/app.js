@@ -46,6 +46,15 @@ function showToast(message) {
   }, 3600);
 }
 
+function showServiceWorkerUpdate(worker) {
+  const toast = document.querySelector("#toast");
+  const action = document.querySelector("#toast-action");
+  document.querySelector("#toast-message").textContent = "CelestiFrameの新しいバージョンがあります";
+  action.hidden = false;
+  action.onclick = () => worker.postMessage({ type: "SKIP_WAITING" });
+  toast.hidden = false;
+}
+
 function setCameraLocation(location, options) {
   store.setState((state) => ({ ...state, cameraLocation: location }));
   mapController?.setLocation(location, options);
@@ -129,16 +138,14 @@ if ("serviceWorker" in navigator) {
   window.addEventListener("load", async () => {
     try {
       const registration = await navigator.serviceWorker.register("./service-worker.js");
+      if (registration.waiting && navigator.serviceWorker.controller) {
+        showServiceWorkerUpdate(registration.waiting);
+      }
       registration.addEventListener("updatefound", () => {
         const worker = registration.installing;
         worker?.addEventListener("statechange", () => {
           if (worker.state !== "installed" || !navigator.serviceWorker.controller) return;
-          const toast = document.querySelector("#toast");
-          const action = document.querySelector("#toast-action");
-          document.querySelector("#toast-message").textContent = "CelestiFrameの新しいバージョンがあります";
-          action.hidden = false;
-          action.onclick = () => worker.postMessage({ type: "SKIP_WAITING" });
-          toast.hidden = false;
+          showServiceWorkerUpdate(worker);
         });
       });
     } catch (error) {
