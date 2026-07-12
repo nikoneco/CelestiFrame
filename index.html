@@ -9,7 +9,7 @@
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./assets/icon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-    <link rel="stylesheet" href="./css/app.css?v=7">
+    <link rel="stylesheet" href="./css/app.css?v=8">
   </head>
   <body>
     <div class="app-shell">
@@ -160,9 +160,10 @@
               <div><span>月との差</span><strong data-alignment-field="moon-difference">—</strong></div>
             </div>
             <p data-alignment-field="message">被写体地点を基準に天体の左右差を表示します。</p>
+            <button class="alignment-search-button" id="alignment-search-button" type="button">重なる日時を検索</button>
           </article>
 
-          <p class="phase-note">Phase 5 — 被写体と天体の重なり</p>
+          <p class="phase-note">Phase 6 — 条件に合う撮影日時の探索</p>
         </section>
       </main>
     </div>
@@ -206,6 +207,58 @@
       </form>
     </dialog>
 
+    <dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title">
+      <div class="search-panel">
+        <header>
+          <div><span class="eyebrow">AZIMUTH SCAN</span><h2 id="search-title">重なる日時を検索</h2></div>
+          <button class="dialog-close" id="search-close" type="button" aria-label="検索を閉じる">×</button>
+        </header>
+
+        <form id="search-form">
+          <fieldset class="search-target">
+            <legend>対象天体</legend>
+            <label><input type="radio" name="target" value="sun"><span>太陽</span></label>
+            <label><input type="radio" name="target" value="moon" checked><span>月</span></label>
+          </fieldset>
+
+          <section class="search-section">
+            <span class="search-section-label">探索範囲</span>
+            <div class="search-grid search-grid-dates">
+              <label><span>開始日</span><input type="date" name="startDate" required></label>
+              <label><span>終了日</span><input type="date" name="endDate" required></label>
+              <label><span>開始時刻</span><input type="time" name="startTime" value="00:00" required></label>
+              <label><span>終了時刻</span><input type="time" name="endTime" value="23:59" required></label>
+            </div>
+            <label class="search-step"><span>検索間隔</span><select name="stepMinutes"><option value="10">10分</option><option value="5">5分</option><option value="1">1分</option></select></label>
+          </section>
+
+          <section class="search-section">
+            <span class="search-section-label">一致条件</span>
+            <div class="search-grid">
+              <label><span>許容方位差</span><span class="input-unit"><input type="number" name="toleranceDegrees" value="2" min="0.1" max="180" step="0.1"><i>°</i></span></label>
+              <label><span>最低月照度</span><span class="input-unit"><input type="number" name="minIllumination" value="0" min="0" max="100" step="1"><i>%</i></span></label>
+              <label><span>最低高度</span><span class="input-unit"><input type="number" name="minAltitude" value="0" min="-90" max="90" step="1"><i>°</i></span></label>
+              <label><span>最高高度</span><span class="input-unit"><input type="number" name="maxAltitude" value="45" min="-90" max="90" step="1"><i>°</i></span></label>
+            </div>
+          </section>
+
+          <div class="search-progress-panel" id="search-progress-panel" hidden>
+            <div class="scan-rail"><progress id="search-progress" max="100" value="0"></progress></div>
+            <span id="search-progress-label">方位を走査しています…</span>
+          </div>
+
+          <div class="search-actions">
+            <button class="search-submit" id="search-submit" type="submit">日時を検索</button>
+            <button class="search-cancel" id="search-cancel" type="button" hidden>キャンセル</button>
+          </div>
+        </form>
+
+        <section class="search-results-section" aria-label="検索結果">
+          <div class="search-results" id="search-results"></div>
+        </section>
+      </div>
+    </dialog>
+
     <div class="toast" id="toast" role="status" aria-live="polite" hidden>
       <span id="toast-message"></span>
       <button id="toast-action" type="button" hidden>今すぐ更新</button>
@@ -213,6 +266,6 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script src="./js/vendor/suncalc.js"></script>
-    <script type="module" src="./js/app.js?v=7"></script>
+    <script type="module" src="./js/app.js?v=8"></script>
   </body>
 </html>
