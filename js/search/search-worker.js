@@ -1,3 +1,4 @@
+self.window = self;
 importScripts("../vendor/suncalc.js", "./search-core.js");
 
 self.addEventListener("message", (event) => {

@@ -6,7 +6,7 @@ import { calculateSunData } from "./astronomy/sun-service.js";
 import { calculateMoonData } from "./astronomy/moon-service.js?v=5";
 import { subjectGeometry } from "./geometry/bearing.js?v=7";
 import { signedAngleDifference } from "./geometry/angle.js";
-import { bindSearchControls } from "./search/search-controller.js?v=9";
+import { bindSearchControls } from "./search/search-controller.js?v=10";
 
 const store = createStore();
 const mapStage = document.querySelector(".map-stage");

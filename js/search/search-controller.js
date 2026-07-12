@@ -138,7 +138,7 @@ export function bindSearchControls(store, showToast) {
     if (errors.length) return showToast(errors[0]);
 
     worker?.terminate();
-    worker = new Worker(new URL("./search-worker.js?v=8", import.meta.url));
+    worker = new Worker(new URL("./search-worker.js?v=10", import.meta.url));
     submitButton.disabled = true;
     cancelButton.hidden = false;
     progressPanel.hidden = false;
