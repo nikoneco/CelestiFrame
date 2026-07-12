@@ -1,8 +1,8 @@
 import { createStore } from "./state.js";
-import { createMapController } from "./map/map-controller.js";
+import { createMapController } from "./map/map-controller.js?v=5";
 import { bindDateTimeControls } from "./ui/datetime-controls.js";
 import { calculateSunData } from "./astronomy/sun-service.js";
-import { calculateMoonData } from "./astronomy/moon-service.js";
+import { calculateMoonData } from "./astronomy/moon-service.js?v=5";
 
 const store = createStore();
 const mapStage = document.querySelector(".map-stage");

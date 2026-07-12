@@ -1,18 +1,18 @@
-const CACHE_VERSION = "celestiframe-shell-v4";
+const CACHE_VERSION = "celestiframe-shell-v5";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./offline.html",
   "./manifest.webmanifest",
   "./assets/icon.svg",
-  "./css/app.css",
-  "./js/app.js",
+  "./css/app.css?v=5",
+  "./js/app.js?v=5",
   "./js/state.js",
   "./js/astronomy/sun-service.js",
-  "./js/astronomy/moon-service.js",
+  "./js/astronomy/moon-service.js?v=5",
   "./js/geometry/angle.js",
   "./js/geometry/destination.js",
-  "./js/map/map-controller.js",
+  "./js/map/map-controller.js?v=5",
   "./js/ui/datetime-controls.js",
   "./js/vendor/suncalc.js",
 ];
@@ -38,6 +38,23 @@ self.addEventListener("fetch", (event) => {
 
   if (event.request.mode === "navigate") {
     event.respondWith(fetch(event.request).catch(() => caches.match("./index.html").then((response) => response || caches.match("./offline.html"))));
+    return;
+  }
+
+  const requestUrl = new URL(event.request.url);
+  const isVersionedSource = requestUrl.origin === self.location.origin
+    && (event.request.destination === "script" || event.request.destination === "style");
+
+  if (isVersionedSource) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          const copy = response.clone();
+          caches.open(CACHE_VERSION).then((cache) => cache.put(event.request, copy));
+          return response;
+        })
+        .catch(() => caches.match(event.request)),
+    );
     return;
   }
 
