@@ -1,4 +1,4 @@
-const CACHE_VERSION = "celestiframe-shell-v1";
+const CACHE_VERSION = "celestiframe-shell-v2";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -8,8 +8,12 @@ const APP_SHELL = [
   "./css/app.css",
   "./js/app.js",
   "./js/state.js",
+  "./js/astronomy/sun-service.js",
+  "./js/geometry/angle.js",
+  "./js/geometry/destination.js",
   "./js/map/map-controller.js",
   "./js/ui/datetime-controls.js",
+  "./js/vendor/suncalc.js",
 ];
 
 self.addEventListener("install", (event) => {

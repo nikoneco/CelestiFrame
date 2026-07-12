@@ -1,12 +1,41 @@
 import { createStore } from "./state.js";
 import { createMapController } from "./map/map-controller.js";
 import { bindDateTimeControls } from "./ui/datetime-controls.js";
+import { calculateSunData } from "./astronomy/sun-service.js";
 
 const store = createStore();
 const mapStage = document.querySelector(".map-stage");
 const setLocationButton = document.querySelector("#set-location-button");
 let mapController;
 let isArmingLocation = false;
+
+const formatAngle = (value) => value.toFixed(1);
+const formatTime = (date) => date
+  ? new Intl.DateTimeFormat("ja-JP", { hour: "2-digit", minute: "2-digit", hour12: false }).format(date)
+  : "なし";
+
+function renderSun(state) {
+  try {
+    const sunData = calculateSunData(new Date(state.selectedDateTime), state.cameraLocation);
+    document.querySelector('[data-sun-field="azimuth"]').textContent = formatAngle(sunData.azimuth);
+    document.querySelector('[data-sun-field="altitude"]').textContent = formatAngle(sunData.altitude);
+    document.querySelector('[data-sun-field="direction"]').textContent = sunData.direction;
+    document.querySelector('[data-sun-field="sunrise"]').textContent = formatTime(sunData.sunrise);
+    document.querySelector('[data-sun-field="sunset"]').textContent = formatTime(sunData.sunset);
+    const horizonState = document.querySelector('[data-sun-field="state"]');
+    horizonState.textContent = sunData.isAboveHorizon ? "地平線の上" : "地平線の下（計算値）";
+    horizonState.classList.toggle("is-above", sunData.isAboveHorizon);
+    horizonState.classList.toggle("is-below", !sunData.isAboveHorizon);
+    if (state.selectedBody === "sun" || state.selectedBody === "both") {
+      mapController?.setSunDirection(state.cameraLocation, sunData);
+    } else {
+      mapController?.clearSunDirection();
+    }
+  } catch (error) {
+    console.error("Solar calculation failed", error);
+    document.querySelector('[data-sun-field="state"]').textContent = "計算できません";
+  }
+}
 
 function showToast(message) {
   const toast = document.querySelector("#toast");
@@ -88,11 +117,13 @@ store.subscribe((state) => {
   document.querySelectorAll("[data-card]").forEach((card) => {
     card.hidden = state.selectedBody !== "both" && card.dataset.card !== state.selectedBody;
   });
+  renderSun(state);
 });
 
 document.querySelector("#timezone-label").textContent = Intl.DateTimeFormat().resolvedOptions().timeZone || "LOCAL";
 bindDateTimeControls(store);
 initializeMap();
+renderSun(store.getState());
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", async () => {

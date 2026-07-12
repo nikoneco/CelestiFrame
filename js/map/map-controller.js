@@ -1,3 +1,5 @@
+import { destinationPoint } from "../geometry/destination.js";
+
 export function createMapController({ elementId, initialLocation, initialZoom, onLocationChange, onMapMove }) {
   if (!window.L) throw new Error("Leaflet is unavailable");
 
@@ -24,6 +26,7 @@ export function createMapController({ elementId, initialLocation, initialZoom, o
     icon: markerIcon,
     title: "撮影地点",
   }).addTo(map);
+  let directionLine = null;
 
   marker.on("dragend", () => {
     const { lat, lng } = marker.getLatLng();
@@ -50,6 +53,28 @@ export function createMapController({ elementId, initialLocation, initialZoom, o
       marker.setLatLng(center);
       onLocationChange(location);
       return location;
+    },
+    setSunDirection(location, sunData) {
+      directionLine?.remove();
+      const destination = destinationPoint(location, sunData.azimuth, 35000);
+      directionLine = L.polyline(
+        [
+          [location.latitude, location.longitude],
+          [destination.latitude, destination.longitude],
+        ],
+        {
+          color: "#ffb44a",
+          weight: 3,
+          opacity: sunData.isAboveHorizon ? 0.9 : 0.38,
+          dashArray: sunData.isAboveHorizon ? null : "7 8",
+          interactive: false,
+          className: "sun-direction-line",
+        },
+      ).addTo(map);
+    },
+    clearSunDirection() {
+      directionLine?.remove();
+      directionLine = null;
     },
   };
 }

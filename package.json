@@ -6,5 +6,8 @@
   "scripts": {
     "test": "node --test",
     "serve": "node tools/dev-server.mjs"
+  },
+  "dependencies": {
+    "suncalc": "1.9.0"
   }
 }

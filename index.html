@@ -127,17 +127,17 @@
                   <span class="eyebrow">SOLAR VECTOR</span>
                   <h2>太陽</h2>
                 </div>
-                <span class="horizon-state">計算準備中</span>
+                <span class="horizon-state" data-sun-field="state">計算準備中</span>
               </header>
               <div class="metric-pair">
-                <div><span>方位角</span><strong>—<small>°</small></strong></div>
-                <div><span>高度角</span><strong>—<small>°</small></strong></div>
+                <div><span>方位角 <em data-sun-field="direction">—</em></span><strong><b data-sun-field="azimuth">—</b><small>°</small></strong></div>
+                <div><span>高度角</span><strong><b data-sun-field="altitude">—</b><small>°</small></strong></div>
               </div>
-              <footer><span>日の出 —</span><span>日の入り —</span></footer>
+              <footer><span>日の出 <b data-sun-field="sunrise">—</b></span><span>日の入り <b data-sun-field="sunset">—</b></span></footer>
             </article>
           </div>
 
-          <p class="phase-note">Phase 1 — 地図と撮影日時の土台を構築中</p>
+          <p class="phase-note">Phase 2 — 太陽位置と日の出・日の入り</p>
         </section>
       </main>
     </div>
@@ -148,6 +148,7 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script src="./js/vendor/suncalc.js"></script>
     <script type="module" src="./js/app.js"></script>
   </body>
 </html>
