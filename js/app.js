@@ -205,10 +205,13 @@ function renderComposition(state) {
     document.querySelector('[data-composition-field="status"]').textContent = composition.framing;
     document.querySelector('[data-composition-field="horizontal-fov"]').textContent = `${composition.horizontalDegrees.toFixed(1)}°`;
     document.querySelector('[data-composition-field="vertical-fov"]').textContent = `${composition.verticalDegrees.toFixed(1)}°`;
-    document.querySelector('[data-composition-field="fill"]').textContent = `${composition.verticalFillPercent.toFixed(0)}%`;
+    document.querySelector('[data-composition-field="fill"]').textContent = composition.verticalFillPercent > 0 && composition.verticalFillPercent < 1
+      ? "1%未満" : `${composition.verticalFillPercent.toFixed(0)}%`;
     const sensorHeight = state.composition.orientation === "portrait" ? sensor.widthMm : sensor.heightMm;
     const suggestedFocal = focalLengthForFill({ angularHeightDegrees: composition.angularHeightDegrees, sensorHeightMm: sensorHeight });
-    document.querySelector('[data-composition-field="suggested-focal"]').textContent = suggestedFocal ? `${Math.round(suggestedFocal)} mm` : "—";
+    document.querySelector('[data-composition-field="suggested-focal"]').textContent = suggestedFocal
+      ? suggestedFocal > 2000 ? "2000 mm超" : `${Math.round(suggestedFocal)} mm`
+      : "—";
     document.querySelector('[data-composition-field="message"]').textContent = `${state.subject.name || "被写体"}は垂直画角の${composition.verticalFillPercent.toFixed(0)}%。中心仰角は${composition.centerAltitudeDegrees.toFixed(1)}°です。`;
     document.querySelector("#composition-frame-label").textContent = `${sensor.name.toUpperCase()} · ${state.composition.focalLengthMm}mm · ${state.composition.orientation === "portrait" ? "縦" : "横"}`;
     document.querySelector("#composition-viewfinder").classList.toggle("is-portrait", state.composition.orientation === "portrait");
