@@ -52,6 +52,9 @@ export function createMapController({ elementId, initialLocation, initialZoom, o
 
   return {
     map,
+    focusLocation(location, zoom = 16) {
+      map.flyTo([location.latitude, location.longitude], zoom);
+    },
     setLocation(location, { pan = true } = {}) {
       marker.setLatLng([location.latitude, location.longitude]);
       if (pan) map.flyTo([location.latitude, location.longitude], Math.max(map.getZoom(), 14));

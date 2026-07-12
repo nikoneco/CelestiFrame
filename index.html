@@ -9,7 +9,7 @@
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./assets/icon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-    <link rel="stylesheet" href="./css/app.css?v=11">
+    <link rel="stylesheet" href="./css/app.css?v=12">
   </head>
   <body>
     <div class="app-shell">
@@ -49,6 +49,19 @@
             <span class="status-dot"></span>
             <span id="location-label">東京駅付近</span>
             <output id="coordinates">35.68124, 139.76712</output>
+          </div>
+
+          <div class="place-search">
+            <form id="place-search-form" role="search">
+              <label class="sr-only" for="place-search-input">地名・施設名を検索</label>
+              <input id="place-search-input" type="search" placeholder="スカイツリー、富士山…" autocomplete="off" enterkeyhint="search">
+              <button id="place-search-submit" type="submit" aria-label="場所を検索">⌕</button>
+            </form>
+            <section class="place-search-results" id="place-search-results" aria-label="場所の検索結果" hidden>
+              <header><span id="place-search-status">検索結果</span><button id="place-search-close" type="button" aria-label="検索結果を閉じる">×</button></header>
+              <div id="place-search-list"></div>
+              <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">検索データ © OpenStreetMap contributors</a>
+            </section>
           </div>
 
           <div class="map-actions">
@@ -267,6 +280,6 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script src="./js/vendor/suncalc.js"></script>
-    <script type="module" src="./js/app.js?v=11"></script>
+    <script type="module" src="./js/app.js?v=12"></script>
   </body>
 </html>

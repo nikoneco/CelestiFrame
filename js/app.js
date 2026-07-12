@@ -1,5 +1,6 @@
 import { createStore } from "./state.js?v=7";
-import { createMapController } from "./map/map-controller.js?v=7";
+import { createMapController } from "./map/map-controller.js?v=12";
+import { bindPlaceSearch } from "./map/place-search.js?v=12";
 import { bindDateTimeControls } from "./ui/datetime-controls.js?v=11";
 import { normalizeThemePreference, resolveThemePreference, themeColor } from "./ui/theme.js?v=6";
 import { calculateSunData } from "./astronomy/sun-service.js";
@@ -272,6 +273,7 @@ document.querySelector("#timezone-label").textContent = Intl.DateTimeFormat().re
 bindDateTimeControls(store);
 bindSearchControls(store, showToast);
 initializeMap();
+bindPlaceSearch(store, () => mapController, showToast);
 renderSun(store.getState());
 renderMoon(store.getState());
 renderAlignment(store.getState());
