@@ -1,5 +1,12 @@
 import { destinationPoint } from "../geometry/destination.js";
 
+export function directionLineLocations(location, azimuth, origin, distanceMeters = 35000) {
+  const celestialDirection = destinationPoint(location, azimuth, distanceMeters);
+  if (origin !== "subject") return [location, celestialDirection];
+  const cameraCandidateDirection = destinationPoint(location, (azimuth + 180) % 360, distanceMeters);
+  return [cameraCandidateDirection, location, celestialDirection];
+}
+
 export function createMapController({ elementId, initialLocation, initialZoom, onLocationChange, onSubjectLocationChange, onMapMove }) {
   if (!window.L) throw new Error("Leaflet is unavailable");
 
@@ -104,17 +111,14 @@ export function createMapController({ elementId, initialLocation, initialZoom, o
     setSunDirections(directions) {
       directionLines.forEach((line) => line.remove());
       directionLines = directions.map(({ location, data, origin }) => {
-        const destination = destinationPoint(location, data.azimuth, 35000);
+        const points = directionLineLocations(location, data.azimuth, origin);
         return L.polyline(
-          [
-            [location.latitude, location.longitude],
-            [destination.latitude, destination.longitude],
-          ],
+          points.map((point) => [point.latitude, point.longitude]),
           {
-            color: "#ffb44a",
-            weight: origin === "subject" ? 2.5 : 3,
-            opacity: data.isAboveHorizon ? (origin === "subject" ? 0.72 : 0.9) : 0.38,
-            dashArray: origin === "subject" ? "2 7" : data.isAboveHorizon ? null : "7 8",
+            color: origin === "subject" ? "#ffd08a" : "#ffb44a",
+            weight: origin === "subject" ? 2.25 : 3,
+            opacity: data.isAboveHorizon ? (origin === "subject" ? 0.82 : 0.9) : 0.38,
+            dashArray: origin === "subject" ? "12 7 2 7" : data.isAboveHorizon ? null : "7 8",
             interactive: false,
             className: `sun-direction-line ${origin}-origin-line`,
           },
@@ -128,17 +132,14 @@ export function createMapController({ elementId, initialLocation, initialZoom, o
     setMoonDirections(directions) {
       moonDirectionLines.forEach((line) => line.remove());
       moonDirectionLines = directions.map(({ location, data, origin }) => {
-        const destination = destinationPoint(location, data.azimuth, 35000);
+        const points = directionLineLocations(location, data.azimuth, origin);
         return L.polyline(
-          [
-            [location.latitude, location.longitude],
-            [destination.latitude, destination.longitude],
-          ],
+          points.map((point) => [point.latitude, point.longitude]),
           {
-            color: "#91b8ec",
-            weight: origin === "subject" ? 2.5 : 3,
-            opacity: data.isAboveHorizon ? (origin === "subject" ? 0.72 : 0.9) : 0.38,
-            dashArray: origin === "subject" ? "2 7" : data.isAboveHorizon ? null : "7 8",
+            color: origin === "subject" ? "#c7ddfa" : "#91b8ec",
+            weight: origin === "subject" ? 2.25 : 3,
+            opacity: data.isAboveHorizon ? (origin === "subject" ? 0.82 : 0.9) : 0.38,
+            dashArray: origin === "subject" ? "12 7 2 7" : data.isAboveHorizon ? null : "7 8",
             interactive: false,
             className: `moon-direction-line ${origin}-origin-line`,
           },
