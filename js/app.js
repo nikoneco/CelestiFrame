@@ -332,6 +332,14 @@ function setCameraLocation(location, options) {
   mapController?.setLocation(location, options);
 }
 
+function setSubjectLocationFromMap(subjectLocation) {
+  store.setState((state) => ({
+    ...state,
+    subjectLocation,
+    subject: { ...state.subject, name: "被写体" },
+  }));
+}
+
 function updateLocationMode(mode) {
   activeLocationMode = mode;
   const cameraActive = mode === "camera";
@@ -356,7 +364,7 @@ function initializeMap() {
       initialLocation: state.cameraLocation,
       initialZoom: state.map.zoom,
       onLocationChange: (cameraLocation) => store.setState((current) => ({ ...current, cameraLocation })),
-      onSubjectLocationChange: (subjectLocation) => store.setState((current) => ({ ...current, subjectLocation })),
+      onSubjectLocationChange: setSubjectLocationFromMap,
       onMapMove: (map) => store.setState((current) => ({ ...current, map })),
     });
   } catch (error) {
