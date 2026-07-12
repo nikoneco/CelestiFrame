@@ -592,6 +592,13 @@ main { min-height: 100dvh; }
   .control-deck { position: fixed; top: 78px; right: 18px; bottom: 18px; width: min(410px, 42vw); min-height: 0; max-height: none; margin: 0; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 93%, transparent); backdrop-filter: blur(18px); }
   .control-deck.is-collapsed { bottom: auto; width: min(290px, calc(100vw - 36px)); height: 58px; max-height: 58px; }
   .map-actions { bottom: 25px; }
+  .toast {
+    left: calc((100vw - min(410px, 42vw) - 36px) / 2);
+    right: auto;
+    bottom: max(90px, calc(90px + env(safe-area-inset-bottom)));
+    width: min(640px, calc(100vw - min(410px, 42vw) - 72px));
+    transform: translateX(-50%);
+  }
   .map-status { top: 88px; }
   .place-search { top: 142px; }
   .deck-handle { visibility: hidden; }
