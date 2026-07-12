@@ -9,7 +9,7 @@
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./assets/icon.svg?v=22" type="image/svg+xml">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-    <link rel="stylesheet" href="./css/app.css?v=19">
+    <link rel="stylesheet" href="./css/app.css?v=23">
   </head>
   <body>
     <div class="app-shell">
@@ -23,13 +23,13 @@
         </div>
         <div class="topbar-actions">
           <button class="icon-button" id="plans-button" type="button" aria-label="撮影計画" title="撮影計画" aria-haspopup="dialog">
-            <span aria-hidden="true">▤</span>
+            <span aria-hidden="true">▤</span><small>計画</small>
           </button>
           <button class="icon-button" id="locate-button" type="button" aria-label="現在地へ移動" title="現在地へ移動">
-            <span aria-hidden="true">⌖</span>
+            <span aria-hidden="true">⌖</span><small>現在地</small>
           </button>
           <button class="icon-button" id="settings-button" type="button" aria-label="設定" title="設定" aria-haspopup="dialog">
-            <span aria-hidden="true">◐</span>
+            <span aria-hidden="true">◐</span><small>表示</small>
           </button>
         </div>
       </header>
@@ -91,12 +91,19 @@
           <div class="control-deck-content" id="control-deck-content">
 
           <div class="body-selector" role="group" aria-label="表示する天体">
-            <button type="button" data-body="sun">太陽</button>
-            <button type="button" data-body="moon" class="is-active">月</button>
-            <button type="button" data-body="both">両方</button>
+            <button type="button" data-body="sun" aria-pressed="false">太陽</button>
+            <button type="button" data-body="moon" class="is-active" aria-pressed="true">月</button>
+            <button type="button" data-body="both" aria-pressed="false">両方</button>
           </div>
 
-          <div class="time-panel">
+          <nav class="deck-shortcuts" aria-label="コントロール内を移動">
+            <button type="button" data-deck-target="time-panel">日時</button>
+            <button type="button" data-deck-target="celestial-grid">天体</button>
+            <button type="button" data-deck-target="alignment-card" data-requires-subject>重なり</button>
+            <button type="button" data-deck-target="composition-card" data-requires-subject>構図</button>
+          </nav>
+
+          <div class="time-panel" id="time-panel">
             <div class="time-heading">
               <div>
                 <span class="eyebrow">撮影日時</span>
@@ -133,7 +140,7 @@
             <input id="time-slider" class="time-slider" type="range" min="0" max="1439" step="1">
           </div>
 
-          <div class="celestial-grid">
+          <div class="celestial-grid" id="celestial-grid">
             <article class="celestial-card celestial-card-moon" data-card="moon">
               <header>
                 <span class="celestial-symbol moon-symbol" aria-hidden="true"></span>
@@ -235,7 +242,7 @@
             <span class="eyebrow">FIELD DISPLAY</span>
             <h2 id="settings-title">表示設定</h2>
           </div>
-          <button class="dialog-close" type="submit" aria-label="設定を閉じる">×</button>
+          <button class="dialog-close" type="submit" aria-label="表示設定を閉じる">×</button>
         </header>
 
         <fieldset class="theme-options">
@@ -351,11 +358,14 @@
 
     <div class="toast" id="toast" role="status" aria-live="polite" hidden>
       <span id="toast-message"></span>
-      <button id="toast-action" type="button" hidden>今すぐ更新</button>
+      <div class="toast-actions">
+        <button id="toast-action" type="button" hidden>今すぐ更新</button>
+        <button id="toast-dismiss" type="button" aria-label="通知を閉じる">×</button>
+      </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script src="./js/vendor/suncalc.js"></script>
-    <script type="module" src="./js/app.js?v=21"></script>
+    <script type="module" src="./js/app.js?v=23"></script>
   </body>
 </html>

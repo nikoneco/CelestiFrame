@@ -1,12 +1,12 @@
-const CACHE_VERSION = "celestiframe-shell-v22";
+const CACHE_VERSION = "celestiframe-shell-v23";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./offline.html",
   "./manifest.webmanifest",
   "./assets/icon.svg?v=22",
-  "./css/app.css?v=19",
-  "./js/app.js?v=21",
+  "./css/app.css?v=23",
+  "./js/app.js?v=23",
   "./js/state.js?v=20",
   "./js/astronomy/sun-service.js",
   "./js/astronomy/moon-service.js?v=5",

@@ -46,6 +46,19 @@ function setControlsCollapsed(collapsed, { persist = true } = {}) {
 deckToggle.addEventListener("click", () => setControlsCollapsed(!controlDeck.classList.contains("is-collapsed")));
 setControlsCollapsed(localStorage.getItem(CONTROL_DECK_KEY) === "true", { persist: false });
 
+document.querySelectorAll("[data-deck-target]").forEach((button) => {
+  button.addEventListener("click", () => {
+    const target = document.querySelector(`#${button.dataset.deckTarget}`);
+    if (!target) return;
+    const deckTop = controlDeck.getBoundingClientRect().top;
+    const targetTop = target.getBoundingClientRect().top;
+    controlDeck.scrollTo({
+      top: controlDeck.scrollTop + targetTop - deckTop - 58,
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+    });
+  });
+});
+
 function applyTheme(preference) {
   const normalized = normalizeThemePreference(preference);
   const resolved = resolveThemePreference(normalized, systemThemeQuery.matches);
@@ -245,9 +258,12 @@ function renderComposition(state) {
 function showToast(message) {
   const toast = document.querySelector("#toast");
   const action = document.querySelector("#toast-action");
+  const dismiss = document.querySelector("#toast-dismiss");
   document.querySelector("#toast-message").textContent = message;
   action.hidden = true;
   action.onclick = null;
+  dismiss.textContent = "×";
+  dismiss.setAttribute("aria-label", "通知を閉じる");
   toast.hidden = false;
   window.setTimeout(() => {
     if (action.hidden) toast.hidden = true;
@@ -257,11 +273,18 @@ function showToast(message) {
 function showServiceWorkerUpdate(worker) {
   const toast = document.querySelector("#toast");
   const action = document.querySelector("#toast-action");
+  const dismiss = document.querySelector("#toast-dismiss");
   document.querySelector("#toast-message").textContent = "CelestiFrameの新しいバージョンがあります";
   action.hidden = false;
   action.onclick = () => worker.postMessage({ type: "SKIP_WAITING" });
+  dismiss.textContent = "後で";
+  dismiss.setAttribute("aria-label", "更新を後で行う");
   toast.hidden = false;
 }
+
+document.querySelector("#toast-dismiss").addEventListener("click", () => {
+  document.querySelector("#toast").hidden = true;
+});
 
 function setCameraLocation(location, options) {
   store.setState((state) => ({ ...state, cameraLocation: location }));
@@ -391,7 +414,14 @@ const compositionControls = bindCompositionControls(store);
 store.subscribe((state) => {
   applyTheme(state.settings.theme);
   document.querySelector("#coordinates").value = `${state.cameraLocation.latitude.toFixed(5)}, ${state.cameraLocation.longitude.toFixed(5)}`;
-  document.querySelectorAll("[data-body]").forEach((button) => button.classList.toggle("is-active", button.dataset.body === state.selectedBody));
+  document.querySelectorAll("[data-body]").forEach((button) => {
+    const isActive = button.dataset.body === state.selectedBody;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-pressed", String(isActive));
+  });
+  document.querySelectorAll("[data-requires-subject]").forEach((button) => {
+    button.hidden = !state.subjectLocation;
+  });
   document.querySelectorAll("[data-card]").forEach((card) => {
     card.hidden = state.selectedBody !== "both" && card.dataset.card !== state.selectedBody;
   });
