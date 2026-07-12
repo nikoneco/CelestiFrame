@@ -8,6 +8,10 @@ const defaultState = {
     longitude: 139.767125,
   },
   subjectLocation: null,
+  subject: {
+    name: "被写体",
+    heightMeters: null,
+  },
   map: {
     zoom: 13,
     center: {
@@ -30,6 +34,7 @@ function loadState() {
       ...structuredClone(defaultState),
       ...stored,
       cameraLocation: { ...defaultState.cameraLocation, ...stored.cameraLocation },
+      subject: { ...defaultState.subject, ...stored.subject },
       map: { ...defaultState.map, ...stored.map },
       settings: { ...defaultState.settings, ...stored.settings },
     };

@@ -1,15 +1,18 @@
-import { createStore } from "./state.js";
-import { createMapController } from "./map/map-controller.js?v=5";
+import { createStore } from "./state.js?v=7";
+import { createMapController } from "./map/map-controller.js?v=7";
 import { bindDateTimeControls } from "./ui/datetime-controls.js";
 import { normalizeThemePreference, resolveThemePreference, themeColor } from "./ui/theme.js?v=6";
 import { calculateSunData } from "./astronomy/sun-service.js";
 import { calculateMoonData } from "./astronomy/moon-service.js?v=5";
+import { subjectGeometry } from "./geometry/bearing.js?v=7";
+import { signedAngleDifference } from "./geometry/angle.js";
 
 const store = createStore();
 const mapStage = document.querySelector(".map-stage");
 const setLocationButton = document.querySelector("#set-location-button");
+const subjectLocationButton = document.querySelector("#subject-location-button");
 let mapController;
-let isArmingLocation = false;
+let activeLocationMode = null;
 const systemThemeQuery = window.matchMedia("(prefers-color-scheme: light)");
 
 function applyTheme(preference) {
@@ -89,6 +92,52 @@ function renderSun(state) {
   }
 }
 
+function formatDistance(value) {
+  return value >= 1000 ? `${(value / 1000).toFixed(2)} km` : `${Math.round(value)} m`;
+}
+
+function formatAlignmentDifference(value) {
+  if (Math.abs(value) < 0.05) return "正面";
+  return `${Math.abs(value).toFixed(1)}°${value > 0 ? "右" : "左"}`;
+}
+
+function renderAlignment(state) {
+  const card = document.querySelector("#alignment-card");
+  if (!state.subjectLocation) {
+    card.hidden = true;
+    return;
+  }
+
+  const selectedDate = new Date(state.selectedDateTime);
+  const geometry = subjectGeometry(state.cameraLocation, state.subjectLocation);
+  const sunData = calculateSunData(selectedDate, state.cameraLocation);
+  const moonData = calculateMoonData(selectedDate, state.cameraLocation);
+  const sunDifference = signedAngleDifference(geometry.bearingDegrees, sunData.azimuth);
+  const moonDifference = signedAngleDifference(geometry.bearingDegrees, moonData.azimuth);
+  const candidates = state.selectedBody === "sun"
+    ? [{ name: "太陽", difference: sunDifference }]
+    : state.selectedBody === "moon"
+      ? [{ name: "月", difference: moonDifference }]
+      : [{ name: "太陽", difference: sunDifference }, { name: "月", difference: moonDifference }];
+  const closest = candidates.reduce((best, candidate) => (
+    Math.abs(candidate.difference) < Math.abs(best.difference) ? candidate : best
+  ));
+  const absoluteDifference = Math.abs(closest.difference);
+
+  card.hidden = false;
+  document.querySelector('[data-alignment-field="distance"]').textContent = formatDistance(geometry.distanceMeters);
+  document.querySelector('[data-alignment-field="bearing"]').textContent = geometry.bearingDegrees.toFixed(1);
+  document.querySelector('[data-alignment-field="sun-difference"]').textContent = formatAlignmentDifference(sunDifference);
+  document.querySelector('[data-alignment-field="moon-difference"]').textContent = formatAlignmentDifference(moonDifference);
+  document.querySelector('[data-alignment-field="status"]').textContent = absoluteDifference <= 1
+    ? "重なり候補"
+    : absoluteDifference <= 5 ? "方向が近い" : "方位差あり";
+  document.querySelector('[data-alignment-field="message"]').textContent = absoluteDifference < 0.05
+    ? `${closest.name}は被写体の正面方向です。`
+    : `${closest.name}は被写体の${formatAlignmentDifference(closest.difference)}にあります。`;
+  mapController?.setSubjectLocation(state.cameraLocation, state.subjectLocation);
+}
+
 function showToast(message) {
   const toast = document.querySelector("#toast");
   document.querySelector("#toast-message").textContent = message;
@@ -112,13 +161,20 @@ function setCameraLocation(location, options) {
   mapController?.setLocation(location, options);
 }
 
-function updateLocationMode(active) {
-  isArmingLocation = active;
-  mapStage.classList.toggle("is-arming", active);
-  setLocationButton.classList.toggle("is-active", active);
-  setLocationButton.innerHTML = active
+function updateLocationMode(mode) {
+  activeLocationMode = mode;
+  const cameraActive = mode === "camera";
+  const subjectActive = mode === "subject";
+  mapStage.classList.toggle("is-arming", Boolean(mode));
+  mapStage.classList.toggle("is-subject-arming", subjectActive);
+  setLocationButton.classList.toggle("is-active", cameraActive);
+  subjectLocationButton.classList.toggle("is-active", subjectActive);
+  setLocationButton.innerHTML = cameraActive
     ? '<span aria-hidden="true">◎</span> 中央を撮影地点にする'
-    : '<span aria-hidden="true">＋</span> 撮影地点を設定';
+    : '<span aria-hidden="true">＋</span> 撮影地点';
+  subjectLocationButton.innerHTML = subjectActive
+    ? '<span aria-hidden="true">◆</span> 中央を被写体地点にする'
+    : '<span aria-hidden="true">◇</span> 被写体地点';
 }
 
 function initializeMap() {
@@ -129,6 +185,7 @@ function initializeMap() {
       initialLocation: state.cameraLocation,
       initialZoom: state.map.zoom,
       onLocationChange: (cameraLocation) => store.setState((current) => ({ ...current, cameraLocation })),
+      onSubjectLocationChange: (subjectLocation) => store.setState((current) => ({ ...current, subjectLocation })),
       onMapMove: (map) => store.setState((current) => ({ ...current, map })),
     });
   } catch (error) {
@@ -139,14 +196,26 @@ function initializeMap() {
 
 setLocationButton.addEventListener("click", () => {
   if (!mapController) return showToast("地図を読み込んでから地点を設定してください");
-  if (!isArmingLocation) {
-    updateLocationMode(true);
+  if (activeLocationMode !== "camera") {
+    updateLocationMode("camera");
     showToast("地図を動かし、ファインダーを撮影地点に合わせてください");
     return;
   }
   mapController.pickCenter();
-  updateLocationMode(false);
+  updateLocationMode(null);
   showToast("撮影地点を更新しました");
+});
+
+subjectLocationButton.addEventListener("click", () => {
+  if (!mapController) return showToast("地図を読み込んでから被写体地点を設定してください");
+  if (activeLocationMode !== "subject") {
+    updateLocationMode("subject");
+    showToast("地図を動かし、ファインダーを被写体へ合わせてください");
+    return;
+  }
+  mapController.pickSubjectCenter();
+  updateLocationMode(null);
+  showToast("被写体地点を設定しました");
 });
 
 document.querySelector("#locate-button").addEventListener("click", () => {
@@ -195,6 +264,7 @@ store.subscribe((state) => {
   });
   renderSun(state);
   renderMoon(state);
+  renderAlignment(state);
 });
 
 document.querySelector("#timezone-label").textContent = Intl.DateTimeFormat().resolvedOptions().timeZone || "LOCAL";
@@ -202,6 +272,7 @@ bindDateTimeControls(store);
 initializeMap();
 renderSun(store.getState());
 renderMoon(store.getState());
+renderAlignment(store.getState());
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", async () => {

@@ -177,6 +177,7 @@ main { min-height: 100dvh; }
   transition: opacity 180ms ease, transform 180ms ease;
 }
 .map-stage.is-arming .reticle { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+.map-stage.is-subject-arming .reticle-ring { border-color: var(--danger); box-shadow: 0 0 28px color-mix(in srgb, var(--danger) 38%, transparent); }
 .reticle-ring { position: absolute; inset: 13px; border: 1px solid var(--moon); border-radius: 50%; box-shadow: 0 0 28px rgba(145, 184, 236, 0.28); }
 .reticle-ring::before, .reticle-ring::after { content: ""; position: absolute; inset: -7px 29px; border-top: 5px solid var(--solar); border-bottom: 5px solid var(--solar); }
 .reticle-ring::after { transform: rotate(90deg); }
@@ -202,16 +203,20 @@ main { min-height: 100dvh; }
 #location-label { font-size: 11px; font-weight: 700; }
 #coordinates { color: var(--muted); font: 9px/1.4 var(--data); }
 
-.set-location-button {
+.map-actions {
   position: absolute;
   z-index: 500;
   left: 50%;
   bottom: 21px;
   transform: translateX(-50%);
   display: flex;
+  gap: 7px;
+}
+.set-location-button {
+  display: flex;
   align-items: center;
   gap: 7px;
-  min-width: 164px;
+  min-width: 126px;
   justify-content: center;
   padding: 11px 15px;
   border: 1px solid rgba(98, 213, 199, 0.55);
@@ -223,6 +228,8 @@ main { min-height: 100dvh; }
   cursor: pointer;
 }
 .set-location-button.is-active { color: var(--ink); background: var(--horizon); }
+.subject-location-button { border-color: color-mix(in srgb, var(--danger) 65%, transparent); }
+.subject-location-button.is-active { color: var(--text); background: var(--danger); }
 
 .control-deck {
   position: relative;
@@ -292,6 +299,19 @@ main { min-height: 100dvh; }
 .celestial-card-sun .horizon-state.is-below { color: var(--muted); }
 .celestial-card-moon .horizon-state.is-above { color: var(--moon-blue); }
 .celestial-card-moon .horizon-state.is-below { color: var(--muted); }
+.alignment-card { margin-top: 8px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--danger) 38%, var(--line)); border-radius: 13px; background: color-mix(in srgb, var(--panel-raised) 34%, var(--panel)); }
+.alignment-card > header { display: flex; align-items: center; justify-content: space-between; padding: 12px 13px 9px; }
+.alignment-card h2 { margin: 3px 0 0; font: 560 17px/1 var(--display); }
+.alignment-status { color: var(--danger); font: 9px var(--data); }
+.alignment-metrics { display: grid; grid-template-columns: repeat(2, 1fr); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.alignment-metrics > div { padding: 9px 13px; }
+.alignment-metrics > div:nth-child(even) { border-left: 1px solid var(--line); }
+.alignment-metrics > div:nth-child(n + 3) { border-top: 1px solid var(--line); }
+.alignment-metrics span { display: block; color: var(--muted); font-size: 9px; }
+.alignment-metrics strong { display: block; margin-top: 2px; font: 500 16px var(--data); }
+.alignment-metrics strong b { font: inherit; }
+.alignment-metrics small { margin-left: 2px; color: var(--muted); font-size: 9px; }
+.alignment-card > p { margin: 0; padding: 9px 13px; color: var(--muted); font-size: 10px; line-height: 1.55; }
 .phase-note { margin: 11px 0 0; text-align: center; color: rgba(147, 164, 184, 0.64); font: 8px var(--data); letter-spacing: 0.06em; }
 
 .toast { position: fixed; z-index: 2000; left: 14px; right: 14px; bottom: max(18px, env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel-raised); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.42); font-size: 12px; }
@@ -323,11 +343,13 @@ main { min-height: 100dvh; }
 
 .camera-marker { width: 20px; height: 20px; border: 3px solid var(--ink); border-radius: 50% 50% 50% 0; background: var(--horizon); transform: rotate(-45deg); box-shadow: 0 3px 12px rgba(0, 0, 0, 0.44); }
 .camera-marker::after { content: ""; position: absolute; inset: 4px; border: 1px solid rgba(7, 17, 31, 0.8); border-radius: 50%; }
+.subject-marker { width: 19px; height: 19px; border: 3px solid var(--text); background: var(--danger); box-shadow: 0 3px 12px rgba(0, 0, 0, 0.44); transform: rotate(45deg); }
+.subject-marker::after { content: ""; position: absolute; inset: 4px; background: var(--ink); }
 
 @media (min-width: 760px) {
   .map-stage { height: 100dvh; }
   .control-deck { position: fixed; top: 78px; right: 18px; bottom: 18px; width: min(410px, 42vw); min-height: 0; max-height: none; margin: 0; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 93%, transparent); backdrop-filter: blur(18px); }
-  .set-location-button { bottom: 25px; }
+  .map-actions { bottom: 25px; }
   .map-status { top: 88px; }
   .deck-handle { display: none; }
   .celestial-grid { grid-template-columns: 1fr; }

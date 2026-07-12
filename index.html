@@ -9,7 +9,7 @@
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./assets/icon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-    <link rel="stylesheet" href="./css/app.css?v=6">
+    <link rel="stylesheet" href="./css/app.css?v=7">
   </head>
   <body>
     <div class="app-shell">
@@ -51,10 +51,16 @@
             <output id="coordinates">35.68124, 139.76712</output>
           </div>
 
-          <button class="set-location-button" id="set-location-button" type="button">
-            <span aria-hidden="true">＋</span>
-            撮影地点を設定
-          </button>
+          <div class="map-actions">
+            <button class="set-location-button" id="set-location-button" type="button">
+              <span aria-hidden="true">＋</span>
+              撮影地点
+            </button>
+            <button class="set-location-button subject-location-button" id="subject-location-button" type="button">
+              <span aria-hidden="true">◇</span>
+              被写体地点
+            </button>
+          </div>
         </section>
 
         <section class="control-deck" aria-label="撮影日時と天体情報">
@@ -142,7 +148,21 @@
             </article>
           </div>
 
-          <p class="phase-note">Phase 4 — 撮影現場の表示と操作</p>
+          <article class="alignment-card" id="alignment-card" hidden>
+            <header>
+              <div><span class="eyebrow">FRAME ALIGNMENT</span><h2>被写体との重なり</h2></div>
+              <span class="alignment-status" data-alignment-field="status">比較中</span>
+            </header>
+            <div class="alignment-metrics">
+              <div><span>距離</span><strong data-alignment-field="distance">—</strong></div>
+              <div><span>被写体方位</span><strong><b data-alignment-field="bearing">—</b><small>°</small></strong></div>
+              <div><span>太陽との差</span><strong data-alignment-field="sun-difference">—</strong></div>
+              <div><span>月との差</span><strong data-alignment-field="moon-difference">—</strong></div>
+            </div>
+            <p data-alignment-field="message">被写体地点を基準に天体の左右差を表示します。</p>
+          </article>
+
+          <p class="phase-note">Phase 5 — 被写体と天体の重なり</p>
         </section>
       </main>
     </div>
@@ -193,6 +213,6 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script src="./js/vendor/suncalc.js"></script>
-    <script type="module" src="./js/app.js?v=6"></script>
+    <script type="module" src="./js/app.js?v=7"></script>
   </body>
 </html>

@@ -1,6 +1,6 @@
 import { destinationPoint } from "../geometry/destination.js";
 
-export function createMapController({ elementId, initialLocation, initialZoom, onLocationChange, onMapMove }) {
+export function createMapController({ elementId, initialLocation, initialZoom, onLocationChange, onSubjectLocationChange, onMapMove }) {
   if (!window.L) throw new Error("Leaflet is unavailable");
 
   const map = L.map(elementId, { zoomControl: false }).setView(
@@ -28,6 +28,14 @@ export function createMapController({ elementId, initialLocation, initialZoom, o
   }).addTo(map);
   let directionLine = null;
   let moonDirectionLine = null;
+  let subjectMarker = null;
+  let subjectLine = null;
+  const subjectMarkerIcon = L.divIcon({
+    className: "",
+    html: '<div class="subject-marker" aria-hidden="true"></div>',
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+  });
 
   marker.on("dragend", () => {
     const { lat, lng } = marker.getLatLng();
@@ -54,6 +62,35 @@ export function createMapController({ elementId, initialLocation, initialZoom, o
       marker.setLatLng(center);
       onLocationChange(location);
       return location;
+    },
+    pickSubjectCenter() {
+      const center = map.getCenter();
+      const location = { latitude: center.lat, longitude: center.lng };
+      onSubjectLocationChange(location);
+      return location;
+    },
+    setSubjectLocation(cameraLocation, subjectLocation) {
+      if (!subjectMarker) {
+        subjectMarker = L.marker([subjectLocation.latitude, subjectLocation.longitude], {
+          draggable: true,
+          icon: subjectMarkerIcon,
+          title: "被写体地点",
+        }).addTo(map);
+        subjectMarker.on("dragend", () => {
+          const { lat, lng } = subjectMarker.getLatLng();
+          onSubjectLocationChange({ latitude: lat, longitude: lng });
+        });
+      } else {
+        subjectMarker.setLatLng([subjectLocation.latitude, subjectLocation.longitude]);
+      }
+      subjectLine?.remove();
+      subjectLine = L.polyline(
+        [
+          [cameraLocation.latitude, cameraLocation.longitude],
+          [subjectLocation.latitude, subjectLocation.longitude],
+        ],
+        { color: "#ff6b6b", weight: 2, opacity: 0.78, dashArray: "3 6", interactive: false, className: "subject-direction-line" },
+      ).addTo(map);
     },
     setSunDirection(location, sunData) {
       directionLine?.remove();
