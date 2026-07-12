@@ -12,6 +12,10 @@ function minutesFromTime(value) {
   return hours * 60 + minutes;
 }
 
+export function normalizeOvernightEndMinute(startMinute, endMinute) {
+  return endMinute < startMinute ? endMinute + 1440 : endMinute;
+}
+
 export function validateSearchInput(input) {
   const errors = [];
   const start = new Date(`${input.startDate}T00:00:00`);
@@ -20,7 +24,6 @@ export function validateSearchInput(input) {
   if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) errors.push("検索期間を入力してください");
   else if (start > end) errors.push("開始日は終了日以前にしてください");
   else if (days > 93) errors.push("検索期間は93日以内にしてください");
-  if (input.startMinute > input.endMinute) errors.push("開始時刻は終了時刻以前にしてください");
   if (input.toleranceDegrees < 0.1 || input.toleranceDegrees > 180) errors.push("許容方位差は0.1〜180°にしてください");
   if (input.minAltitude < -90 || input.maxAltitude > 90 || input.minAltitude > input.maxAltitude) errors.push("高度範囲を確認してください");
   if (input.minIllumination < 0 || input.minIllumination > 100) errors.push("月照度は0〜100%にしてください");
@@ -70,7 +73,15 @@ export function bindSearchControls(store, showToast) {
   const resultsContainer = document.querySelector("#search-results");
   const submitButton = document.querySelector("#search-submit");
   const cancelButton = document.querySelector("#search-cancel");
+  const overnightBadge = document.querySelector("#overnight-badge");
   let worker = null;
+
+  function updateOvernightBadge() {
+    if (!form.elements.startTime.value || !form.elements.endTime.value) return;
+    const startMinute = minutesFromTime(form.elements.startTime.value);
+    const endMinute = minutesFromTime(form.elements.endTime.value);
+    overnightBadge.hidden = endMinute >= startMinute;
+  }
 
   document.querySelector("#alignment-search-button").addEventListener("click", () => {
     const state = store.getState();
@@ -83,6 +94,9 @@ export function bindSearchControls(store, showToast) {
     const target = state.selectedBody === "sun" ? "sun" : "moon";
     form.elements.target.value = target;
     form.elements.minIllumination.disabled = target !== "moon";
+    form.elements.startTime.value = target === "moon" ? "18:00" : "04:00";
+    form.elements.endTime.value = target === "moon" ? "06:00" : "20:00";
+    updateOvernightBadge();
     resultsContainer.replaceChildren();
     progressPanel.hidden = true;
     dialog.showModal();
@@ -93,6 +107,9 @@ export function bindSearchControls(store, showToast) {
       form.elements.minIllumination.disabled = input.value !== "moon";
     });
   });
+
+  form.elements.startTime.addEventListener("change", updateOvernightBadge);
+  form.elements.endTime.addEventListener("change", updateOvernightBadge);
 
   document.querySelector("#search-close").addEventListener("click", () => {
     worker?.terminate();
@@ -120,14 +137,15 @@ export function bindSearchControls(store, showToast) {
     const state = store.getState();
     const geometry = subjectGeometry(state.cameraLocation, state.subjectLocation);
     const data = new FormData(form);
+    const startMinute = minutesFromTime(data.get("startTime"));
     const input = {
       target: data.get("target"),
       cameraLocation: state.cameraLocation,
       subjectBearing: geometry.bearingDegrees,
       startDate: data.get("startDate"),
       endDate: data.get("endDate"),
-      startMinute: minutesFromTime(data.get("startTime")),
-      endMinute: minutesFromTime(data.get("endTime")),
+      startMinute,
+      endMinute: normalizeOvernightEndMinute(startMinute, minutesFromTime(data.get("endTime"))),
       stepMinutes: Number(data.get("stepMinutes")),
       toleranceDegrees: Number(data.get("toleranceDegrees")),
       minAltitude: Number(data.get("minAltitude")),

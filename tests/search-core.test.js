@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import SunCalc from "suncalc";
 import "../js/search/search-core.js";
-import { validateSearchInput } from "../js/search/search-controller.js";
+import { normalizeOvernightEndMinute, validateSearchInput } from "../js/search/search-controller.js";
 
 const baseInput = {
   target: "sun",
@@ -31,4 +31,17 @@ test("searchCandidates returns scored and sorted solar candidates", () => {
 test("validateSearchInput rejects reversed and excessive ranges", () => {
   assert.deepEqual(validateSearchInput({ ...baseInput, startDate: "2026-08-01", endDate: "2026-07-01" }), ["開始日は終了日以前にしてください"]);
   assert.deepEqual(validateSearchInput({ ...baseInput, endDate: "2026-12-31" }), ["検索期間は93日以内にしてください"]);
+});
+
+test("overnight windows continue into the following date", () => {
+  const overnightInput = {
+    ...baseInput,
+    startMinute: 23 * 60,
+    endMinute: normalizeOvernightEndMinute(23 * 60, 2 * 60),
+    stepMinutes: 60,
+  };
+  const results = globalThis.CelestiSearchCore.searchCandidates(overnightInput, SunCalc);
+  assert.equal(results.length, 4);
+  assert.ok(results.some((result) => new Date(result.iso).getDate() === 13));
+  assert.deepEqual(validateSearchInput(overnightInput), []);
 });

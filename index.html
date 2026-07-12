@@ -9,7 +9,7 @@
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./assets/icon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-    <link rel="stylesheet" href="./css/app.css?v=8">
+    <link rel="stylesheet" href="./css/app.css?v=11">
   </head>
   <body>
     <div class="app-shell">
@@ -103,7 +103,7 @@
             </div>
 
             <label class="time-slider-label" for="time-slider">
-              <span>一日の時刻</span>
+              <span>一日の時刻 <b class="date-shift-indicator" id="date-shift-indicator" hidden></b></span>
               <output id="slider-output">—</output>
             </label>
             <input id="time-slider" class="time-slider" type="range" min="0" max="1439" step="1">
@@ -227,8 +227,9 @@
               <label><span>開始日</span><input type="date" name="startDate" required></label>
               <label><span>終了日</span><input type="date" name="endDate" required></label>
               <label><span>開始時刻</span><input type="time" name="startTime" value="00:00" required></label>
-              <label><span>終了時刻</span><input type="time" name="endTime" value="23:59" required></label>
+              <label><span>終了時刻 <b class="overnight-badge" id="overnight-badge" hidden>翌日</b></span><input type="time" name="endTime" value="06:00" required></label>
             </div>
+            <p class="overnight-note">終了時刻が開始時刻より早い場合は、翌日として続けて検索します。</p>
             <label class="search-step"><span>検索間隔</span><select name="stepMinutes"><option value="10">10分</option><option value="5">5分</option><option value="1">1分</option></select></label>
           </section>
 
@@ -266,6 +267,6 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script src="./js/vendor/suncalc.js"></script>
-    <script type="module" src="./js/app.js?v=10"></script>
+    <script type="module" src="./js/app.js?v=11"></script>
   </body>
 </html>
