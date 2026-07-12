@@ -10,7 +10,14 @@ const defaultState = {
   subjectLocation: null,
   subject: {
     name: "被写体",
-    heightMeters: null,
+    heightMeters: 10,
+    groundElevationMeters: 0,
+  },
+  composition: {
+    cameraElevationMeters: 0,
+    focalLengthMm: 50,
+    sensorPreset: "full-frame",
+    orientation: "landscape",
   },
   map: {
     zoom: 13,
@@ -35,6 +42,7 @@ function loadState() {
       ...stored,
       cameraLocation: { ...defaultState.cameraLocation, ...stored.cameraLocation },
       subject: { ...defaultState.subject, ...stored.subject },
+      composition: { ...defaultState.composition, ...stored.composition },
       map: { ...defaultState.map, ...stored.map },
       settings: { ...defaultState.settings, ...stored.settings },
     };

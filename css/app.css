@@ -348,6 +348,48 @@ main { min-height: 100dvh; }
 .alignment-metrics small { margin-left: 2px; color: var(--muted); font-size: 9px; }
 .alignment-card > p { margin: 0; padding: 9px 13px; color: var(--muted); font-size: 10px; line-height: 1.55; }
 .alignment-search-button { width: calc(100% - 26px); min-height: 38px; margin: 0 13px 12px; border: 1px solid var(--danger); border-radius: 8px; background: transparent; color: var(--danger); font-weight: 750; cursor: pointer; }
+.composition-card { margin-top: 8px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--moon-blue) 44%, var(--line)); border-radius: 13px; background: linear-gradient(145deg, color-mix(in srgb, var(--panel-raised) 48%, var(--panel)), var(--panel)); }
+.composition-card > header { display: flex; align-items: center; justify-content: space-between; padding: 12px 13px 10px; }
+.composition-card h2 { margin: 3px 0 0; font: 560 17px/1 var(--display); }
+.composition-status { max-width: 130px; color: var(--horizon); font: 9px var(--data); text-align: right; }
+.composition-viewfinder { position: relative; width: calc(100% - 26px); aspect-ratio: 3 / 2; margin: 0 13px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--moon) 44%, var(--line)); border-radius: 7px; background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--moon-blue) 11%, var(--panel-raised)), var(--ink) 78%); transition: width 180ms ease, aspect-ratio 180ms ease; }
+.composition-viewfinder.is-portrait { width: min(56%, 220px); aspect-ratio: 2 / 3; margin-inline: auto; }
+.composition-card.has-composition-error .composition-viewfinder { opacity: .34; }
+.composition-viewfinder::after { content: ""; position: absolute; inset: 7px; z-index: 5; border: 1px solid color-mix(in srgb, var(--text) 20%, transparent); border-radius: 3px; pointer-events: none; }
+.frame-line { position: absolute; z-index: 1; background: color-mix(in srgb, var(--moon) 15%, transparent); pointer-events: none; }
+.frame-line-v1, .frame-line-v2 { top: 0; bottom: 0; width: 1px; }
+.frame-line-v1 { left: 33.333%; }.frame-line-v2 { left: 66.666%; }
+.frame-line-h1, .frame-line-h2 { left: 0; right: 0; height: 1px; }
+.frame-line-h1 { top: 33.333%; }.frame-line-h2 { top: 66.666%; }
+.composition-horizon { position: absolute; z-index: 2; left: 0; right: 0; height: 1px; background: color-mix(in srgb, var(--horizon) 72%, transparent); box-shadow: 0 0 9px color-mix(in srgb, var(--horizon) 30%, transparent); }
+.composition-horizon b { position: absolute; right: 9px; bottom: 3px; color: var(--horizon); font: 7px var(--data); }
+.composition-horizon.is-outside { opacity: .25; }
+.composition-subject { position: absolute; z-index: 3; left: 50%; width: clamp(24px, 13%, 48px); min-height: 4px; border: 1px solid color-mix(in srgb, var(--danger) 72%, var(--text)); border-bottom: 3px solid var(--danger); background: repeating-linear-gradient(0deg, color-mix(in srgb, var(--danger) 27%, var(--ink)) 0 6px, color-mix(in srgb, var(--moon) 16%, var(--ink)) 6px 8px); box-shadow: 0 0 22px color-mix(in srgb, var(--danger) 20%, transparent); transform: translateX(-50%); }
+.composition-subject::before { content: ""; position: absolute; left: 50%; bottom: 100%; width: 1px; height: min(18px, 20%); background: var(--danger); }
+.composition-subject b { position: absolute; left: 50%; bottom: 100%; max-width: 150px; margin-bottom: 5px; overflow: hidden; color: var(--text); font: 8px var(--data); text-overflow: ellipsis; white-space: nowrap; transform: translateX(-50%); }
+.composition-subject.is-clipped { border-top-style: dashed; }
+.composition-body { position: absolute; z-index: 4; display: grid; justify-items: center; gap: 3px; transform: translate(-50%, -50%); transition: left 180ms ease, top 180ms ease; }
+.composition-body i { display: block; width: 17px; height: 17px; border-radius: 50%; }
+.composition-body b { padding: 2px 4px; border-radius: 3px; background: color-mix(in srgb, var(--ink) 72%, transparent); font: 7px var(--data); }
+.composition-body-sun i { background: var(--solar); box-shadow: 0 0 13px color-mix(in srgb, var(--solar) 70%, transparent); }
+.composition-body-moon i { border: 2px solid var(--moon); border-left-color: transparent; box-shadow: 4px 0 10px color-mix(in srgb, var(--moon-blue) 50%, transparent); transform: rotate(-25deg); }
+.composition-body.is-outside { opacity: .48; }
+.composition-body.is-outside i { outline: 1px dashed var(--danger); outline-offset: 3px; }
+.composition-frame-label { position: absolute; z-index: 6; left: 10px; bottom: 9px; color: color-mix(in srgb, var(--moon) 66%, var(--muted)); font: 7px var(--data); letter-spacing: .06em; }
+.composition-metrics { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 10px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.composition-metrics > div { min-width: 0; padding: 8px 7px; text-align: center; }
+.composition-metrics > div + div { border-left: 1px solid var(--line); }
+.composition-metrics span, .composition-metrics strong { display: block; }
+.composition-metrics span { color: var(--muted); font-size: 8px; }
+.composition-metrics strong { margin-top: 3px; overflow: hidden; font: 10px var(--data); text-overflow: ellipsis; white-space: nowrap; }
+.composition-message { margin: 0; padding: 9px 13px; color: var(--muted); font-size: 9px; line-height: 1.55; }
+.composition-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 11px 13px; border-top: 1px solid var(--line); background: color-mix(in srgb, var(--ink) 24%, transparent); }
+.composition-form label > span:first-child, .composition-orientation > span { display: block; margin: 0 0 4px 2px; color: var(--muted); font-size: 8px; }
+.composition-form input, .composition-form select { width: 100%; height: 37px; padding: 0 8px; border: 1px solid var(--line); border-radius: 7px; background: color-mix(in srgb, var(--ink) 48%, transparent); color: var(--text); font: 10px var(--data); }
+.composition-orientation > div { display: grid; grid-template-columns: repeat(2, 1fr); gap: 3px; padding: 3px; border: 1px solid var(--line); border-radius: 7px; }
+.composition-orientation button { min-height: 29px; border: 0; border-radius: 5px; background: transparent; color: var(--muted); font-size: 9px; cursor: pointer; }
+.composition-orientation button.is-active { background: var(--panel-raised); color: var(--horizon); }
+.composition-note { margin: 0; padding: 0 13px 12px; color: var(--muted); font-size: 8px; line-height: 1.55; }
 .phase-note { margin: 11px 0 0; text-align: center; color: rgba(147, 164, 184, 0.64); font: 8px var(--data); letter-spacing: 0.06em; }
 
 .toast { position: fixed; z-index: 2000; left: 14px; right: 14px; bottom: max(18px, env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel-raised); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.42); font-size: 12px; }
@@ -467,6 +509,9 @@ main { min-height: 100dvh; }
 .search-empty { margin: 12px 0; padding: 18px; border: 1px dashed var(--line); border-radius: 10px; color: var(--muted); font-size: 11px; line-height: 1.7; text-align: center; }
 
 @media (max-width: 520px) {
+  .composition-metrics { grid-template-columns: repeat(2, 1fr); }
+  .composition-metrics > div:nth-child(3) { border-left: 0; }
+  .composition-metrics > div:nth-child(n + 3) { border-top: 1px solid var(--line); }
   .plans-dialog { width: calc(100vw - 12px); height: calc(100dvh - 12px); border-radius: 16px; }
   .plans-panel { padding: 14px; }
   .plans-header { top: -14px; margin: -14px -14px 14px; padding: 14px; }

@@ -23,6 +23,16 @@ test("plan JSON export and import round trips", () => {
   assert.equal(parsed.length, 1);
   assert.equal(parsed[0].name, "月とスカイツリー");
   assert.equal(parsed[0].state.cameraLocation.latitude, state.cameraLocation.latitude);
+  assert.equal(parsed[0].state.composition.focalLengthMm, 50);
+});
+
+test("legacy plans receive Phase 8 composition defaults", () => {
+  const legacy = createPlan({ state, name: "旧計画", id: "legacy", now: "2026-07-12T00:00:00.000Z" });
+  delete legacy.state.composition;
+  delete legacy.state.subject.groundElevationMeters;
+  const parsed = parsePlansFile(JSON.stringify({ app: "CelestiFrame", version: 1, plans: [legacy] }));
+  assert.equal(parsed[0].state.composition.sensorPreset, "full-frame");
+  assert.equal(parsed[0].state.subject.groundElevationMeters, 0);
 });
 
 test("share URL restores locations, date, body and subject name", () => {

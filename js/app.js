@@ -1,4 +1,4 @@
-import { createStore } from "./state.js?v=7";
+import { createStore } from "./state.js?v=19";
 import { createMapController } from "./map/map-controller.js?v=14";
 import { bindPlaceSearch } from "./map/place-search.js?v=14";
 import { bindDateTimeControls } from "./ui/datetime-controls.js?v=11";
@@ -8,8 +8,10 @@ import { calculateMoonData } from "./astronomy/moon-service.js?v=5";
 import { subjectGeometry } from "./geometry/bearing.js?v=7";
 import { signedAngleDifference } from "./geometry/angle.js";
 import { bindSearchControls } from "./search/search-controller.js?v=11";
-import { bindPlanManager } from "./plans/plan-manager.js?v=14";
-import { parseSharedState } from "./plans/plan-data.js?v=14";
+import { bindPlanManager } from "./plans/plan-manager.js?v=19";
+import { parseSharedState } from "./plans/plan-data.js?v=19";
+import { calculateComposition, focalLengthForFill, SENSOR_PRESETS } from "./composition/composition.js?v=19";
+import { bindCompositionControls } from "./ui/composition-controls.js?v=19";
 
 const store = createStore();
 const mapStage = document.querySelector(".map-stage");
@@ -168,6 +170,75 @@ function renderAlignment(state) {
   mapController?.setSubjectLocation(state.cameraLocation, state.subjectLocation);
 }
 
+const clampPercent = (value) => Math.min(100, Math.max(0, value));
+
+function renderComposition(state) {
+  const card = document.querySelector("#composition-card");
+  if (!state.subjectLocation) {
+    card.hidden = true;
+    return;
+  }
+
+  card.hidden = false;
+  try {
+    const selectedDate = new Date(state.selectedDateTime);
+    const geometry = subjectGeometry(state.cameraLocation, state.subjectLocation);
+    const sunData = calculateSunData(selectedDate, state.cameraLocation);
+    const moonData = calculateMoonData(selectedDate, state.cameraLocation);
+    const sensor = SENSOR_PRESETS[state.composition.sensorPreset] || SENSOR_PRESETS["full-frame"];
+    const composition = calculateComposition({
+      distanceMeters: geometry.distanceMeters,
+      subjectHeightMeters: state.subject.heightMeters,
+      cameraElevationMeters: state.composition.cameraElevationMeters,
+      subjectElevationMeters: state.subject.groundElevationMeters,
+      focalLengthMm: state.composition.focalLengthMm,
+      sensorWidthMm: sensor.widthMm,
+      sensorHeightMm: sensor.heightMm,
+      orientation: state.composition.orientation,
+      celestialBodies: [
+        { id: "sun", label: "太陽", azimuthDifferenceDegrees: signedAngleDifference(geometry.bearingDegrees, sunData.azimuth), altitudeDegrees: sunData.altitude },
+        { id: "moon", label: "月", azimuthDifferenceDegrees: signedAngleDifference(geometry.bearingDegrees, moonData.azimuth), altitudeDegrees: moonData.altitude },
+      ],
+    });
+
+    card.classList.remove("has-composition-error");
+    document.querySelector('[data-composition-field="status"]').textContent = composition.framing;
+    document.querySelector('[data-composition-field="horizontal-fov"]').textContent = `${composition.horizontalDegrees.toFixed(1)}°`;
+    document.querySelector('[data-composition-field="vertical-fov"]').textContent = `${composition.verticalDegrees.toFixed(1)}°`;
+    document.querySelector('[data-composition-field="fill"]').textContent = `${composition.verticalFillPercent.toFixed(0)}%`;
+    const sensorHeight = state.composition.orientation === "portrait" ? sensor.widthMm : sensor.heightMm;
+    const suggestedFocal = focalLengthForFill({ angularHeightDegrees: composition.angularHeightDegrees, sensorHeightMm: sensorHeight });
+    document.querySelector('[data-composition-field="suggested-focal"]').textContent = suggestedFocal ? `${Math.round(suggestedFocal)} mm` : "—";
+    document.querySelector('[data-composition-field="message"]').textContent = `${state.subject.name || "被写体"}は垂直画角の${composition.verticalFillPercent.toFixed(0)}%。中心仰角は${composition.centerAltitudeDegrees.toFixed(1)}°です。`;
+    document.querySelector("#composition-frame-label").textContent = `${sensor.name.toUpperCase()} · ${state.composition.focalLengthMm}mm · ${state.composition.orientation === "portrait" ? "縦" : "横"}`;
+    document.querySelector("#composition-viewfinder").classList.toggle("is-portrait", state.composition.orientation === "portrait");
+    document.querySelector("#composition-subject-label").textContent = state.subject.name || "被写体";
+
+    const subjectElement = document.querySelector("#composition-subject");
+    const top = clampPercent(composition.subjectTopPercent);
+    const bottom = clampPercent(composition.subjectBottomPercent);
+    subjectElement.style.top = `${top}%`;
+    subjectElement.style.height = `${Math.max(2, bottom - top)}%`;
+    subjectElement.classList.toggle("is-clipped", composition.verticalFillPercent > 100);
+    const horizon = document.querySelector("#composition-horizon");
+    horizon.style.top = `${clampPercent(composition.horizonPercent)}%`;
+    horizon.classList.toggle("is-outside", composition.horizonPercent < 0 || composition.horizonPercent > 100);
+
+    composition.bodyPositions.forEach((body) => {
+      const element = document.querySelector(`[data-composition-body="${body.id}"]`);
+      element.style.left = `${body.xPercent}%`;
+      element.style.top = `${body.yPercent}%`;
+      element.hidden = state.selectedBody !== "both" && state.selectedBody !== body.id;
+      element.classList.toggle("is-outside", !body.isInsideFrame);
+      element.title = body.isInsideFrame ? `${body.label}はフレーム内` : `${body.label}はフレーム外`;
+    });
+  } catch (error) {
+    card.classList.add("has-composition-error");
+    document.querySelector('[data-composition-field="status"]').textContent = "入力を確認";
+    document.querySelector('[data-composition-field="message"]').textContent = error.message || "構図を計算できません";
+  }
+}
+
 function showToast(message) {
   const toast = document.querySelector("#toast");
   const action = document.querySelector("#toast-action");
@@ -228,7 +299,13 @@ function initializeMap() {
 }
 
 function applyPlanState(planState) {
-  store.setState((state) => ({ ...state, ...planState, settings: state.settings }));
+  store.setState((state) => ({
+    ...state,
+    ...planState,
+    subject: { ...state.subject, ...planState.subject },
+    composition: { ...state.composition, ...planState.composition },
+    settings: state.settings,
+  }));
   mapController?.setLocation(planState.cameraLocation, { pan: false });
   if (planState.subjectLocation) {
     mapController?.setSubjectLocation(planState.cameraLocation, planState.subjectLocation);
@@ -300,6 +377,8 @@ document.querySelectorAll("[data-body]").forEach((button) => {
   });
 });
 
+const compositionControls = bindCompositionControls(store);
+
 store.subscribe((state) => {
   applyTheme(state.settings.theme);
   document.querySelector("#coordinates").value = `${state.cameraLocation.latitude.toFixed(5)}, ${state.cameraLocation.longitude.toFixed(5)}`;
@@ -310,6 +389,8 @@ store.subscribe((state) => {
   renderSun(state);
   renderMoon(state);
   renderAlignment(state);
+  renderComposition(state);
+  compositionControls.sync(state);
   const compactDate = new Intl.DateTimeFormat("ja-JP", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(state.selectedDateTime));
   const compactBody = state.selectedBody === "sun" ? "太陽" : state.selectedBody === "moon" ? "月" : "太陽＋月";
   document.querySelector("#deck-compact-summary").textContent = `${compactDate} ・ ${compactBody}`;
@@ -324,6 +405,7 @@ bindPlanManager(store, { applyState: applyPlanState, showToast });
 renderSun(store.getState());
 renderMoon(store.getState());
 renderAlignment(store.getState());
+renderComposition(store.getState());
 if (sharedState) showToast("共有された撮影計画を開きました");
 
 if ("serviceWorker" in navigator) {

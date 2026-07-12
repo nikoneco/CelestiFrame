@@ -9,7 +9,7 @@
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./assets/icon.svg?v=18" type="image/svg+xml">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-    <link rel="stylesheet" href="./css/app.css?v=17">
+    <link rel="stylesheet" href="./css/app.css?v=19">
   </head>
   <body>
     <div class="app-shell">
@@ -187,7 +187,42 @@
             <button class="alignment-search-button" id="alignment-search-button" type="button">重なる日時を検索</button>
           </article>
 
-          <p class="phase-note">Phase 7 — 撮影計画の保存と共有</p>
+          <article class="composition-card" id="composition-card" hidden>
+            <header>
+              <div><span class="eyebrow">OPTICAL FRAME</span><h2>構図ファインダー</h2></div>
+              <span class="composition-status" data-composition-field="status">計算準備中</span>
+            </header>
+
+            <div class="composition-viewfinder" id="composition-viewfinder" aria-label="計算上の構図プレビュー">
+              <i class="frame-line frame-line-v1"></i><i class="frame-line frame-line-v2"></i>
+              <i class="frame-line frame-line-h1"></i><i class="frame-line frame-line-h2"></i>
+              <span class="composition-horizon" id="composition-horizon"><b>水平</b></span>
+              <span class="composition-subject" id="composition-subject"><b id="composition-subject-label">被写体</b></span>
+              <span class="composition-body composition-body-sun" data-composition-body="sun"><i></i><b>太陽</b></span>
+              <span class="composition-body composition-body-moon" data-composition-body="moon"><i></i><b>月</b></span>
+              <span class="composition-frame-label" id="composition-frame-label">FULL FRAME · 50mm</span>
+            </div>
+
+            <div class="composition-metrics">
+              <div><span>水平画角</span><strong data-composition-field="horizontal-fov">—</strong></div>
+              <div><span>垂直画角</span><strong data-composition-field="vertical-fov">—</strong></div>
+              <div><span>被写体占有</span><strong data-composition-field="fill">—</strong></div>
+              <div><span>70%の目安</span><strong data-composition-field="suggested-focal">—</strong></div>
+            </div>
+            <p class="composition-message" data-composition-field="message">被写体地点と高さから構図を計算します。</p>
+
+            <form class="composition-form" id="composition-form">
+              <label><span>センサー</span><select data-composition-field="sensorPreset"><option value="full-frame">フルサイズ</option><option value="aps-c">APS-C</option><option value="mft">マイクロフォーサーズ</option><option value="one-inch">1型</option></select></label>
+              <label><span>焦点距離</span><span class="input-unit"><input type="number" data-composition-field="focalLengthMm" min="1" max="2000" step="1"><i>mm</i></span></label>
+              <div class="composition-orientation"><span>構図方向</span><div><button type="button" data-composition-orientation="landscape" aria-pressed="true">横</button><button type="button" data-composition-orientation="portrait" aria-pressed="false">縦</button></div></div>
+              <label><span>被写体の高さ</span><span class="input-unit"><input type="number" data-subject-field="heightMeters" min="0.1" max="10000" step="0.1"><i>m</i></span></label>
+              <label><span>撮影地点の標高</span><span class="input-unit"><input type="number" data-composition-field="cameraElevationMeters" min="-500" max="9000" step="1"><i>m</i></span></label>
+              <label><span>被写体地点の標高</span><span class="input-unit"><input type="number" data-subject-field="groundElevationMeters" min="-500" max="9000" step="1"><i>m</i></span></label>
+            </form>
+            <p class="composition-note">標高と被写体高は手入力の概算値です。ファインダーは被写体の高さ中央へ向けた場合を表示します。</p>
+          </article>
+
+          <p class="phase-note">Phase 8 — 光学画角と簡易構図計画</p>
           </div>
         </section>
       </main>
@@ -321,6 +356,6 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script src="./js/vendor/suncalc.js"></script>
-    <script type="module" src="./js/app.js?v=16"></script>
+    <script type="module" src="./js/app.js?v=19"></script>
   </body>
 </html>

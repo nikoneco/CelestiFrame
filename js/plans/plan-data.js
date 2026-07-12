@@ -1,4 +1,4 @@
-export const PLAN_FILE_VERSION = 1;
+export const PLAN_FILE_VERSION = 2;
 
 const BODIES = new Set(["sun", "moon", "both"]);
 
@@ -32,6 +32,16 @@ export function snapshotPlanState(state) {
       heightMeters: state.subject?.heightMeters != null && Number.isFinite(Number(state.subject.heightMeters))
         ? Number(state.subject.heightMeters)
         : null,
+      groundElevationMeters: state.subject?.groundElevationMeters != null && Number.isFinite(Number(state.subject.groundElevationMeters))
+        ? Number(state.subject.groundElevationMeters)
+        : 0,
+    },
+    composition: {
+      cameraElevationMeters: Number(state.composition?.cameraElevationMeters) || 0,
+      focalLengthMm: Math.min(2000, Math.max(1, Number(state.composition?.focalLengthMm) || 50)),
+      sensorPreset: ["full-frame", "aps-c", "mft", "one-inch"].includes(state.composition?.sensorPreset)
+        ? state.composition.sensorPreset : "full-frame",
+      orientation: state.composition?.orientation === "portrait" ? "portrait" : "landscape",
     },
     map: {
       zoom: Math.min(19, Math.max(2, Number(state.map?.zoom) || 13)),
@@ -95,10 +105,16 @@ export function buildShareUrl(state, baseUrl = location.href) {
   url.searchParams.set("at", snapshot.selectedDateTime);
   url.searchParams.set("body", snapshot.selectedBody);
   url.searchParams.set("z", String(snapshot.map.zoom));
+  url.searchParams.set("f", String(snapshot.composition.focalLengthMm));
+  url.searchParams.set("sensor", snapshot.composition.sensorPreset);
+  url.searchParams.set("orientation", snapshot.composition.orientation);
+  url.searchParams.set("ce", String(snapshot.composition.cameraElevationMeters));
   if (snapshot.subjectLocation) {
     url.searchParams.set("slat", snapshot.subjectLocation.latitude.toFixed(6));
     url.searchParams.set("slng", snapshot.subjectLocation.longitude.toFixed(6));
     url.searchParams.set("subject", snapshot.subject.name);
+    url.searchParams.set("height", String(snapshot.subject.heightMeters ?? 10));
+    url.searchParams.set("se", String(snapshot.subject.groundElevationMeters));
   }
   return url.toString();
 }
@@ -118,7 +134,18 @@ export function parseSharedState(urlValue) {
     selectedBody: BODIES.has(url.searchParams.get("body")) ? url.searchParams.get("body") : "moon",
     cameraLocation,
     subjectLocation,
-    subject: { name: url.searchParams.get("subject")?.slice(0, 120) || "被写体", heightMeters: null },
+    subject: {
+      name: url.searchParams.get("subject")?.slice(0, 120) || "被写体",
+      heightMeters: Math.max(0.1, Number(url.searchParams.get("height")) || 10),
+      groundElevationMeters: Number(url.searchParams.get("se")) || 0,
+    },
+    composition: {
+      cameraElevationMeters: Number(url.searchParams.get("ce")) || 0,
+      focalLengthMm: Math.min(2000, Math.max(1, Number(url.searchParams.get("f")) || 50)),
+      sensorPreset: ["full-frame", "aps-c", "mft", "one-inch"].includes(url.searchParams.get("sensor"))
+        ? url.searchParams.get("sensor") : "full-frame",
+      orientation: url.searchParams.get("orientation") === "portrait" ? "portrait" : "landscape",
+    },
     map: { zoom: Math.min(19, Math.max(2, Number(url.searchParams.get("z")) || 13)), center: cameraLocation },
   };
 }
