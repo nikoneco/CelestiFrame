@@ -9,7 +9,7 @@
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./assets/icon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-    <link rel="stylesheet" href="./css/app.css?v=14">
+    <link rel="stylesheet" href="./css/app.css?v=16">
   </head>
   <body>
     <div class="app-shell">
@@ -80,7 +80,15 @@
         </section>
 
         <section class="control-deck" aria-label="撮影日時と天体情報">
-          <div class="deck-handle" aria-hidden="true"></div>
+          <div class="deck-rail">
+            <div class="deck-handle" aria-hidden="true"></div>
+            <span class="deck-compact-summary" id="deck-compact-summary">撮影日時</span>
+            <button class="deck-toggle" id="deck-toggle" type="button" aria-expanded="true" aria-controls="control-deck-content" aria-label="コントロールを最小化">
+              <span class="deck-toggle-label">最小化</span><b aria-hidden="true">⌄</b>
+            </button>
+          </div>
+
+          <div class="control-deck-content" id="control-deck-content">
 
           <div class="body-selector" role="group" aria-label="表示する天体">
             <button type="button" data-body="sun">太陽</button>
@@ -180,6 +188,7 @@
           </article>
 
           <p class="phase-note">Phase 7 — 撮影計画の保存と共有</p>
+          </div>
         </section>
       </main>
     </div>
@@ -312,6 +321,6 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script src="./js/vendor/suncalc.js"></script>
-    <script type="module" src="./js/app.js?v=15"></script>
+    <script type="module" src="./js/app.js?v=16"></script>
   </body>
 </html>

@@ -13,6 +13,10 @@ import { parseSharedState } from "./plans/plan-data.js?v=14";
 
 const store = createStore();
 const mapStage = document.querySelector(".map-stage");
+const appShell = document.querySelector(".app-shell");
+const controlDeck = document.querySelector(".control-deck");
+const deckToggle = document.querySelector("#deck-toggle");
+const CONTROL_DECK_KEY = "celestiframe:controls-collapsed:v1";
 const setLocationButton = document.querySelector("#set-location-button");
 const subjectLocationButton = document.querySelector("#subject-location-button");
 let mapController;
@@ -25,6 +29,20 @@ try {
 } catch (error) {
   console.warn("Shared plan could not be applied", error);
 }
+
+function setControlsCollapsed(collapsed, { persist = true } = {}) {
+  controlDeck.classList.toggle("is-collapsed", collapsed);
+  appShell.classList.toggle("is-controls-collapsed", collapsed);
+  deckToggle.setAttribute("aria-expanded", String(!collapsed));
+  deckToggle.setAttribute("aria-label", collapsed ? "コントロールを開く" : "コントロールを最小化");
+  deckToggle.querySelector(".deck-toggle-label").textContent = collapsed ? "開く" : "最小化";
+  deckToggle.querySelector("b").textContent = collapsed ? "⌃" : "⌄";
+  if (persist) localStorage.setItem(CONTROL_DECK_KEY, JSON.stringify(collapsed));
+  window.setTimeout(() => mapController?.map.invalidateSize(), 20);
+}
+
+deckToggle.addEventListener("click", () => setControlsCollapsed(!controlDeck.classList.contains("is-collapsed")));
+setControlsCollapsed(localStorage.getItem(CONTROL_DECK_KEY) === "true", { persist: false });
 
 function applyTheme(preference) {
   const normalized = normalizeThemePreference(preference);
@@ -292,6 +310,9 @@ store.subscribe((state) => {
   renderSun(state);
   renderMoon(state);
   renderAlignment(state);
+  const compactDate = new Intl.DateTimeFormat("ja-JP", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(state.selectedDateTime));
+  const compactBody = state.selectedBody === "sun" ? "太陽" : state.selectedBody === "moon" ? "月" : "太陽＋月";
+  document.querySelector("#deck-compact-summary").textContent = `${compactDate} ・ ${compactBody}`;
 });
 
 document.querySelector("#timezone-label").textContent = Intl.DateTimeFormat().resolvedOptions().timeZone || "LOCAL";
