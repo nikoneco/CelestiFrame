@@ -1,4 +1,4 @@
-const CACHE_VERSION = "celestiframe-shell-v3";
+const CACHE_VERSION = "celestiframe-shell-v4";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -9,6 +9,7 @@ const APP_SHELL = [
   "./js/app.js",
   "./js/state.js",
   "./js/astronomy/sun-service.js",
+  "./js/astronomy/moon-service.js",
   "./js/geometry/angle.js",
   "./js/geometry/destination.js",
   "./js/map/map-controller.js",

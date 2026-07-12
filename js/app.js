@@ -2,6 +2,7 @@ import { createStore } from "./state.js";
 import { createMapController } from "./map/map-controller.js";
 import { bindDateTimeControls } from "./ui/datetime-controls.js";
 import { calculateSunData } from "./astronomy/sun-service.js";
+import { calculateMoonData } from "./astronomy/moon-service.js";
 
 const store = createStore();
 const mapStage = document.querySelector(".map-stage");
@@ -13,6 +14,44 @@ const formatAngle = (value) => value.toFixed(1);
 const formatTime = (date) => date
   ? new Intl.DateTimeFormat("ja-JP", { hour: "2-digit", minute: "2-digit", hour12: false }).format(date)
   : "なし";
+
+function formatMoonEvent(date, selectedDate) {
+  if (!date) return "なし";
+  const prefix = date.getFullYear() !== selectedDate.getFullYear()
+    || date.getMonth() !== selectedDate.getMonth()
+    || date.getDate() !== selectedDate.getDate()
+    ? "翌日 "
+    : "";
+  return `${prefix}${formatTime(date)}`;
+}
+
+function renderMoon(state) {
+  try {
+    const selectedDate = new Date(state.selectedDateTime);
+    const moonData = calculateMoonData(selectedDate, state.cameraLocation);
+    document.querySelector('[data-moon-field="azimuth"]').textContent = formatAngle(moonData.azimuth);
+    document.querySelector('[data-moon-field="altitude"]').textContent = formatAngle(moonData.altitude);
+    document.querySelector('[data-moon-field="direction"]').textContent = moonData.direction;
+    document.querySelector('[data-moon-field="age"]').textContent = `${moonData.ageDays.toFixed(1)}日`;
+    document.querySelector('[data-moon-field="illumination"]').textContent = `${(moonData.illuminationFraction * 100).toFixed(1)}%`;
+    document.querySelector('[data-moon-field="moonrise"]').textContent = formatMoonEvent(moonData.moonrise, selectedDate);
+    document.querySelector('[data-moon-field="moonset"]').textContent = formatMoonEvent(moonData.moonset, selectedDate);
+    const horizonState = document.querySelector('[data-moon-field="state"]');
+    horizonState.textContent = moonData.isAboveHorizon
+      ? `${moonData.phaseName}・地平線の上`
+      : `${moonData.phaseName}・地平線の下（計算値）`;
+    horizonState.classList.toggle("is-above", moonData.isAboveHorizon);
+    horizonState.classList.toggle("is-below", !moonData.isAboveHorizon);
+    if (state.selectedBody === "moon" || state.selectedBody === "both") {
+      mapController?.setMoonDirection(state.cameraLocation, moonData);
+    } else {
+      mapController?.clearMoonDirection();
+    }
+  } catch (error) {
+    console.error("Lunar calculation failed", error);
+    document.querySelector('[data-moon-field="state"]').textContent = "計算できません";
+  }
+}
 
 function renderSun(state) {
   try {
@@ -127,12 +166,14 @@ store.subscribe((state) => {
     card.hidden = state.selectedBody !== "both" && card.dataset.card !== state.selectedBody;
   });
   renderSun(state);
+  renderMoon(state);
 });
 
 document.querySelector("#timezone-label").textContent = Intl.DateTimeFormat().resolvedOptions().timeZone || "LOCAL";
 bindDateTimeControls(store);
 initializeMap();
 renderSun(store.getState());
+renderMoon(store.getState());
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", async () => {

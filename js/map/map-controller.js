@@ -27,6 +27,7 @@ export function createMapController({ elementId, initialLocation, initialZoom, o
     title: "撮影地点",
   }).addTo(map);
   let directionLine = null;
+  let moonDirectionLine = null;
 
   marker.on("dragend", () => {
     const { lat, lng } = marker.getLatLng();
@@ -75,6 +76,28 @@ export function createMapController({ elementId, initialLocation, initialZoom, o
     clearSunDirection() {
       directionLine?.remove();
       directionLine = null;
+    },
+    setMoonDirection(location, moonData) {
+      moonDirectionLine?.remove();
+      const destination = destinationPoint(location, moonData.azimuth, 35000);
+      moonDirectionLine = L.polyline(
+        [
+          [location.latitude, location.longitude],
+          [destination.latitude, destination.longitude],
+        ],
+        {
+          color: "#91b8ec",
+          weight: 3,
+          opacity: moonData.isAboveHorizon ? 0.9 : 0.38,
+          dashArray: moonData.isAboveHorizon ? null : "7 8",
+          interactive: false,
+          className: "moon-direction-line",
+        },
+      ).addTo(map);
+    },
+    clearMoonDirection() {
+      moonDirectionLine?.remove();
+      moonDirectionLine = null;
     },
   };
 }

@@ -111,13 +111,18 @@
                   <span class="eyebrow">MOON VECTOR</span>
                   <h2>月</h2>
                 </div>
-                <span class="horizon-state">計算準備中</span>
+                <span class="horizon-state" data-moon-field="state">計算準備中</span>
               </header>
               <div class="metric-pair">
-                <div><span>方位角</span><strong>—<small>°</small></strong></div>
-                <div><span>高度角</span><strong>—<small>°</small></strong></div>
+                <div><span>方位角 <em data-moon-field="direction">—</em></span><strong><b data-moon-field="azimuth">—</b><small>°</small></strong></div>
+                <div><span>高度角</span><strong><b data-moon-field="altitude">—</b><small>°</small></strong></div>
               </div>
-              <footer><span>月齢 —</span><span>照度 —</span></footer>
+              <footer class="moon-details">
+                <span>月齢 <b data-moon-field="age">—</b></span>
+                <span>照度 <b data-moon-field="illumination">—</b></span>
+                <span>月の出 <b data-moon-field="moonrise">—</b></span>
+                <span>月の入り <b data-moon-field="moonset">—</b></span>
+              </footer>
             </article>
 
             <article class="celestial-card celestial-card-sun" data-card="sun" hidden>
@@ -137,7 +142,7 @@
             </article>
           </div>
 
-          <p class="phase-note">Phase 2 — 太陽位置と日の出・日の入り</p>
+          <p class="phase-note">Phase 3 — 太陽と月の撮影方位</p>
         </section>
       </main>
     </div>

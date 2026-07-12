@@ -246,13 +246,18 @@ main { min-height: 100dvh; }
 .metric-pair > div + div { border-left: 1px solid var(--line); }
 .metric-pair span { display: block; color: var(--muted); font-size: 9px; }
 .metric-pair span em { color: var(--solar); font-style: normal; }
+.celestial-card-moon .metric-pair span em { color: var(--moon-blue); }
 .metric-pair strong { display: block; margin-top: 2px; font: 500 25px/1 var(--data); }
 .metric-pair strong b, .celestial-card footer b { font: inherit; font-weight: inherit; }
 .metric-pair small { margin-left: 2px; color: var(--muted); font-size: 11px; }
 .celestial-card footer { display: flex; justify-content: space-between; padding: 8px 13px; color: var(--muted); font: 9px var(--data); }
+.celestial-card footer.moon-details { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px 12px; }
+.celestial-card footer.moon-details span:nth-child(even) { text-align: right; }
 .celestial-card-sun .eyebrow { color: var(--solar); }
 .celestial-card-sun .horizon-state.is-above { color: var(--solar); }
 .celestial-card-sun .horizon-state.is-below { color: var(--muted); }
+.celestial-card-moon .horizon-state.is-above { color: var(--moon-blue); }
+.celestial-card-moon .horizon-state.is-below { color: var(--muted); }
 .phase-note { margin: 11px 0 0; text-align: center; color: rgba(147, 164, 184, 0.64); font: 8px var(--data); letter-spacing: 0.06em; }
 
 .toast { position: fixed; z-index: 2000; left: 14px; right: 14px; bottom: max(18px, env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: #172a40; box-shadow: 0 12px 30px rgba(0, 0, 0, 0.42); font-size: 12px; }
