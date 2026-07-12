@@ -152,10 +152,13 @@ function renderAlignment(state) {
 
 function showToast(message) {
   const toast = document.querySelector("#toast");
+  const action = document.querySelector("#toast-action");
   document.querySelector("#toast-message").textContent = message;
+  action.hidden = true;
+  action.onclick = null;
   toast.hidden = false;
   window.setTimeout(() => {
-    if (document.querySelector("#toast-action").hidden) toast.hidden = true;
+    if (action.hidden) toast.hidden = true;
   }, 3600);
 }
 
