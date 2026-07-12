@@ -95,6 +95,12 @@ export function createMapController({ elementId, initialLocation, initialZoom, o
         { color: "#ff6b6b", weight: 2, opacity: 0.78, dashArray: "3 6", interactive: false, className: "subject-direction-line" },
       ).addTo(map);
     },
+    clearSubjectLocation() {
+      subjectMarker?.remove();
+      subjectLine?.remove();
+      subjectMarker = null;
+      subjectLine = null;
+    },
     setSunDirection(location, sunData) {
       directionLine?.remove();
       const destination = destinationPoint(location, sunData.azimuth, 35000);

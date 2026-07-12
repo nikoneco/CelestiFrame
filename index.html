@@ -9,7 +9,7 @@
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./assets/icon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-    <link rel="stylesheet" href="./css/app.css?v=12">
+    <link rel="stylesheet" href="./css/app.css?v=14">
   </head>
   <body>
     <div class="app-shell">
@@ -22,6 +22,9 @@
           </span>
         </div>
         <div class="topbar-actions">
+          <button class="icon-button" id="plans-button" type="button" aria-label="撮影計画" title="撮影計画" aria-haspopup="dialog">
+            <span aria-hidden="true">▤</span>
+          </button>
           <button class="icon-button" id="locate-button" type="button" aria-label="現在地へ移動" title="現在地へ移動">
             <span aria-hidden="true">⌖</span>
           </button>
@@ -176,7 +179,7 @@
             <button class="alignment-search-button" id="alignment-search-button" type="button">重なる日時を検索</button>
           </article>
 
-          <p class="phase-note">Phase 6 — 条件に合う撮影日時の探索</p>
+          <p class="phase-note">Phase 7 — 撮影計画の保存と共有</p>
         </section>
       </main>
     </div>
@@ -218,6 +221,35 @@
         <p class="settings-note">地図タイルにもテーマに合わせた表示フィルターを適用します。</p>
         <button class="settings-done" type="submit">設定を閉じる</button>
       </form>
+    </dialog>
+
+    <dialog class="plans-dialog" id="plans-dialog" aria-labelledby="plans-title">
+      <div class="plans-panel">
+        <header class="plans-header">
+          <div><span class="eyebrow">FIELD NOTEBOOK</span><h2 id="plans-title">撮影計画</h2></div>
+          <button class="dialog-close" id="plans-close" type="button" aria-label="撮影計画を閉じる">×</button>
+        </header>
+
+        <form class="plan-form" id="plan-form">
+          <div class="plan-form-heading"><span>現在のフレーム</span><small>地点・日時・天体を記録</small></div>
+          <label><span>計画名</span><input id="plan-name" maxlength="120" required></label>
+          <label><span>メモ</span><textarea id="plan-notes" maxlength="2000" rows="2" placeholder="レンズ、到着時刻、現地メモ…"></textarea></label>
+          <div class="plan-form-actions">
+            <button id="plan-save" type="submit">この計画を保存</button>
+            <button id="plan-cancel-edit" type="button" hidden>編集をやめる</button>
+          </div>
+        </form>
+
+        <div class="plans-toolbar">
+          <span id="plans-count">0 PLANS</span>
+          <div>
+            <button id="plans-import" type="button">JSON読込</button>
+            <button id="plans-export" type="button">JSON保存</button>
+            <input id="plans-import-input" class="sr-only" type="file" accept="application/json,.json">
+          </div>
+        </div>
+        <section class="plans-list" id="plans-list" aria-label="保存した撮影計画"></section>
+      </div>
     </dialog>
 
     <dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title">
@@ -280,6 +312,6 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script src="./js/vendor/suncalc.js"></script>
-    <script type="module" src="./js/app.js?v=13"></script>
+    <script type="module" src="./js/app.js?v=14"></script>
   </body>
 </html>

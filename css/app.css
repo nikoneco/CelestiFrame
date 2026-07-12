@@ -62,9 +62,9 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-button, input { font: inherit; }
+button, input, textarea { font: inherit; }
 button { color: inherit; }
-button:focus-visible, input:focus-visible {
+button:focus-visible, input:focus-visible, textarea:focus-visible {
   outline: 2px solid var(--horizon);
   outline-offset: 2px;
 }
@@ -214,12 +214,15 @@ main { min-height: 100dvh; }
 .place-search-results > header { display: flex; align-items: center; justify-content: space-between; min-height: 34px; padding: 0 8px 0 11px; border-bottom: 1px solid var(--line); color: var(--muted); font: 9px var(--data); }
 .place-search-results > header button { width: 28px; height: 28px; border: 0; background: transparent; color: var(--muted); font-size: 18px; cursor: pointer; }
 #place-search-list { max-height: 232px; overflow-y: auto; }
-.place-result { display: grid; grid-template-columns: 1fr auto; border-bottom: 1px solid var(--line); }
+.place-result { display: grid; grid-template-columns: minmax(0, 1fr) auto; border-bottom: 1px solid var(--line); }
 .place-result-focus { min-width: 0; padding: 9px 10px; border: 0; background: transparent; color: var(--text); text-align: left; cursor: pointer; }
 .place-result-focus strong, .place-result-focus span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .place-result-focus strong { font-size: 11px; }
 .place-result-focus span { margin-top: 3px; color: var(--muted); font-size: 8px; }
-.place-result-subject { align-self: center; margin-right: 8px; padding: 7px 8px; border: 1px solid var(--danger); border-radius: 6px; background: transparent; color: var(--danger); font-size: 9px; font-weight: 700; cursor: pointer; }
+.place-result-actions { align-self: center; display: grid; gap: 4px; margin-right: 8px; }
+.place-result-actions button { min-width: 72px; padding: 5px 7px; border-radius: 6px; background: transparent; font-size: 8px; font-weight: 700; cursor: pointer; }
+.place-result-camera { border: 1px solid var(--horizon); color: var(--horizon); }
+.place-result-subject { border: 1px solid var(--danger); color: var(--danger); }
 .place-search-results > a { display: block; padding: 6px 10px; color: var(--muted); font-size: 8px; text-decoration: none; }
 
 .map-actions {
@@ -362,6 +365,45 @@ main { min-height: 100dvh; }
 .settings-note { margin: 14px 2px; color: var(--muted); font-size: 10px; line-height: 1.6; }
 .settings-done { width: 100%; min-height: 44px; border: 1px solid var(--horizon); border-radius: 10px; background: var(--horizon); color: var(--ink); font-weight: 750; cursor: pointer; }
 
+.plans-dialog { width: min(620px, calc(100vw - 20px)); height: min(820px, calc(100dvh - 20px)); padding: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 18px; background: var(--panel); color: var(--text); box-shadow: 0 28px 80px rgba(0, 0, 0, 0.52); }
+.plans-dialog::backdrop { background: rgba(1, 7, 14, 0.76); backdrop-filter: blur(5px); }
+.plans-panel { height: 100%; padding: 18px; overflow-y: auto; }
+.plans-header { position: sticky; z-index: 3; top: -18px; display: flex; align-items: center; justify-content: space-between; margin: -18px -18px 14px; padding: 18px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--panel) 94%, transparent); backdrop-filter: blur(14px); }
+.plans-header h2 { margin: 3px 0 0; font: 580 24px/1.1 var(--display); }
+.plan-form { position: relative; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 9px; padding: 13px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--moon-blue) 44%, var(--line)); border-radius: 13px; background: linear-gradient(120deg, color-mix(in srgb, var(--panel-raised) 64%, transparent), transparent); }
+.plan-form::after { content: ""; position: absolute; right: -28px; top: -42px; width: 110px; height: 110px; border: 1px solid color-mix(in srgb, var(--moon-blue) 24%, transparent); border-radius: 50%; box-shadow: inset 0 0 0 18px color-mix(in srgb, var(--moon-blue) 4%, transparent), inset 0 0 0 36px color-mix(in srgb, var(--moon-blue) 4%, transparent); pointer-events: none; }
+.plan-form-heading { grid-column: 1 / -1; display: flex; align-items: baseline; justify-content: space-between; padding-right: 72px; }
+.plan-form-heading span { font: 570 16px var(--display); }
+.plan-form-heading small { color: var(--muted); font: 8px var(--data); }
+.plan-form label { min-width: 0; }
+.plan-form label > span { display: block; margin: 0 0 4px 2px; color: var(--muted); font-size: 9px; }
+.plan-form input, .plan-form textarea { width: 100%; border: 1px solid var(--line); border-radius: 8px; background: color-mix(in srgb, var(--ink) 52%, transparent); color: var(--text); }
+.plan-form input { height: 40px; padding: 0 10px; }
+.plan-form textarea { min-height: 40px; padding: 9px 10px; resize: vertical; line-height: 1.45; }
+.plan-form-actions { grid-column: 1 / -1; display: flex; gap: 7px; }
+.plan-form-actions button { min-height: 39px; border-radius: 8px; font-size: 11px; font-weight: 750; cursor: pointer; }
+#plan-save { flex: 1; border: 1px solid var(--horizon); background: var(--horizon); color: var(--ink); }
+#plan-cancel-edit { padding: 0 13px; border: 1px solid var(--line); background: transparent; color: var(--muted); }
+.plans-toolbar { display: flex; align-items: center; justify-content: space-between; margin: 16px 2px 8px; }
+.plans-toolbar > span { color: var(--moon-blue); font: 9px var(--data); letter-spacing: .1em; }
+.plans-toolbar > div { display: flex; gap: 5px; }
+.plans-toolbar button { padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: var(--muted); font-size: 9px; cursor: pointer; }
+.plans-list { display: grid; gap: 7px; }
+.plan-card { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; overflow: hidden; border: 1px solid var(--line); border-radius: 11px; background: color-mix(in srgb, var(--panel-raised) 38%, transparent); }
+.plan-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--moon-blue); opacity: .48; }
+.plan-card.is-favorite::before { background: var(--solar); opacity: 1; box-shadow: 0 0 9px var(--solar); }
+.plan-card-main { min-width: 0; padding: 11px 12px 10px 14px; border: 0; background: transparent; text-align: left; cursor: pointer; }
+.plan-card-main strong, .plan-card-main span, .plan-card-main small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.plan-card-main strong { font: 570 14px var(--display); }
+.plan-card-main span { margin-top: 3px; color: var(--moon); font: 11px var(--data); }
+.plan-card-main small { margin-top: 4px; color: var(--muted); font-size: 9px; }
+.plan-card-main .plan-card-note { color: color-mix(in srgb, var(--text) 72%, var(--muted)); }
+.plan-card-actions { align-self: center; display: grid; grid-template-columns: repeat(3, auto); gap: 3px; padding: 7px; }
+.plan-card-actions button { min-height: 26px; padding: 3px 6px; border: 1px solid var(--line); border-radius: 5px; background: transparent; color: var(--muted); font-size: 8px; cursor: pointer; }
+.plan-card-actions button:first-child { color: var(--solar); font-size: 13px; }
+.plan-card-actions button:last-child { color: var(--danger); }
+.plans-empty { margin: 0; padding: 24px 18px; border: 1px dashed var(--line); border-radius: 11px; color: var(--muted); font-size: 11px; line-height: 1.7; text-align: center; }
+
 .search-dialog { width: min(680px, calc(100vw - 20px)); height: min(820px, calc(100dvh - 20px)); padding: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 18px; background: var(--panel); color: var(--text); box-shadow: 0 28px 80px rgba(0, 0, 0, 0.52); }
 .search-dialog::backdrop { background: rgba(1, 7, 14, 0.76); backdrop-filter: blur(5px); }
 .search-panel { height: 100%; padding: 18px; overflow-y: auto; }
@@ -413,6 +455,13 @@ main { min-height: 100dvh; }
 .search-empty { margin: 12px 0; padding: 18px; border: 1px dashed var(--line); border-radius: 10px; color: var(--muted); font-size: 11px; line-height: 1.7; text-align: center; }
 
 @media (max-width: 520px) {
+  .plans-dialog { width: calc(100vw - 12px); height: calc(100dvh - 12px); border-radius: 16px; }
+  .plans-panel { padding: 14px; }
+  .plans-header { top: -14px; margin: -14px -14px 14px; padding: 14px; }
+  .plan-form { grid-template-columns: 1fr; }
+  .plan-form label, .plan-form-actions { grid-column: 1; }
+  .plan-card { grid-template-columns: 1fr; }
+  .plan-card-actions { grid-template-columns: repeat(5, 1fr); padding: 0 9px 9px 13px; }
   .search-dialog { width: calc(100vw - 12px); height: calc(100dvh - 12px); border-radius: 16px; }
   .search-panel { padding: 14px; }
   .search-panel > header { top: -14px; margin: -14px -14px 14px; padding: 14px; }

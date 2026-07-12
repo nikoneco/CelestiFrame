@@ -64,6 +64,20 @@ export function bindPlaceSearch(store, getMapController, showToast) {
         panel.hidden = true;
         showToast(`${resultLabel(place.displayName)}へ移動しました`);
       });
+      const actions = document.createElement("div");
+      actions.className = "place-result-actions";
+      const setCamera = document.createElement("button");
+      setCamera.type = "button";
+      setCamera.className = "place-result-camera";
+      setCamera.textContent = "撮影地点";
+      setCamera.addEventListener("click", () => {
+        const cameraLocation = { latitude: place.latitude, longitude: place.longitude };
+        store.setState((state) => ({ ...state, cameraLocation }));
+        const mapController = getMapController();
+        mapController?.setLocation(cameraLocation);
+        panel.hidden = true;
+        showToast(`${resultLabel(place.displayName)}を撮影地点に設定しました`);
+      });
       const setSubject = document.createElement("button");
       setSubject.type = "button";
       setSubject.className = "place-result-subject";
@@ -79,7 +93,8 @@ export function bindPlaceSearch(store, getMapController, showToast) {
         panel.hidden = true;
         showToast(`${resultLabel(place.displayName)}を被写体に設定しました`);
       });
-      row.append(focus, setSubject);
+      actions.append(setCamera, setSubject);
+      row.append(focus, actions);
       list.append(row);
     });
   }

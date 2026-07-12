@@ -1,6 +1,6 @@
 import { createStore } from "./state.js?v=7";
-import { createMapController } from "./map/map-controller.js?v=12";
-import { bindPlaceSearch } from "./map/place-search.js?v=12";
+import { createMapController } from "./map/map-controller.js?v=14";
+import { bindPlaceSearch } from "./map/place-search.js?v=14";
 import { bindDateTimeControls } from "./ui/datetime-controls.js?v=11";
 import { normalizeThemePreference, resolveThemePreference, themeColor } from "./ui/theme.js?v=6";
 import { calculateSunData } from "./astronomy/sun-service.js";
@@ -8,6 +8,8 @@ import { calculateMoonData } from "./astronomy/moon-service.js?v=5";
 import { subjectGeometry } from "./geometry/bearing.js?v=7";
 import { signedAngleDifference } from "./geometry/angle.js";
 import { bindSearchControls } from "./search/search-controller.js?v=11";
+import { bindPlanManager } from "./plans/plan-manager.js?v=14";
+import { parseSharedState } from "./plans/plan-data.js?v=14";
 
 const store = createStore();
 const mapStage = document.querySelector(".map-stage");
@@ -16,6 +18,13 @@ const subjectLocationButton = document.querySelector("#subject-location-button")
 let mapController;
 let activeLocationMode = null;
 const systemThemeQuery = window.matchMedia("(prefers-color-scheme: light)");
+let sharedState = null;
+try {
+  sharedState = parseSharedState(window.location.href);
+  if (sharedState) store.setState((state) => ({ ...state, ...sharedState, settings: state.settings }));
+} catch (error) {
+  console.warn("Shared plan could not be applied", error);
+}
 
 function applyTheme(preference) {
   const normalized = normalizeThemePreference(preference);
@@ -197,6 +206,18 @@ function initializeMap() {
   }
 }
 
+function applyPlanState(planState) {
+  store.setState((state) => ({ ...state, ...planState, settings: state.settings }));
+  mapController?.setLocation(planState.cameraLocation, { pan: false });
+  if (planState.subjectLocation) {
+    mapController?.setSubjectLocation(planState.cameraLocation, planState.subjectLocation);
+    mapController?.focusLocation(planState.subjectLocation, planState.map?.zoom || 14);
+  } else {
+    mapController?.clearSubjectLocation();
+    mapController?.focusLocation(planState.cameraLocation, planState.map?.zoom || 14);
+  }
+}
+
 setLocationButton.addEventListener("click", () => {
   if (!mapController) return showToast("地図を読み込んでから地点を設定してください");
   if (activeLocationMode !== "camera") {
@@ -275,9 +296,11 @@ bindDateTimeControls(store);
 bindSearchControls(store, showToast);
 initializeMap();
 bindPlaceSearch(store, () => mapController, showToast);
+bindPlanManager(store, { applyState: applyPlanState, showToast });
 renderSun(store.getState());
 renderMoon(store.getState());
 renderAlignment(store.getState());
+if (sharedState) showToast("共有された撮影計画を開きました");
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", async () => {
