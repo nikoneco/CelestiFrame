@@ -127,6 +127,7 @@ function renderAlignment(state) {
   const absoluteDifference = Math.abs(closest.difference);
 
   card.hidden = false;
+  document.querySelector("#alignment-title").textContent = `${state.subject?.name || "被写体"}との重なり`;
   document.querySelector('[data-alignment-field="distance"]').textContent = formatDistance(geometry.distanceMeters);
   document.querySelector('[data-alignment-field="bearing"]').textContent = geometry.bearingDegrees.toFixed(1);
   document.querySelector('[data-alignment-field="sun-difference"]').textContent = formatAlignmentDifference(sunDifference);
