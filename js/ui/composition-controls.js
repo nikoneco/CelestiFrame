@@ -2,7 +2,7 @@ export function bindCompositionControls(store) {
   const form = document.querySelector("#composition-form");
   const orientationButtons = document.querySelectorAll("[data-composition-orientation]");
 
-  form.addEventListener("change", (event) => {
+  function updateField(event) {
     const input = event.target;
     if (input.dataset.compositionField) {
       const field = input.dataset.compositionField;
@@ -21,7 +21,10 @@ export function bindCompositionControls(store) {
         subject: { ...state.subject, [input.dataset.subjectField]: value },
       }));
     }
-  });
+  }
+
+  form.addEventListener("input", updateField);
+  form.addEventListener("change", updateField);
 
   orientationButtons.forEach((button) => {
     button.addEventListener("click", () => {

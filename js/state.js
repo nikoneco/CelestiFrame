@@ -37,11 +37,13 @@ function loadState() {
   try {
     const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (!stored) return structuredClone(defaultState);
+    const subject = { ...defaultState.subject, ...stored.subject };
+    if (!Number.isFinite(Number(subject.heightMeters)) || Number(subject.heightMeters) <= 0) subject.heightMeters = defaultState.subject.heightMeters;
     return {
       ...structuredClone(defaultState),
       ...stored,
       cameraLocation: { ...defaultState.cameraLocation, ...stored.cameraLocation },
-      subject: { ...defaultState.subject, ...stored.subject },
+      subject,
       composition: { ...defaultState.composition, ...stored.composition },
       map: { ...defaultState.map, ...stored.map },
       settings: { ...defaultState.settings, ...stored.settings },

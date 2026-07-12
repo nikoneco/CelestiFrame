@@ -1,4 +1,4 @@
-import { createStore } from "./state.js?v=19";
+import { createStore } from "./state.js?v=20";
 import { createMapController } from "./map/map-controller.js?v=14";
 import { bindPlaceSearch } from "./map/place-search.js?v=14";
 import { bindDateTimeControls } from "./ui/datetime-controls.js?v=11";
@@ -11,7 +11,7 @@ import { bindSearchControls } from "./search/search-controller.js?v=11";
 import { bindPlanManager } from "./plans/plan-manager.js?v=19";
 import { parseSharedState } from "./plans/plan-data.js?v=19";
 import { calculateComposition, focalLengthForFill, SENSOR_PRESETS } from "./composition/composition.js?v=19";
-import { bindCompositionControls } from "./ui/composition-controls.js?v=19";
+import { bindCompositionControls } from "./ui/composition-controls.js?v=20";
 
 const store = createStore();
 const mapStage = document.querySelector(".map-stage");
@@ -302,7 +302,13 @@ function applyPlanState(planState) {
   store.setState((state) => ({
     ...state,
     ...planState,
-    subject: { ...state.subject, ...planState.subject },
+    subject: {
+      ...state.subject,
+      ...planState.subject,
+      heightMeters: Number(planState.subject?.heightMeters) > 0
+        ? Number(planState.subject.heightMeters)
+        : Number(state.subject.heightMeters) > 0 ? state.subject.heightMeters : 10,
+    },
     composition: { ...state.composition, ...planState.composition },
     settings: state.settings,
   }));
