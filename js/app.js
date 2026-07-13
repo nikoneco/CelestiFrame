@@ -25,11 +25,13 @@ const store = createStore();
 const mapStage = document.querySelector(".map-stage");
 const appShell = document.querySelector(".app-shell");
 const controlDeck = document.querySelector(".control-deck");
+const controlDeckContent = document.querySelector("#control-deck-content");
 const deckToggle = document.querySelector("#deck-toggle");
 const CONTROL_DECK_KEY = "celestiframe:controls-collapsed:v1";
 const setLocationButton = document.querySelector("#set-location-button");
 const subjectLocationButton = document.querySelector("#subject-location-button");
 let mapController;
+let controlDeckResizeTimer;
 let activeLocationMode = null;
 const systemThemeQuery = window.matchMedia("(prefers-color-scheme: light)");
 let sharedState = null;
@@ -43,12 +45,16 @@ try {
 function setControlsCollapsed(collapsed, { persist = true } = {}) {
   controlDeck.classList.toggle("is-collapsed", collapsed);
   appShell.classList.toggle("is-controls-collapsed", collapsed);
+  controlDeckContent.toggleAttribute("inert", collapsed);
+  if (collapsed) controlDeckContent.setAttribute("aria-hidden", "true");
+  else controlDeckContent.removeAttribute("aria-hidden");
   deckToggle.setAttribute("aria-expanded", String(!collapsed));
   deckToggle.setAttribute("aria-label", collapsed ? "コントロールを開く" : "コントロールを最小化");
   deckToggle.querySelector(".deck-toggle-label").textContent = collapsed ? "開く" : "最小化";
-  deckToggle.querySelector("b").textContent = collapsed ? "⌃" : "⌄";
   if (persist) localStorage.setItem(CONTROL_DECK_KEY, JSON.stringify(collapsed));
   window.setTimeout(() => mapController?.map.invalidateSize(), 20);
+  window.clearTimeout(controlDeckResizeTimer);
+  controlDeckResizeTimer = window.setTimeout(() => mapController?.map.invalidateSize(), 400);
 }
 
 deckToggle.addEventListener("click", () => setControlsCollapsed(!controlDeck.classList.contains("is-collapsed")));
