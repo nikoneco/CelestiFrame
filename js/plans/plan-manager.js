@@ -15,13 +15,57 @@ function downloadText(filename, text) {
 }
 
 async function copyText(value) {
-  if (navigator.clipboard?.writeText) return navigator.clipboard.writeText(value);
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(value);
+      return;
+    } catch (error) {
+      console.warn("Clipboard API failed; trying legacy copy", error);
+    }
+  }
   const input = document.createElement("textarea");
   input.value = value;
   document.body.append(input);
   input.select();
-  document.execCommand("copy");
+  const copied = document.execCommand("copy");
   input.remove();
+  if (!copied) throw new Error("共有内容をクリップボードへコピーできませんでした");
+}
+
+export function createPlanSharePayload(plan, baseUrl = location.href) {
+  const subjectLabel = plan.state.subjectLocation
+    ? `${plan.state.subject.name || "被写体"}・${bodyLabel(plan.state.selectedBody)}`
+    : `撮影地点のみ・${bodyLabel(plan.state.selectedBody)}`;
+  const lines = [
+    `撮影計画「${plan.name}」`,
+    `撮影日時: ${formatDateTime(plan.state.selectedDateTime)}`,
+    `対象: ${subjectLabel}`,
+  ];
+  if (plan.notes) lines.push(`メモ: ${plan.notes}`);
+  return {
+    title: `${plan.name} | CelestiFrame`,
+    text: lines.join("\n"),
+    url: buildShareUrl(plan.state, baseUrl),
+  };
+}
+
+export async function sharePlan(plan, options = {}) {
+  const runtimeNavigator = typeof navigator === "undefined" ? {} : navigator;
+  const share = options.share ?? (typeof runtimeNavigator.share === "function" ? runtimeNavigator.share.bind(runtimeNavigator) : null);
+  const copy = options.copy ?? copyText;
+  const warn = options.warn ?? console.warn;
+  const payload = createPlanSharePayload(plan, options.baseUrl);
+  if (share) {
+    try {
+      await share(payload);
+      return "shared";
+    } catch (error) {
+      if (error?.name === "AbortError") return "cancelled";
+      warn("Native plan sharing failed; falling back to clipboard", error);
+    }
+  }
+  await copy(`${payload.text}\n\n${payload.url}`);
+  return "copied";
 }
 
 export function bindPlanManager(store, { applyState, showToast }) {
@@ -35,6 +79,7 @@ export function bindPlanManager(store, { applyState, showToast }) {
   const list = document.querySelector("#plans-list");
   const count = document.querySelector("#plans-count");
   let editingId = null;
+  let visiblePlans = [];
 
   function resetForm() {
     editingId = null;
@@ -95,6 +140,7 @@ export function bindPlanManager(store, { applyState, showToast }) {
   async function refresh() {
     try {
       const plans = await repository.list();
+      visiblePlans = plans;
       count.textContent = `${plans.length} PLANS`;
       list.replaceChildren();
       if (!plans.length) {
@@ -148,7 +194,7 @@ export function bindPlanManager(store, { applyState, showToast }) {
     const button = event.target.closest("button[data-action]");
     const card = button?.closest("[data-plan-id]");
     if (!button || !card) return;
-    const plan = (await repository.list()).find((item) => item.id === card.dataset.planId);
+    const plan = visiblePlans.find((item) => item.id === card.dataset.planId);
     if (!plan) return showToast("撮影計画が見つかりません");
 
     if (button.dataset.action === "open") {
@@ -159,8 +205,20 @@ export function bindPlanManager(store, { applyState, showToast }) {
       await repository.put({ ...plan, favorite: !plan.favorite, updatedAt: new Date().toISOString() });
       await refresh();
     } else if (button.dataset.action === "share") {
-      await copyText(buildShareUrl(plan.state));
-      showToast("共有URLをコピーしました");
+      const originalLabel = button.textContent;
+      button.disabled = true;
+      button.textContent = "共有中…";
+      try {
+        const result = await sharePlan(plan);
+        if (result === "shared") showToast("撮影計画を共有しました");
+        if (result === "copied") showToast("共有内容をコピーしました");
+      } catch (error) {
+        console.error(error);
+        showToast("撮影計画を共有できませんでした");
+      } finally {
+        button.disabled = false;
+        button.textContent = originalLabel;
+      }
     } else if (button.dataset.action === "edit") {
       editingId = plan.id;
       nameInput.value = plan.name;
