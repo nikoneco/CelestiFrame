@@ -632,15 +632,23 @@ if ("serviceWorker" in navigator) {
         lastUpdateCheck = now;
         registration.update().catch((error) => console.warn("Service Worker update check failed", error));
       };
+      const observedWorkers = new WeakSet();
+      const observeUpdateWorker = (worker) => {
+        if (!worker || observedWorkers.has(worker)) return;
+        observedWorkers.add(worker);
+        const announceWhenReady = () => {
+          if (worker.state !== "installed" || !navigator.serviceWorker.controller) return;
+          showServiceWorkerUpdate(worker);
+        };
+        worker.addEventListener("statechange", announceWhenReady);
+        announceWhenReady();
+      };
       if (registration.waiting && navigator.serviceWorker.controller) {
         showServiceWorkerUpdate(registration.waiting);
       }
+      observeUpdateWorker(registration.installing);
       registration.addEventListener("updatefound", () => {
-        const worker = registration.installing;
-        worker?.addEventListener("statechange", () => {
-          if (worker.state !== "installed" || !navigator.serviceWorker.controller) return;
-          showServiceWorkerUpdate(worker);
-        });
+        observeUpdateWorker(registration.installing);
       });
       document.addEventListener("visibilitychange", () => {
         if (!document.hidden) checkForUpdates();
