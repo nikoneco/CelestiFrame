@@ -1,9 +1,10 @@
-import { MAX_PLAN_IMPORT_BYTES, buildShareUrl, createPlan, defaultPlanName, normalizePlan, parsePlansFile, serializePlans } from "./plan-data.js?v=32";
+import { MAX_PLAN_IMPORT_BYTES, buildShareUrl, createPlan, defaultPlanName, normalizePlan, parsePlansFile, serializePlans } from "./plan-data.js?v=40";
 import { createPlanRepository } from "./plan-repository.js?v=14";
 
 const formatDateTime = (value) => new Intl.DateTimeFormat("ja-JP", {
   year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false,
 }).format(new Date(value));
+const bodyLabel = (body) => body === "sun" ? "太陽" : body === "moon" ? "月" : body === "milkyway" ? "天の川" : "太陽＋月＋天の川";
 
 function downloadText(filename, text) {
   const anchor = document.createElement("a");
@@ -68,8 +69,8 @@ export function bindPlanManager(store, { applyState, showToast }) {
     date.textContent = formatDateTime(plan.state.selectedDateTime);
     const route = document.createElement("small");
     route.textContent = plan.state.subjectLocation
-      ? `${plan.state.subject.name} ・ ${plan.state.selectedBody === "sun" ? "太陽" : plan.state.selectedBody === "moon" ? "月" : "太陽＋月"}`
-      : `撮影地点のみ ・ ${plan.state.selectedBody === "sun" ? "太陽" : plan.state.selectedBody === "moon" ? "月" : "太陽＋月"}`;
+      ? `${plan.state.subject.name} ・ ${bodyLabel(plan.state.selectedBody)}`
+      : `撮影地点のみ ・ ${bodyLabel(plan.state.selectedBody)}`;
     main.append(name, date, route);
     if (plan.notes) {
       const note = document.createElement("small");

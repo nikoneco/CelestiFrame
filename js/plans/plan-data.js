@@ -1,8 +1,9 @@
-export const PLAN_FILE_VERSION = 3;
+export const PLAN_FILE_VERSION = 4;
 export const MAX_PLAN_IMPORT_BYTES = 5 * 1024 * 1024;
 export const MAX_PLAN_IMPORT_COUNT = 1000;
 
-const BODIES = new Set(["sun", "moon", "both"]);
+const BODIES = new Set(["sun", "moon", "milkyway", "all"]);
+const normalizeBody = (value) => value === "both" ? "all" : BODIES.has(value) ? value : "moon";
 
 function cloneLocation(location) {
   if (!location) return null;
@@ -28,7 +29,7 @@ export function snapshotPlanState(state) {
   if (Number.isNaN(selectedDateTime.getTime())) throw new Error("撮影日時が正しくありません");
   return {
     selectedDateTime: selectedDateTime.toISOString(),
-    selectedBody: BODIES.has(state.selectedBody) ? state.selectedBody : "moon",
+    selectedBody: normalizeBody(state.selectedBody),
     cameraLocation: cloneLocation(state.cameraLocation),
     subjectLocation: cloneLocation(state.subjectLocation),
     subject: {
@@ -149,7 +150,7 @@ export function parseSharedState(urlValue) {
     : null;
   return {
     selectedDateTime: selectedDateTime.toISOString(),
-    selectedBody: BODIES.has(url.searchParams.get("body")) ? url.searchParams.get("body") : "moon",
+    selectedBody: normalizeBody(url.searchParams.get("body")),
     cameraLocation,
     subjectLocation,
     subject: {

@@ -1,20 +1,24 @@
-import { createStore } from "./state.js?v=27";
-import { createMapController } from "./map/map-controller.js?v=32";
+import { createStore } from "./state.js?v=40";
+import { createMapController } from "./map/map-controller.js?v=40";
 import { bindPlaceSearch } from "./map/place-search.js?v=32";
 import { loadRuntimeConfig } from "./config/runtime-config.js?v=32";
 import { bindDateTimeControls } from "./ui/datetime-controls.js?v=11";
 import { normalizeThemePreference, resolveThemePreference, themeColor } from "./ui/theme.js?v=6";
 import { calculateSunData } from "./astronomy/sun-service.js";
 import { calculateMoonData } from "./astronomy/moon-service.js?v=5";
+import { calculateMilkyWay } from "./astronomy/milky-way-service.js?v=40";
 import { subjectGeometry } from "./geometry/bearing.js?v=7";
 import { signedAngleDifference } from "./geometry/angle.js";
 import { bindSearchControls } from "./search/search-controller.js?v=32";
-import { bindPlanManager } from "./plans/plan-manager.js?v=32";
-import { parseSharedState } from "./plans/plan-data.js?v=32";
+import { bindPlanManager } from "./plans/plan-manager.js?v=40";
+import { parseSharedState } from "./plans/plan-data.js?v=40";
 import { calculateComposition, focalLengthForFill, SENSOR_PRESETS } from "./composition/composition.js?v=19";
 import { bindCompositionControls } from "./ui/composition-controls.js?v=24";
 import { bindElevationControls } from "./elevation/elevation-controller.js?v=24";
 import { apparentSolarAltitude, calculateTargetAltitude } from "./geometry/target-altitude.js?v=24";
+import { bindShootingPlanner } from "./planning/shooting-planner.js?v=40";
+import { bindTerrainProfile } from "./terrain/terrain-profile-controller.js?v=40";
+import { bindFieldMode } from "./field/field-mode.js?v=40";
 
 const runtimeConfig = await loadRuntimeConfig();
 const store = createStore();
@@ -78,6 +82,8 @@ const formatAngle = (value) => value.toFixed(1);
 const formatTime = (date) => date
   ? new Intl.DateTimeFormat("ja-JP", { hour: "2-digit", minute: "2-digit", hour12: false }).format(date)
   : "なし";
+const bodyIsVisible = (selectedBody, body) => selectedBody === body || selectedBody === "all" || selectedBody === "both";
+const SVG_NS = "http://www.w3.org/2000/svg";
 
 function formatMoonEvent(date, selectedDate) {
   if (!date) return "なし";
@@ -106,7 +112,7 @@ function renderMoon(state) {
       : `${moonData.phaseName}・地平線の下（計算値）`;
     horizonState.classList.toggle("is-above", moonData.isAboveHorizon);
     horizonState.classList.toggle("is-below", !moonData.isAboveHorizon);
-    if (state.selectedBody === "moon" || state.selectedBody === "both") {
+    if (bodyIsVisible(state.selectedBody, "moon")) {
       const directions = [];
       if (state.settings.directionLineOrigin !== "subject") {
         directions.push({ location: state.cameraLocation, data: moonData, origin: "camera" });
@@ -140,7 +146,7 @@ function renderSun(state) {
     horizonState.textContent = sunData.isAboveHorizon ? "地平線の上" : "地平線の下（計算値）";
     horizonState.classList.toggle("is-above", sunData.isAboveHorizon);
     horizonState.classList.toggle("is-below", !sunData.isAboveHorizon);
-    if (state.selectedBody === "sun" || state.selectedBody === "both") {
+    if (bodyIsVisible(state.selectedBody, "sun")) {
       const directions = [];
       if (state.settings.directionLineOrigin !== "subject") {
         directions.push({ location: state.cameraLocation, data: sunData, origin: "camera" });
@@ -159,6 +165,78 @@ function renderSun(state) {
   } catch (error) {
     console.error("Solar calculation failed", error);
     document.querySelector('[data-sun-field="state"]').textContent = "計算できません";
+  }
+}
+
+function renderMilkyWayArc(data) {
+  const svg = document.querySelector("#milkyway-arc");
+  svg.replaceChildren();
+  const horizon = document.createElementNS(SVG_NS, "line");
+  horizon.setAttribute("class", "milkyway-horizon");
+  horizon.setAttribute("x1", "0");
+  horizon.setAttribute("x2", "360");
+  horizon.setAttribute("y1", "90");
+  horizon.setAttribute("y2", "90");
+  svg.append(horizon);
+  let segment = [];
+  const appendSegment = () => {
+    if (segment.length < 2) {
+      segment = [];
+      return;
+    }
+    const path = document.createElementNS(SVG_NS, "polyline");
+    path.setAttribute("class", "milkyway-path");
+    path.setAttribute("points", segment.map((point) => `${point.azimuth.toFixed(1)},${(90 - point.altitude * 0.82).toFixed(1)}`).join(" "));
+    svg.append(path);
+    segment = [];
+  };
+  data.plane.forEach((point) => {
+    const previous = segment.at(-1);
+    if (point.altitude < 0 || (previous && Math.abs(point.azimuth - previous.azimuth) > 120)) {
+      appendSegment();
+      if (point.altitude < 0) return;
+    }
+    segment.push(point);
+  });
+  appendSegment();
+  if (data.core.isAboveHorizon) {
+    const core = document.createElementNS(SVG_NS, "circle");
+    core.setAttribute("class", "milkyway-core");
+    core.setAttribute("cx", data.core.azimuth.toFixed(1));
+    core.setAttribute("cy", (90 - data.core.altitude * 0.82).toFixed(1));
+    core.setAttribute("r", "4");
+    svg.append(core);
+  }
+}
+
+function renderMilkyWay(state) {
+  try {
+    const date = new Date(state.selectedDateTime);
+    const data = calculateMilkyWay(date, state.cameraLocation);
+    const sun = calculateSunData(date, state.cameraLocation);
+    document.querySelector('[data-milkyway-field="azimuth"]').textContent = formatAngle(data.azimuth);
+    document.querySelector('[data-milkyway-field="altitude"]').textContent = formatAngle(data.altitude);
+    document.querySelector('[data-milkyway-field="direction"]').textContent = data.direction;
+    document.querySelector('[data-milkyway-field="core-direction"]').textContent = `${data.core.direction} ${data.core.azimuth.toFixed(1)}°`;
+    document.querySelector('[data-milkyway-field="core-altitude"]').textContent = `${data.core.altitude.toFixed(1)}°`;
+    document.querySelector('[data-milkyway-field="darkness"]').textContent = sun.altitude <= -18 ? "天文夜" : sun.altitude <= -12 ? "暗い" : sun.altitude <= -6 ? "薄明" : "明るい";
+    const stateLabel = document.querySelector('[data-milkyway-field="state"]');
+    stateLabel.textContent = data.core.isAboveHorizon ? "銀河中心も地平線上" : "アーチのみ・中心は地平線下";
+    stateLabel.classList.toggle("is-above", data.isAboveHorizon);
+    renderMilkyWayArc(data);
+    if (bodyIsVisible(state.selectedBody, "milkyway")) {
+      const directions = [];
+      if (state.settings.directionLineOrigin !== "subject") directions.push({ location: state.cameraLocation, data, origin: "camera" });
+      if (state.subjectLocation && state.settings.directionLineOrigin !== "camera") {
+        directions.push({ location: state.subjectLocation, data: calculateMilkyWay(date, state.subjectLocation), origin: "subject" });
+      }
+      mapController?.setMilkyWayDirections(directions);
+    } else {
+      mapController?.clearMilkyWayDirection();
+    }
+  } catch (error) {
+    console.error("Milky Way calculation failed", error);
+    document.querySelector('[data-milkyway-field="state"]').textContent = "計算できません";
   }
 }
 
@@ -182,13 +260,17 @@ function renderAlignment(state) {
   const geometry = subjectGeometry(state.cameraLocation, state.subjectLocation);
   const sunData = calculateSunData(selectedDate, state.cameraLocation);
   const moonData = calculateMoonData(selectedDate, state.cameraLocation);
+  const milkyWayData = calculateMilkyWay(selectedDate, state.cameraLocation);
   const sunDifference = signedAngleDifference(geometry.bearingDegrees, sunData.azimuth);
   const moonDifference = signedAngleDifference(geometry.bearingDegrees, moonData.azimuth);
+  const milkyWayDifference = signedAngleDifference(geometry.bearingDegrees, milkyWayData.azimuth);
   const candidates = state.selectedBody === "sun"
     ? [{ name: "太陽", difference: sunDifference }]
     : state.selectedBody === "moon"
       ? [{ name: "月", difference: moonDifference }]
-      : [{ name: "太陽", difference: sunDifference }, { name: "月", difference: moonDifference }];
+      : state.selectedBody === "milkyway"
+        ? [{ name: "天の川アーチ", difference: milkyWayDifference }]
+        : [{ name: "太陽", difference: sunDifference }, { name: "月", difference: moonDifference }, { name: "天の川アーチ", difference: milkyWayDifference }];
   const closest = candidates.reduce((best, candidate) => (
     Math.abs(candidate.difference) < Math.abs(best.difference) ? candidate : best
   ));
@@ -200,6 +282,8 @@ function renderAlignment(state) {
   document.querySelector('[data-alignment-field="bearing"]').textContent = geometry.bearingDegrees.toFixed(1);
   document.querySelector('[data-alignment-field="sun-difference"]').textContent = formatAlignmentDifference(sunDifference);
   document.querySelector('[data-alignment-field="moon-difference"]').textContent = formatAlignmentDifference(moonDifference);
+  document.querySelector('[data-alignment-field="milkyway-difference"]').textContent = formatAlignmentDifference(milkyWayDifference);
+  document.querySelector("#alignment-search-button").hidden = state.selectedBody === "milkyway";
   document.querySelector('[data-alignment-field="status"]').textContent = absoluteDifference <= 1
     ? "重なり候補"
     : absoluteDifference <= 5 ? "方向が近い" : "方位差あり";
@@ -224,6 +308,7 @@ function renderComposition(state) {
     const geometry = subjectGeometry(state.cameraLocation, state.subjectLocation);
     const sunData = calculateSunData(selectedDate, state.cameraLocation);
     const moonData = calculateMoonData(selectedDate, state.cameraLocation);
+    const milkyWayData = calculateMilkyWay(selectedDate, state.cameraLocation);
     const sensor = SENSOR_PRESETS[state.composition.sensorPreset] || SENSOR_PRESETS["full-frame"];
     const targetAltitude = calculateTargetAltitude({
       distanceMeters: geometry.distanceMeters,
@@ -246,6 +331,7 @@ function renderComposition(state) {
       celestialBodies: [
         { id: "sun", label: "太陽", azimuthDifferenceDegrees: signedAngleDifference(geometry.bearingDegrees, sunData.azimuth), altitudeDegrees: sunData.altitude },
         { id: "moon", label: "月", azimuthDifferenceDegrees: signedAngleDifference(geometry.bearingDegrees, moonData.azimuth), altitudeDegrees: moonData.altitude },
+        { id: "milkyway", label: "天の川", azimuthDifferenceDegrees: signedAngleDifference(geometry.bearingDegrees, milkyWayData.azimuth), altitudeDegrees: milkyWayData.altitude },
       ],
     });
 
@@ -287,7 +373,7 @@ function renderComposition(state) {
       const element = document.querySelector(`[data-composition-body="${body.id}"]`);
       element.style.left = `${body.xPercent}%`;
       element.style.top = `${body.yPercent}%`;
-      element.hidden = state.selectedBody !== "both" && state.selectedBody !== body.id;
+      element.hidden = !bodyIsVisible(state.selectedBody, body.id);
       element.classList.toggle("is-outside", !body.isInsideFrame);
       element.title = body.isInsideFrame ? `${body.label}はフレーム内` : `${body.label}はフレーム外`;
     });
@@ -368,6 +454,10 @@ function initializeMap() {
       onLocationChange: (cameraLocation) => store.setState((current) => ({ ...current, cameraLocation })),
       onSubjectLocationChange: setSubjectLocationFromMap,
       onMapMove: (map) => store.setState((current) => ({ ...current, map })),
+      onShootingCandidateSelect: (candidate) => {
+        store.setState((current) => ({ ...current, cameraLocation: candidate.location }));
+        showToast(`${candidate.label}・${candidate.distanceLabel}候補を撮影地点に設定しました`);
+      },
       tileUrl: runtimeConfig.tileUrl,
     });
   } catch (error) {
@@ -492,15 +582,18 @@ store.subscribe((state) => {
     button.hidden = !state.subjectLocation;
   });
   document.querySelectorAll("[data-card]").forEach((card) => {
-    card.hidden = state.selectedBody !== "both" && card.dataset.card !== state.selectedBody;
+    card.hidden = !bodyIsVisible(state.selectedBody, card.dataset.card);
   });
   renderSun(state);
   renderMoon(state);
+  renderMilkyWay(state);
   renderAlignment(state);
   renderComposition(state);
   compositionControls.sync(state);
   const compactDate = new Intl.DateTimeFormat("ja-JP", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(state.selectedDateTime));
-  const compactBody = state.selectedBody === "sun" ? "太陽" : state.selectedBody === "moon" ? "月" : "太陽＋月";
+  const compactBody = state.selectedBody === "sun" ? "太陽"
+    : state.selectedBody === "moon" ? "月"
+      : state.selectedBody === "milkyway" ? "天の川" : "全て";
   document.querySelector("#deck-compact-summary").textContent = `${compactDate} ・ ${compactBody}`;
 });
 
@@ -510,8 +603,12 @@ bindSearchControls(store, showToast);
 initializeMap();
 bindPlaceSearch(store, () => mapController, showToast, { geocoderEndpoint: runtimeConfig.nominatimEndpoint });
 bindPlanManager(store, { applyState: applyPlanState, showToast });
+bindShootingPlanner(store, () => mapController, showToast);
+bindTerrainProfile(store, () => mapController, showToast);
+bindFieldMode(store, showToast);
 renderSun(store.getState());
 renderMoon(store.getState());
+renderMilkyWay(store.getState());
 renderAlignment(store.getState());
 renderComposition(store.getState());
 if (sharedState) showToast("共有された撮影計画を開きました");

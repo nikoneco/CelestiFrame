@@ -51,6 +51,16 @@ test("invalid share coordinates are rejected", () => {
   assert.throws(() => parseSharedState("https://example.com/?plan=1&lat=999&lng=0&at=2026-01-01T00:00:00Z"), /緯度/);
 });
 
+test("Milky Way selection survives plan sharing", () => {
+  const url = buildShareUrl({ ...state, selectedBody: "milkyway" }, "https://example.com/");
+  assert.equal(parseSharedState(url).selectedBody, "milkyway");
+});
+
+test("legacy both selection migrates to all celestial bodies", () => {
+  const url = buildShareUrl({ ...state, selectedBody: "both" }, "https://example.com/");
+  assert.equal(parseSharedState(url).selectedBody, "all");
+});
+
 test("plan import rejects excessive item counts", () => {
   const payload = JSON.stringify({ app: "CelestiFrame", plans: Array(MAX_PLAN_IMPORT_COUNT + 1).fill({}) });
   assert.throws(() => parsePlansFile(payload), /1000件まで/);

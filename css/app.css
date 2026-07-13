@@ -6,6 +6,7 @@
   --moon: #dceaff;
   --moon-blue: #91b8ec;
   --solar: #ffb44a;
+  --milkyway: #b58af2;
   --horizon: #62d5c7;
   --danger: #ff6b6b;
   --text: #f3f7fc;
@@ -64,7 +65,7 @@ body {
 
 button, input, textarea { font: inherit; }
 button { color: inherit; }
-button:focus-visible, input:focus-visible, textarea:focus-visible {
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
   outline: 2px solid var(--horizon);
   outline-offset: 2px;
 }
@@ -285,7 +286,7 @@ main { min-height: 100dvh; }
 .control-deck.is-collapsed .deck-toggle { grid-column: 2; }
 .control-deck.is-collapsed .control-deck-content { display: none; }
 .app-shell.is-controls-collapsed .map-stage { height: calc(100dvh - 38px); min-height: 0; }
-.body-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; padding: 3px; border: 1px solid var(--line); border-radius: 10px; background: color-mix(in srgb, var(--ink) 45%, transparent); }
+.body-selector { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; padding: 3px; border: 1px solid var(--line); border-radius: 10px; background: color-mix(in srgb, var(--ink) 45%, transparent); }
 .body-selector button { min-height: 42px; padding: 8px; border: 0; border-radius: 7px; background: transparent; color: var(--muted); font-size: 12px; cursor: pointer; }
 .body-selector button.is-active { background: var(--panel-raised); color: var(--text); box-shadow: inset 0 0 0 1px rgba(220, 234, 255, 0.1); }
 .deck-shortcuts { display: flex; gap: 6px; margin-top: 8px; overflow-x: auto; scrollbar-width: none; }
@@ -338,6 +339,7 @@ main { min-height: 100dvh; }
 .celestial-symbol { position: relative; flex: 0 0 28px; width: 28px; height: 28px; border-radius: 50%; }
 .moon-symbol { border: 2px solid var(--moon); border-left-color: transparent; transform: rotate(-25deg); box-shadow: 4px 0 12px rgba(145, 184, 236, 0.18); }
 .sun-symbol { background: var(--solar); box-shadow: 0 0 16px rgba(255, 180, 74, 0.35); }
+.milkyway-symbol { border: 2px solid var(--milkyway); border-top-color: transparent; border-bottom-color: transparent; box-shadow: 0 0 14px color-mix(in srgb, var(--milkyway) 38%, transparent); transform: rotate(-28deg) scaleY(.7); }
 .horizon-state { margin-left: auto; color: var(--muted); font-size: 9px; }
 .metric-pair { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .metric-pair > div { padding: 10px 13px; }
@@ -352,6 +354,17 @@ main { min-height: 100dvh; }
 .celestial-card footer.moon-details { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px 12px; }
 .celestial-card footer.moon-details span:nth-child(even) { text-align: right; }
 .celestial-card-sun .eyebrow { color: var(--solar); }
+.celestial-card-milkyway .eyebrow, .celestial-card-milkyway .metric-pair span em { color: var(--milkyway); }
+.celestial-card-milkyway .horizon-state.is-above { color: var(--milkyway); }
+.milkyway-arc-chart { position: relative; height: 116px; margin: 9px 13px 3px; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: radial-gradient(circle at 50% 100%, color-mix(in srgb, var(--milkyway) 12%, var(--panel-raised)), var(--ink) 70%); }
+#milkyway-arc { display: block; width: 100%; height: 92px; }
+#milkyway-arc .milkyway-horizon { stroke: color-mix(in srgb, var(--muted) 55%, transparent); stroke-width: 1; stroke-dasharray: 3 4; }
+#milkyway-arc .milkyway-path { fill: none; stroke: var(--milkyway); stroke-width: 3; stroke-linecap: round; filter: drop-shadow(0 0 5px color-mix(in srgb, var(--milkyway) 60%, transparent)); }
+#milkyway-arc .milkyway-core { fill: var(--solar); stroke: var(--ink); stroke-width: 1.5; }
+.milkyway-horizon-label { position: absolute; left: 8px; right: 8px; bottom: 5px; color: var(--muted); font: 7px var(--data); text-align: justify; text-align-last: justify; }
+.celestial-card footer.milkyway-details { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
+.celestial-card footer.milkyway-details span:nth-child(2) { text-align: center; }
+.celestial-card footer.milkyway-details span:last-child { text-align: right; }
 .celestial-card-sun .horizon-state.is-above { color: var(--solar); }
 .celestial-card-sun .horizon-state.is-below { color: var(--muted); }
 .celestial-card-moon .horizon-state.is-above { color: var(--moon-blue); }
@@ -364,12 +377,34 @@ main { min-height: 100dvh; }
 .alignment-metrics > div { padding: 9px 13px; }
 .alignment-metrics > div:nth-child(even) { border-left: 1px solid var(--line); }
 .alignment-metrics > div:nth-child(n + 3) { border-top: 1px solid var(--line); }
+.alignment-metrics > div:last-child:nth-child(odd) { grid-column: 1 / -1; border-left: 0; }
 .alignment-metrics span { display: block; color: var(--muted); font-size: 9px; }
 .alignment-metrics strong { display: block; margin-top: 2px; font: 500 16px var(--data); }
 .alignment-metrics strong b { font: inherit; }
 .alignment-metrics small { margin-left: 2px; color: var(--muted); font-size: 9px; }
 .alignment-card > p { margin: 0; padding: 9px 13px; color: var(--muted); font-size: 10px; line-height: 1.55; }
 .alignment-search-button { width: calc(100% - 26px); min-height: 38px; margin: 0 13px 12px; border: 1px solid var(--danger); border-radius: 8px; background: transparent; color: var(--danger); font-weight: 750; cursor: pointer; }
+.shooting-planner, .terrain-profile-panel { margin: 0 13px 12px; padding: 11px; border: 1px solid var(--line); border-radius: 10px; background: color-mix(in srgb, var(--ink) 24%, transparent); }
+.planning-tool-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.planning-tool-heading b { display: block; margin-top: 3px; font-size: 12px; }
+.planning-tool-heading select { max-width: 118px; min-height: 36px; padding: 0 7px; border: 1px solid var(--line); border-radius: 7px; background: var(--panel); color: var(--text); font-size: 10px; }
+.shooting-planner > p, .terrain-profile-panel > p { margin: 8px 0; padding: 0; color: var(--muted); font-size: 9px; line-height: 1.55; }
+.shooting-planner > button, .terrain-profile-panel > button { width: 100%; min-height: 38px; border: 1px solid var(--horizon); border-radius: 8px; background: transparent; color: var(--horizon); font-size: 10px; font-weight: 750; cursor: pointer; }
+.candidate-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; margin-top: 7px; }
+.candidate-list:empty { display: none; }
+.candidate-list button { display: grid; gap: 2px; min-height: 43px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 7px; background: var(--panel-raised); text-align: left; cursor: pointer; }
+.candidate-list button b { color: var(--text); font: 11px var(--data); }
+.candidate-list button span { color: var(--muted); font-size: 8px; }
+.candidate-note { display: block; margin-top: 7px; color: var(--muted); font-size: 8px; line-height: 1.5; }
+.terrain-profile-result { margin-top: 8px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--ink); }
+#terrain-profile-chart { display: block; width: 100%; height: 112px; }
+.terrain-profile-ground { fill: none; stroke: var(--horizon); stroke-width: 2.5; }
+.terrain-profile-sight { fill: none; stroke: var(--solar); stroke-width: 1.5; stroke-dasharray: 6 4; }
+.terrain-profile-result > div { display: flex; justify-content: flex-end; gap: 12px; padding: 5px 8px; border-top: 1px solid var(--line); color: var(--muted); font-size: 8px; }
+.terrain-profile-result i { display: inline-block; width: 13px; height: 2px; margin-right: 4px; vertical-align: middle; }
+.terrain-key-ground { background: var(--horizon); }
+.terrain-key-sight { background: var(--solar); }
+.terrain-profile-result[data-result="blocked"] { border-color: color-mix(in srgb, var(--danger) 65%, var(--line)); }
 .composition-card { margin-top: 8px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--moon-blue) 44%, var(--line)); border-radius: 13px; background: linear-gradient(145deg, color-mix(in srgb, var(--panel-raised) 48%, var(--panel)), var(--panel)); }
 .composition-card > header { display: flex; align-items: center; justify-content: space-between; padding: 12px 13px 10px; }
 .composition-card h2 { margin: 3px 0 0; font: 560 17px/1 var(--display); }
@@ -397,6 +432,7 @@ main { min-height: 100dvh; }
 .composition-body b { padding: 2px 4px; border-radius: 3px; background: color-mix(in srgb, var(--ink) 72%, transparent); font: 7px var(--data); }
 .composition-body-sun i { background: var(--solar); box-shadow: 0 0 13px color-mix(in srgb, var(--solar) 70%, transparent); }
 .composition-body-moon i { border: 2px solid var(--moon); border-left-color: transparent; box-shadow: 4px 0 10px color-mix(in srgb, var(--moon-blue) 50%, transparent); transform: rotate(-25deg); }
+.composition-body-milkyway i { width: 19px; height: 9px; border: 2px solid var(--milkyway); border-top-color: transparent; border-radius: 50%; box-shadow: 0 0 10px color-mix(in srgb, var(--milkyway) 55%, transparent); }
 .composition-body.is-outside { opacity: .48; }
 .composition-body.is-outside i { outline: 1px dashed var(--danger); outline-offset: 3px; }
 .composition-frame-label { position: absolute; z-index: 6; left: 10px; bottom: 9px; color: color-mix(in srgb, var(--moon) 66%, var(--muted)); font: 7px var(--data); letter-spacing: .06em; }
@@ -436,6 +472,36 @@ main { min-height: 100dvh; }
 .composition-orientation button.is-active { background: var(--panel-raised); color: var(--horizon); }
 .composition-note { margin: 0; padding: 0 13px 12px; color: var(--muted); font-size: 10px; line-height: 1.55; }
 .phase-note { margin: 11px 0 0; text-align: center; color: rgba(147, 164, 184, 0.64); font: 9px var(--data); letter-spacing: 0.06em; }
+
+.field-dialog { width: min(520px, calc(100vw - 18px)); max-height: calc(100dvh - 18px); padding: 0; overflow: hidden; border: 1px solid color-mix(in srgb, var(--horizon) 45%, var(--line)); border-radius: 20px; background: var(--ink); color: var(--text); box-shadow: 0 28px 90px rgba(0, 0, 0, .7); }
+.field-dialog::backdrop { background: rgba(1, 5, 10, .88); backdrop-filter: blur(7px); }
+.field-panel { min-height: min(680px, calc(100dvh - 18px)); padding: max(18px, env(safe-area-inset-top)) 18px max(22px, env(safe-area-inset-bottom)); overflow-y: auto; background: radial-gradient(circle at 50% 25%, color-mix(in srgb, var(--horizon) 8%, var(--panel)), var(--ink) 68%); }
+.field-panel > header { display: flex; align-items: center; justify-content: space-between; }
+.field-panel h2 { margin: 3px 0 0; font: 580 24px var(--display); }
+.field-panel > header button { width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 50%; background: transparent; color: var(--muted); font-size: 24px; cursor: pointer; }
+.field-target { display: flex; align-items: center; justify-content: space-between; margin-top: 22px; padding: 11px 13px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+.field-target span { color: var(--muted); font-size: 10px; }
+.field-target strong { font-size: 14px; }
+.field-compass { display: grid; place-items: center; gap: 14px; padding: 26px 0 22px; }
+.field-compass-ring { position: relative; display: grid; place-items: center; width: 190px; height: 190px; border: 1px solid var(--line); border-radius: 50%; box-shadow: inset 0 0 0 20px color-mix(in srgb, var(--panel) 46%, transparent), 0 0 42px color-mix(in srgb, var(--horizon) 10%, transparent); }
+.field-compass-ring::before, .field-compass-ring::after { content: ""; position: absolute; background: var(--line); }
+.field-compass-ring::before { width: 1px; height: 100%; }
+.field-compass-ring::after { width: 100%; height: 1px; }
+.field-compass-ring span { position: absolute; top: 9px; color: var(--danger); font: 12px var(--data); }
+.field-compass-ring i { position: relative; z-index: 2; width: 4px; height: 78px; transform-origin: 50% 100%; transition: transform 120ms linear; }
+.field-compass-ring i::before { content: ""; position: absolute; inset: 0; clip-path: polygon(50% 0, 100% 100%, 50% 86%, 0 100%); background: linear-gradient(var(--horizon), var(--moon-blue)); filter: drop-shadow(0 0 8px var(--horizon)); }
+.field-compass > strong { min-height: 24px; color: var(--horizon); font: 18px var(--data); }
+.field-metrics { display: grid; grid-template-columns: repeat(2, 1fr); overflow: hidden; border: 1px solid var(--line); border-radius: 11px; }
+.field-metrics > div { padding: 12px; }
+.field-metrics > div:nth-child(even) { border-left: 1px solid var(--line); }
+.field-metrics > div:nth-child(n + 3) { border-top: 1px solid var(--line); }
+.field-metrics span, .field-metrics strong { display: block; }
+.field-metrics span { color: var(--muted); font-size: 9px; }
+.field-metrics strong { margin-top: 4px; font: 16px var(--data); }
+.field-primary, .field-secondary { width: 100%; min-height: 48px; margin-top: 10px; border-radius: 10px; font-weight: 750; cursor: pointer; }
+.field-primary { border: 1px solid var(--horizon); background: var(--horizon); color: var(--ink); }
+.field-secondary { border: 1px solid var(--line); background: transparent; color: var(--moon); }
+.field-panel > p { color: var(--muted); font-size: 9px; line-height: 1.65; }
 
 .toast { position: fixed; z-index: 2000; left: 14px; right: 14px; bottom: max(18px, env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel-raised); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.42); font-size: 12px; }
 .toast-actions { display: flex; align-items: center; gap: 4px; }
@@ -596,6 +662,15 @@ main { min-height: 100dvh; }
   .search-panel > header { top: -14px; margin: -14px -14px 14px; padding: 14px; }
   .search-grid-dates { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .search-result { grid-template-columns: 78px 1fr 36px; gap: 7px; }
+}
+
+@media (max-width: 390px) {
+  .topbar-actions { gap: 3px; }
+  .icon-button { width: 39px; height: 44px; }
+  .icon-button small { font-size: 7px; }
+  .brand { gap: 7px; }
+  .brand strong { font-size: 16px; }
+  .brand small { display: none; }
 }
 
 @media (max-width: 759px) {

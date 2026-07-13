@@ -49,10 +49,13 @@ function loadState() {
     const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (!stored) return structuredClone(defaultState);
     const subject = { ...defaultState.subject, ...stored.subject };
+    const migratedBody = stored.selectedBody === "both" ? "all" : stored.selectedBody;
+    const selectedBody = ["sun", "moon", "milkyway", "all"].includes(migratedBody) ? migratedBody : defaultState.selectedBody;
     if (!Number.isFinite(Number(subject.heightMeters)) || Number(subject.heightMeters) <= 0) subject.heightMeters = defaultState.subject.heightMeters;
     return {
       ...structuredClone(defaultState),
       ...stored,
+      selectedBody,
       cameraLocation: { ...defaultState.cameraLocation, ...stored.cameraLocation },
       subject,
       composition: { ...defaultState.composition, ...stored.composition },

@@ -10,7 +10,7 @@
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./assets/icon.svg?v=22" type="image/svg+xml">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
-    <link rel="stylesheet" href="./css/app.css?v=30">
+    <link rel="stylesheet" href="./css/app.css?v=40">
   </head>
   <body>
     <div class="app-shell">
@@ -23,6 +23,9 @@
           </span>
         </div>
         <div class="topbar-actions">
+          <button class="icon-button" id="field-button" type="button" aria-label="現地撮影モード" title="現地撮影モード" aria-haspopup="dialog">
+            <span aria-hidden="true">⌁</span><small>現地</small>
+          </button>
           <button class="icon-button" id="plans-button" type="button" aria-label="撮影計画" title="撮影計画" aria-haspopup="dialog">
             <span aria-hidden="true">▤</span><small>計画</small>
           </button>
@@ -94,7 +97,8 @@
           <div class="body-selector" role="group" aria-label="表示する天体">
             <button type="button" data-body="sun" aria-pressed="false">太陽</button>
             <button type="button" data-body="moon" class="is-active" aria-pressed="true">月</button>
-            <button type="button" data-body="both" aria-pressed="false">両方</button>
+            <button type="button" data-body="milkyway" aria-pressed="false">天の川</button>
+            <button type="button" data-body="all" aria-pressed="false">全て</button>
           </div>
 
           <nav class="deck-shortcuts" aria-label="コントロール内を移動">
@@ -178,6 +182,30 @@
               </div>
               <footer><span>日の出 <b data-sun-field="sunrise">—</b></span><span>日の入り <b data-sun-field="sunset">—</b></span></footer>
             </article>
+
+            <article class="celestial-card celestial-card-milkyway" data-card="milkyway" hidden>
+              <header>
+                <span class="celestial-symbol milkyway-symbol" aria-hidden="true"></span>
+                <div>
+                  <span class="eyebrow">MILKY WAY ARC</span>
+                  <h2>天の川</h2>
+                </div>
+                <span class="horizon-state" data-milkyway-field="state">計算準備中</span>
+              </header>
+              <div class="metric-pair">
+                <div><span>アーチ最高点 <em data-milkyway-field="direction">—</em></span><strong><b data-milkyway-field="azimuth">—</b><small>°</small></strong></div>
+                <div><span>高度角</span><strong><b data-milkyway-field="altitude">—</b><small>°</small></strong></div>
+              </div>
+              <div class="milkyway-arc-chart" aria-label="地平線より上に見える天の川アーチ">
+                <svg id="milkyway-arc" viewBox="0 0 360 100" preserveAspectRatio="none" role="img"></svg>
+                <span class="milkyway-horizon-label">北　　東　　南　　西　　北</span>
+              </div>
+              <footer class="milkyway-details">
+                <span>銀河中心 <b data-milkyway-field="core-direction">—</b></span>
+                <span>中心高度 <b data-milkyway-field="core-altitude">—</b></span>
+                <span>暗さ <b data-milkyway-field="darkness">—</b></span>
+              </footer>
+            </article>
           </div>
 
           <article class="alignment-card" id="alignment-card" hidden>
@@ -190,9 +218,26 @@
               <div><span>被写体方位</span><strong><b data-alignment-field="bearing">—</b><small>°</small></strong></div>
               <div><span>太陽との差</span><strong data-alignment-field="sun-difference">—</strong></div>
               <div><span>月との差</span><strong data-alignment-field="moon-difference">—</strong></div>
+              <div><span>天の川との差</span><strong data-alignment-field="milkyway-difference">—</strong></div>
             </div>
             <p data-alignment-field="message">被写体地点を基準に天体の左右差を表示します。</p>
             <button class="alignment-search-button" id="alignment-search-button" type="button">重なる日時を検索</button>
+            <section class="shooting-planner" id="shooting-planner">
+              <div class="planning-tool-heading"><div><span class="eyebrow">REVERSE LOCATION</span><b>撮影地点候補</b></div><select id="candidate-body" aria-label="候補の基準天体"><option value="sun">太陽</option><option value="moon">月</option><option value="milkyway">天の川アーチ</option></select></div>
+              <p id="candidate-summary">被写体と天体の延長線上へ候補を表示します。</p>
+              <button id="candidate-toggle" type="button">候補を表示</button>
+              <div class="candidate-list" id="candidate-list"></div>
+              <small class="candidate-note">道路・水上・立入可否は候補地点の地図と現地情報で確認してください。</small>
+            </section>
+            <section class="terrain-profile-panel" id="terrain-profile-panel">
+              <div class="planning-tool-heading"><div><span class="eyebrow">TERRAIN SIGHTLINE</span><b>地形断面と見通し</b></div></div>
+              <p id="terrain-profile-status">21点の標高から見通しを確認します。</p>
+              <button id="terrain-profile-button" type="button">地形断面を計算</button>
+              <div class="terrain-profile-result" id="terrain-profile-result" hidden>
+                <svg id="terrain-profile-chart" viewBox="0 0 360 104" preserveAspectRatio="none" role="img"></svg>
+                <div><span><i class="terrain-key-ground"></i>地形</span><span><i class="terrain-key-sight"></i>見通し線</span></div>
+              </div>
+            </section>
           </article>
 
           <article class="composition-card" id="composition-card" hidden>
@@ -208,6 +253,7 @@
               <span class="composition-subject" id="composition-subject"><b id="composition-subject-label">被写体</b></span>
               <span class="composition-body composition-body-sun" data-composition-body="sun"><i></i><b>太陽</b></span>
               <span class="composition-body composition-body-moon" data-composition-body="moon"><i></i><b>月</b></span>
+              <span class="composition-body composition-body-milkyway" data-composition-body="milkyway"><i></i><b>天の川</b></span>
               <span class="composition-frame-label" id="composition-frame-label">FULL FRAME · 50mm</span>
             </div>
 
@@ -252,7 +298,7 @@
             <p class="composition-note">標高は国土地理院DEMによる推定値です。建物・樹木・積雪・実際の大気状態は反映しません。</p>
           </article>
 
-          <p class="phase-note">Ver 1.0.0 - CelestiFrame by NikoNeco</p>
+          <p class="phase-note">Ver 1.1.0 - CelestiFrame by NikoNeco</p>
           </div>
         </section>
       </main>
@@ -394,6 +440,26 @@
       </div>
     </dialog>
 
+    <dialog class="field-dialog" id="field-dialog" aria-labelledby="field-title">
+      <section class="field-panel">
+        <header><div><span class="eyebrow">ON LOCATION</span><h2 id="field-title">現地撮影モード</h2></div><button id="field-close" type="button" aria-label="現地撮影モードを閉じる">×</button></header>
+        <div class="field-target"><span>目標</span><strong id="field-target-name">被写体</strong></div>
+        <div class="field-compass" aria-label="目標方向">
+          <div class="field-compass-ring"><span>N</span><i id="field-compass-arrow"></i></div>
+          <strong id="field-heading-difference">現在地と端末方位を開始してください</strong>
+        </div>
+        <div class="field-metrics">
+          <div><span>端末方位</span><strong id="field-heading">—</strong></div>
+          <div><span>目標方位</span><strong id="field-target-bearing">—</strong></div>
+          <div><span>目標まで</span><strong id="field-distance">—</strong></div>
+          <div><span>GPS精度</span><strong id="field-accuracy">—</strong></div>
+        </div>
+        <button class="field-primary" id="field-start" type="button">現在地と方位を開始</button>
+        <button class="field-secondary" id="field-wake" type="button" aria-pressed="false">画面点灯を維持</button>
+        <p>端末の磁気センサーは周囲の金属やケースの影響を受けます。方位は現地確認用の目安です。</p>
+      </section>
+    </dialog>
+
     <div class="toast" id="toast" role="status" aria-live="polite" hidden>
       <span id="toast-message"></span>
       <div class="toast-actions">
@@ -404,6 +470,6 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
     <script src="./js/vendor/suncalc.js"></script>
-    <script type="module" src="./js/app.js?v=32"></script>
+    <script type="module" src="./js/app.js?v=40"></script>
   </body>
 </html>

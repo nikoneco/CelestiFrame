@@ -14,6 +14,7 @@ export function createMapController({
   onLocationChange,
   onSubjectLocationChange,
   onMapMove,
+  onShootingCandidateSelect = () => {},
   tileUrl = "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
 }) {
   if (!window.L) throw new Error("Leaflet is unavailable");
@@ -43,6 +44,9 @@ export function createMapController({
   }).addTo(map);
   let directionLines = [];
   let moonDirectionLines = [];
+  let milkyWayDirectionLines = [];
+  let shootingCandidateLayers = [];
+  let terrainObstructionMarker = null;
   let subjectMarker = null;
   let subjectLine = null;
   const subjectMarkerIcon = L.divIcon({
@@ -157,6 +161,66 @@ export function createMapController({
     clearMoonDirection() {
       moonDirectionLines.forEach((line) => line.remove());
       moonDirectionLines = [];
+    },
+    setMilkyWayDirections(directions) {
+      milkyWayDirectionLines.forEach((line) => line.remove());
+      milkyWayDirectionLines = directions.map(({ location, data, origin }) => {
+        const points = directionLineLocations(location, data.azimuth, origin);
+        return L.polyline(
+          points.map((point) => [point.latitude, point.longitude]),
+          {
+            color: origin === "subject" ? "#d9c2ff" : "#a779e9",
+            weight: origin === "subject" ? 2.25 : 3,
+            opacity: data.isAboveHorizon ? 0.86 : 0.34,
+            dashArray: origin === "subject" ? "10 6 2 6" : data.isAboveHorizon ? "4 5" : "4 9",
+            interactive: false,
+            className: `milkyway-direction-line ${origin}-origin-line`,
+          },
+        ).addTo(map);
+      });
+    },
+    clearMilkyWayDirection() {
+      milkyWayDirectionLines.forEach((line) => line.remove());
+      milkyWayDirectionLines = [];
+    },
+    setShootingCandidates(candidates) {
+      shootingCandidateLayers.forEach((layer) => layer.remove());
+      shootingCandidateLayers = candidates.map((candidate) => {
+        const color = candidate.body === "sun" ? "#ffb44a" : candidate.body === "moon" ? "#91b8ec" : "#b58af2";
+        const layer = L.circleMarker([candidate.location.latitude, candidate.location.longitude], {
+          radius: 8,
+          color,
+          weight: 2,
+          fillColor: "#07111f",
+          fillOpacity: 0.88,
+          className: `shooting-candidate shooting-candidate-${candidate.body}`,
+        }).addTo(map);
+        layer.bindTooltip(`${candidate.label} ${candidate.distanceLabel}`, { direction: "top", offset: [0, -7] });
+        layer.on("click", () => {
+          marker.setLatLng([candidate.location.latitude, candidate.location.longitude]);
+          map.flyTo([candidate.location.latitude, candidate.location.longitude], Math.max(map.getZoom(), 13));
+          onShootingCandidateSelect(candidate);
+        });
+        return layer;
+      });
+    },
+    clearShootingCandidates() {
+      shootingCandidateLayers.forEach((layer) => layer.remove());
+      shootingCandidateLayers = [];
+    },
+    setTerrainObstruction(location) {
+      terrainObstructionMarker?.remove();
+      terrainObstructionMarker = L.circleMarker([location.latitude, location.longitude], {
+        radius: 7,
+        color: "#ff6b6b",
+        weight: 2,
+        fillColor: "#ff6b6b",
+        fillOpacity: 0.42,
+      }).addTo(map).bindTooltip("見通しを遮る可能性", { direction: "top" });
+    },
+    clearTerrainObstruction() {
+      terrainObstructionMarker?.remove();
+      terrainObstructionMarker = null;
     },
   };
 }
