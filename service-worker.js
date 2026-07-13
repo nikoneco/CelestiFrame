@@ -1,11 +1,11 @@
-const CACHE_VERSION = "celestiframe-shell-v41";
+const CACHE_VERSION = "celestiframe-shell-v42";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./offline.html",
   "./manifest.webmanifest",
   "./assets/icon.svg?v=22",
-  "./css/app.css?v=41",
+  "./css/app.css?v=42",
   "./js/app.js?v=41",
   "./js/config/runtime-config.js?v=32",
   "./js/state.js?v=40",
