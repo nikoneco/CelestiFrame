@@ -1,4 +1,4 @@
-const CACHE_VERSION = "celestiframe-shell-v62";
+const CACHE_VERSION = "celestiframe-shell-v63";
 const APP_SHELL = [
   "./",
   "./index.html",
