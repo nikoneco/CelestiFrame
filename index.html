@@ -10,7 +10,7 @@
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./assets/icon.svg?v=43" type="image/svg+xml">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
-    <link rel="stylesheet" href="./css/app.css?v=55">
+    <link rel="stylesheet" href="./css/app.css?v=56">
   </head>
   <body>
     <div class="app-shell">
@@ -404,7 +404,7 @@
           <button class="dialog-close" id="search-close" type="button" aria-label="検索を閉じる">×</button>
         </header>
 
-        <form id="search-form">
+        <form id="search-form" novalidate>
           <fieldset class="search-target">
             <legend>対象天体</legend>
             <label><input type="radio" name="target" value="sun"><span>太陽</span></label>
@@ -454,6 +454,8 @@
             <div class="scan-rail"><progress id="search-progress" max="100" value="0"></progress></div>
             <span id="search-progress-label">方位を走査しています…</span>
           </div>
+
+          <p class="search-feedback" id="search-feedback" role="status" aria-live="assertive" hidden></p>
 
           <div class="search-actions">
             <button class="search-submit" id="search-submit" type="submit">日時を検索</button>
@@ -514,6 +516,6 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
     <script src="./js/vendor/suncalc.js"></script>
-    <script type="module" src="./js/app.js?v=58"></script>
+    <script type="module" src="./js/app.js?v=59"></script>
   </body>
 </html>

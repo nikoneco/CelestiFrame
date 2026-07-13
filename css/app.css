@@ -623,6 +623,7 @@ main { min-height: 100dvh; }
 .search-section { margin-top: 10px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: color-mix(in srgb, var(--panel-raised) 24%, transparent); }
 .search-section-label { display: block; margin-bottom: 10px; color: var(--moon-blue); font: 9px var(--data); letter-spacing: 0.12em; }
 .search-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; }
+.search-grid > *, .search-date-field > *, .search-angle-range > * { min-width: 0; }
 .search-date-field { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 6px; min-width: 0; }
 .search-date-field label { min-width: 0; }
 .search-date-shortcut { min-width: 64px; height: 44px; padding: 0 10px; border: 1px solid color-mix(in srgb, var(--moon-blue) 50%, var(--line)); border-radius: 7px; background: color-mix(in srgb, var(--moon-blue) 8%, transparent); color: var(--moon-blue); font-size: 10px; font-weight: 750; cursor: pointer; }
@@ -636,8 +637,9 @@ main { min-height: 100dvh; }
 .search-grid label > span:first-child, .search-step > span:first-child { display: block; margin: 0 0 4px 2px; color: var(--muted); font-size: 9px; }
 .overnight-badge { margin-left: 4px; padding: 2px 5px; border-radius: 4px; background: color-mix(in srgb, var(--danger) 18%, transparent); color: var(--danger); font: 8px var(--data); }
 .overnight-note { margin: 8px 2px 0; color: var(--muted); font-size: 9px; line-height: 1.55; }
-.search-grid input, .search-grid select, .search-step select { width: 100%; height: 44px; padding: 0 9px; border: 1px solid var(--line); border-radius: 7px; background: color-mix(in srgb, var(--ink) 46%, transparent); color: var(--text); font: 11px var(--data); color-scheme: inherit; }
+.search-grid input, .search-grid select, .search-step select { width: 100%; min-width: 0; max-width: 100%; height: 44px; padding: 0 9px; border: 1px solid var(--line); border-radius: 7px; background: color-mix(in srgb, var(--ink) 46%, transparent); color: var(--text); font: 11px var(--data); color-scheme: inherit; }
 .search-grid input:disabled { opacity: 0.38; }
+.search-grid input[aria-invalid="true"] { border-color: var(--danger); box-shadow: 0 0 0 1px color-mix(in srgb, var(--danger) 28%, transparent); }
 .diamond-toggle { display: flex; align-items: center; gap: 10px; margin-top: 11px; padding: 10px; border: 1px solid color-mix(in srgb, var(--solar) 42%, var(--line)); border-radius: 9px; background: color-mix(in srgb, var(--solar) 5%, transparent); cursor: pointer; }
 .diamond-toggle input { flex: 0 0 auto; width: 18px; height: 18px; accent-color: var(--solar); }
 .diamond-toggle span, .diamond-toggle b, .diamond-toggle small { display: block; }
@@ -659,6 +661,7 @@ main { min-height: 100dvh; }
 .scan-rail progress::-moz-progress-bar { background: linear-gradient(90deg, var(--moon-blue), var(--horizon)); }
 #search-progress-label { display: block; margin-top: 6px; color: var(--muted); font: 9px var(--data); text-align: right; }
 @keyframes scan-pulse { from { left: 8%; } to { left: 92%; } }
+.search-feedback { margin: 11px 0 0; padding: 10px 12px; scroll-margin-top: 82px; border: 1px solid color-mix(in srgb, var(--danger) 55%, var(--line)); border-radius: 9px; background: color-mix(in srgb, var(--danger) 8%, transparent); color: color-mix(in srgb, var(--danger) 72%, var(--text)); font-size: 11px; font-weight: 700; line-height: 1.55; }
 .search-actions { display: flex; gap: 8px; margin-top: 12px; }
 .search-submit, .search-cancel { min-height: 43px; border-radius: 9px; font-weight: 750; cursor: pointer; }
 .search-submit { flex: 1; border: 1px solid var(--horizon); background: var(--horizon); color: var(--ink); }
@@ -702,9 +705,10 @@ main { min-height: 100dvh; }
   .search-dialog { width: calc(100vw - 12px); height: calc(100dvh - 12px); border-radius: 16px; }
   .search-panel { padding: 14px; }
   .search-panel > header { top: -14px; margin: -14px -14px 14px; padding: 14px; }
-  .search-grid-dates { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .search-grid-dates { grid-template-columns: minmax(0, 1fr); }
   .search-date-field { grid-template-columns: minmax(0, 1fr); }
   .search-date-shortcut { width: 100%; height: 34px; }
+  .search-grid input, .search-grid select, .search-step select, .diamond-tolerance input { font-size: 16px; }
   .search-result { grid-template-columns: 78px 1fr 36px; gap: 7px; }
 }
 

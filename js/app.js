@@ -9,7 +9,7 @@ import { calculateMoonData } from "./astronomy/moon-service.js?v=5";
 import { calculateMilkyWay } from "./astronomy/milky-way-service.js?v=40";
 import { subjectGeometry } from "./geometry/bearing.js?v=7";
 import { signedAngleDifference } from "./geometry/angle.js";
-import { bindSearchControls } from "./search/search-controller.js?v=43";
+import { bindSearchControls } from "./search/search-controller.js?v=44";
 import { bindPlanManager } from "./plans/plan-manager.js?v=41";
 import { parseSharedState } from "./plans/plan-data.js?v=40";
 import { calculateComposition, focalLengthForFill, SENSOR_PRESETS } from "./composition/composition.js?v=19";

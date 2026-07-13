@@ -98,6 +98,7 @@ function renderResults(results, container, onSelect) {
 
 export function bindSearchControls(store, showToast) {
   const dialog = document.querySelector("#search-dialog");
+  const panel = dialog.querySelector(".search-panel");
   const form = document.querySelector("#search-form");
   const progressPanel = document.querySelector("#search-progress-panel");
   const progress = document.querySelector("#search-progress");
@@ -116,7 +117,29 @@ export function bindSearchControls(store, showToast) {
   const moonIlluminationCondition = document.querySelector("#moon-illumination-condition");
   const milkyWayDarknessCondition = document.querySelector("#milkyway-darkness-condition");
   const oneYearButton = document.querySelector("#search-end-one-year");
+  const feedback = document.querySelector("#search-feedback");
   let worker = null;
+
+  function scrollStatusIntoView(element, block = "center") {
+    requestAnimationFrame(() => element.scrollIntoView({ block, behavior: "smooth" }));
+  }
+
+  function clearFeedback() {
+    feedback.hidden = true;
+    feedback.textContent = "";
+  }
+
+  function showFeedback(message) {
+    feedback.textContent = message;
+    feedback.hidden = false;
+    scrollStatusIntoView(feedback, "nearest");
+  }
+
+  function setSearchBusy(busy) {
+    submitButton.disabled = busy;
+    submitButton.textContent = busy ? "検索中…" : "日時を検索";
+    cancelButton.hidden = !busy;
+  }
 
   function stopWorker() {
     worker?.terminate();
@@ -129,6 +152,7 @@ export function bindSearchControls(store, showToast) {
     resultsSummary.value = "";
     resultsSummary.textContent = "";
     if (!keepProgress) progressPanel.hidden = true;
+    clearFeedback();
   }
 
   function revealResults(count) {
@@ -137,14 +161,13 @@ export function bindSearchControls(store, showToast) {
     resultsSummary.value = summary;
     resultsSummary.textContent = summary;
     resultsSection.hidden = false;
-    requestAnimationFrame(() => resultsSection.scrollIntoView({ block: "start", behavior: "smooth" }));
+    scrollStatusIntoView(resultsSection, "start");
   }
 
   function invalidateSearchResults() {
     if (worker) {
       stopWorker();
-      submitButton.disabled = false;
-      cancelButton.hidden = true;
+      setSearchBusy(false);
     }
     resetSearchUi();
   }
@@ -212,6 +235,33 @@ export function bindSearchControls(store, showToast) {
     overnightBadge.hidden = endMinute >= startMinute;
   }
 
+  function updateDateLimits() {
+    const startDate = form.elements.startDate.value;
+    form.elements.endDate.min = startDate;
+    form.elements.endDate.max = calendarYearLater(startDate);
+  }
+
+  function validateDateRangeFeedback() {
+    const startDate = form.elements.startDate.value;
+    const endDate = form.elements.endDate.value;
+    form.elements.endDate.removeAttribute("aria-invalid");
+    if (!startDate || !endDate) return false;
+    if (startDate > endDate) {
+      form.elements.endDate.setAttribute("aria-invalid", "true");
+      showFeedback("終了日は開始日以降にしてください");
+      return false;
+    }
+    const latestEndDate = calendarYearLater(startDate);
+    if (endDate > latestEndDate) {
+      form.elements.endDate.setAttribute("aria-invalid", "true");
+      const latestLabel = new Intl.DateTimeFormat("ja-JP", { dateStyle: "long" })
+        .format(new Date(`${latestEndDate}T00:00:00`));
+      showFeedback(`検索期間は1年以内です。終了日は${latestLabel}までにしてください`);
+      return false;
+    }
+    return true;
+  }
+
   document.querySelector("#alignment-search-button").addEventListener("click", () => {
     const state = store.getState();
     if (!state.subjectLocation) return showToast("先に被写体地点を設定してください");
@@ -228,11 +278,12 @@ export function bindSearchControls(store, showToast) {
     form.elements.maxAltitude.value = target === "milkyway" ? "90" : "45";
     form.elements.matchTargetAltitude.checked = target === "sun";
     updateOvernightBadge();
+    updateDateLimits();
     updateDiamondControls();
     stopWorker();
-    submitButton.disabled = false;
-    cancelButton.hidden = true;
+    setSearchBusy(false);
     resetSearchUi();
+    panel.scrollTop = 0;
     dialog.showModal();
   });
 
@@ -253,8 +304,16 @@ export function bindSearchControls(store, showToast) {
 
   form.elements.startTime.addEventListener("change", updateOvernightBadge);
   form.elements.endTime.addEventListener("change", updateOvernightBadge);
-  form.addEventListener("input", invalidateSearchResults);
-  form.addEventListener("change", invalidateSearchResults);
+  form.addEventListener("input", () => {
+    invalidateSearchResults();
+    updateDateLimits();
+    validateDateRangeFeedback();
+  });
+  form.addEventListener("change", () => {
+    invalidateSearchResults();
+    updateDateLimits();
+    validateDateRangeFeedback();
+  });
 
   oneYearButton.addEventListener("click", () => {
     const nextYear = calendarYearLater(form.elements.startDate.value);
@@ -270,8 +329,7 @@ export function bindSearchControls(store, showToast) {
 
   dialog.addEventListener("cancel", () => {
     stopWorker();
-    submitButton.disabled = false;
-    cancelButton.hidden = true;
+    setSearchBusy(false);
   });
 
   store.subscribe(() => {
@@ -280,9 +338,9 @@ export function bindSearchControls(store, showToast) {
 
   cancelButton.addEventListener("click", () => {
     stopWorker();
-    submitButton.disabled = false;
-    cancelButton.hidden = true;
+    setSearchBusy(false);
     progressLabel.textContent = "検索をキャンセルしました";
+    showFeedback("検索をキャンセルしました。条件を変更して再検索できます。");
   });
 
   form.addEventListener("submit", (event) => {
@@ -290,13 +348,16 @@ export function bindSearchControls(store, showToast) {
     const state = store.getState();
     const geometry = subjectGeometry(state.cameraLocation, state.subjectLocation);
     const data = new FormData(form);
-    const startMinute = minutesFromTime(data.get("startTime"));
+    const startTime = data.get("startTime");
+    const endTime = data.get("endTime");
+    if (!startTime || !endTime) return showFeedback("開始時刻と終了時刻を入力してください");
+    const startMinute = minutesFromTime(startTime);
     const matchTargetAltitude = data.get("target") === "sun" && data.get("matchTargetAltitude") === "on";
     let targetAltitude = null;
     if (matchTargetAltitude) {
       const elevationsReady = [state.composition.cameraElevationStatus, state.subject.groundElevationStatus]
         .every((status) => status === "ready" || status === "manual");
-      if (!elevationsReady) return showToast("撮影地点と被写体地点の標高を取得してください");
+      if (!elevationsReady) return showFeedback("撮影地点と被写体地点の標高を取得してください");
       targetAltitude = targetAltitudeForState(state);
     }
     const input = {
@@ -306,7 +367,7 @@ export function bindSearchControls(store, showToast) {
       startDate: data.get("startDate"),
       endDate: data.get("endDate"),
       startMinute,
-      endMinute: normalizeOvernightEndMinute(startMinute, minutesFromTime(data.get("endTime"))),
+      endMinute: normalizeOvernightEndMinute(startMinute, minutesFromTime(endTime)),
       stepMinutes: Number(data.get("stepMinutes")),
       toleranceDegrees: Number(data.get("toleranceDegrees")),
       minAltitude: Number(data.get("minAltitude")),
@@ -317,24 +378,27 @@ export function bindSearchControls(store, showToast) {
       targetAltitude: targetAltitude?.altitudeDegrees ?? null,
       verticalToleranceDegrees: Number(data.get("verticalToleranceDegrees") || 0.3),
     };
+    if (input.startDate && input.endDate && !validateDateRangeFeedback()) return;
     const errors = validateSearchInput(input);
-    if (errors.length) return showToast(errors[0]);
+    if (errors.length) return showFeedback(errors[0]);
 
     stopWorker();
+    clearFeedback();
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
     const searchWorker = new Worker(new URL("./search-worker.js?v=42", import.meta.url));
     worker = searchWorker;
-    submitButton.disabled = true;
-    cancelButton.hidden = false;
+    setSearchBusy(true);
     progressPanel.hidden = false;
     progress.value = 0;
     progressLabel.textContent = "方位を走査しています…";
     resetSearchUi({ keepProgress: true });
+    scrollStatusIntoView(progressPanel, "center");
     const handleWorkerFailure = (message) => {
       if (worker !== searchWorker) return;
       console.error("Alignment search worker failed", message);
-      submitButton.disabled = false;
-      cancelButton.hidden = true;
+      setSearchBusy(false);
       progressLabel.textContent = "検索Workerを起動できませんでした";
+      showFeedback(`日時検索を開始できません: ${message}`);
       showToast(`日時検索を開始できません: ${message}`);
       searchWorker.terminate();
       worker = null;
@@ -354,8 +418,7 @@ export function bindSearchControls(store, showToast) {
         progressLabel.textContent = `${percent}% 走査済み`;
       }
       if (message.data.type === "done") {
-        submitButton.disabled = false;
-        cancelButton.hidden = true;
+        setSearchBusy(false);
         progress.value = 100;
         progressLabel.textContent = `${message.data.results.length}件の候補を検出`;
         renderResults(message.data.results, resultsContainer, (result) => {
@@ -368,9 +431,9 @@ export function bindSearchControls(store, showToast) {
         worker = null;
       }
       if (message.data.type === "error") {
-        submitButton.disabled = false;
-        cancelButton.hidden = true;
+        setSearchBusy(false);
         progressLabel.textContent = "検索に失敗しました";
+        showFeedback(message.data.message);
         showToast(message.data.message);
         searchWorker.terminate();
         worker = null;
