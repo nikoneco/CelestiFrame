@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { targetRelativeCardinalOffsets, targetRelativeHeadingOffset } from "../js/field/field-mode.js";
+import { headingToTargetOffset, targetRelativeCardinalOffsets } from "../js/field/field-mode.js";
 
 function roundedOffsets(targetBearing) {
   return Object.fromEntries(targetRelativeCardinalOffsets(targetBearing, 68).map(({ label, x, y }) => [
@@ -24,8 +24,8 @@ test("east target keeps the target at the top and moves north to the left", () =
   assert.deepEqual(offsets.N, { x: -68, y: 0 });
 });
 
-test("current heading is expressed around the target-up compass axis", () => {
-  assert.equal(targetRelativeHeadingOffset(90, 0), -90);
-  assert.equal(targetRelativeHeadingOffset(90, 180), 90);
-  assert.equal(targetRelativeHeadingOffset(90, 90), 0);
+test("compass arrow always points from the device heading toward the target", () => {
+  assert.equal(headingToTargetOffset(0, 90), 90);
+  assert.equal(headingToTargetOffset(180, 90), -90);
+  assert.equal(headingToTargetOffset(90, 90), 0);
 });

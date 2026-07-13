@@ -24,9 +24,9 @@ export function targetRelativeCardinalOffsets(targetBearing, radius = 68) {
   });
 }
 
-export function targetRelativeHeadingOffset(targetBearing, heading) {
-  if (!Number.isFinite(Number(targetBearing)) || !Number.isFinite(Number(heading))) return null;
-  return signedAngleDifference(Number(targetBearing), Number(heading));
+export function headingToTargetOffset(heading, targetBearing) {
+  if (!Number.isFinite(Number(heading)) || !Number.isFinite(Number(targetBearing))) return null;
+  return signedAngleDifference(Number(heading), Number(targetBearing));
 }
 
 export function bindFieldMode(store, showToast) {
@@ -85,11 +85,11 @@ export function bindFieldMode(store, showToast) {
     }
     compassRing.dataset.headingReady = "true";
     headingOutput.textContent = `${heading.toFixed(1)}°`;
-    const difference = targetRelativeHeadingOffset(geometry.bearingDegrees, heading);
+    const difference = signedAngleDifference(geometry.bearingDegrees, heading);
     differenceOutput.textContent = Math.abs(difference) < 2
       ? "ほぼ正面です"
       : `${Math.abs(difference).toFixed(1)}° ${difference > 0 ? "左へ" : "右へ"}`;
-    compassArrow.style.transform = `rotate(${difference}deg)`;
+    compassArrow.style.transform = `rotate(${headingToTargetOffset(heading, geometry.bearingDegrees)}deg)`;
   }
 
   function handleOrientation(event) {
