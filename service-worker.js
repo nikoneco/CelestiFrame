@@ -1,12 +1,12 @@
-const CACHE_VERSION = "celestiframe-shell-v53";
+const CACHE_VERSION = "celestiframe-shell-v54";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./offline.html",
   "./manifest.webmanifest",
   "./assets/icon.svg?v=43",
-  "./css/app.css?v=51",
-  "./js/app.js?v=52",
+  "./css/app.css?v=52",
+  "./js/app.js?v=53",
   "./js/config/runtime-config.js?v=32",
   "./js/state.js?v=40",
   "./js/astronomy/sun-service.js",
@@ -25,9 +25,9 @@ const APP_SHELL = [
   "./js/plans/plan-manager.js?v=40",
   "./js/plans/plan-repository.js?v=14",
   "./js/composition/composition.js?v=19",
-  "./js/search/search-controller.js?v=41",
-  "./js/search/search-core.js?v=41",
-  "./js/search/search-worker.js?v=41",
+  "./js/search/search-controller.js?v=42",
+  "./js/search/search-core.js?v=42",
+  "./js/search/search-worker.js?v=42",
   "./js/ui/datetime-controls.js?v=11",
   "./js/ui/composition-controls.js?v=24",
   "./js/ui/theme.js?v=6",

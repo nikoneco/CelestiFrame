@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import SunCalc from "suncalc";
 import "../js/search/search-core.js";
-import { normalizeOvernightEndMinute, validateSearchInput } from "../js/search/search-controller.js";
+import { calendarYearLater, normalizeOvernightEndMinute, validateSearchInput } from "../js/search/search-controller.js";
 import { apparentSolarAltitude } from "../js/geometry/target-altitude.js";
 
 const baseInput = {
@@ -29,9 +29,32 @@ test("searchCandidates returns scored and sorted solar candidates", () => {
   assert.equal(progress.at(-1), 1);
 });
 
-test("validateSearchInput rejects reversed and excessive ranges", () => {
+test("validateSearchInput rejects reversed and ranges beyond one calendar year", () => {
   assert.deepEqual(validateSearchInput({ ...baseInput, startDate: "2026-08-01", endDate: "2026-07-01" }), ["開始日は終了日以前にしてください"]);
-  assert.deepEqual(validateSearchInput({ ...baseInput, endDate: "2026-12-31" }), ["検索期間は93日以内にしてください"]);
+  assert.deepEqual(validateSearchInput({ ...baseInput, startDate: "2026-07-13", endDate: "2027-07-13" }), []);
+  assert.deepEqual(validateSearchInput({ ...baseInput, startDate: "2026-07-13", endDate: "2027-07-14" }), ["検索期間は開始日から1年以内にしてください"]);
+});
+
+test("calendarYearLater preserves the calendar date and clamps leap day", () => {
+  assert.equal(calendarYearLater("2026-07-13"), "2027-07-13");
+  assert.equal(calendarYearLater("2024-02-29"), "2025-02-28");
+});
+
+test("coarse search never returns candidates outside the requested altitude range", () => {
+  const calculator = {
+    getMoonPosition: () => ({ azimuth: 0, altitude: 13.5 * Math.PI / 180 }),
+    getMoonIllumination: () => ({ fraction: 0.5 }),
+  };
+  const results = globalThis.CelestiSearchCore.searchCandidates({
+    ...baseInput,
+    target: "moon",
+    startMinute: 0,
+    endMinute: 0,
+    stepMinutes: 10,
+    minAltitude: 10,
+    maxAltitude: 11,
+  }, calculator);
+  assert.equal(results.length, 0);
 });
 
 test("overnight windows continue into the following date", () => {

@@ -1,5 +1,5 @@
 self.window = self;
-importScripts("../vendor/suncalc.js", "./search-core.js?v=41");
+importScripts("../vendor/suncalc.js", "./search-core.js?v=42");
 
 self.addEventListener("message", async (event) => {
   try {

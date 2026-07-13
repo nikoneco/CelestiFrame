@@ -71,7 +71,7 @@
       const diamond = input.matchTargetAltitude && input.target === "sun"
         ? diamondMetrics(difference, altitude, input.targetAltitude, input.verticalToleranceDegrees)
         : null;
-      const coarseBuffer = refinement ? 0 : Math.max(0, input.stepMinutes * 0.3);
+      const coarseBuffer = !refinement && diamond ? Math.max(0, input.stepMinutes * 0.3) : 0;
 
       if (Math.abs(difference) > input.toleranceDegrees + coarseBuffer) return null;
       if (altitude < input.minAltitude - coarseBuffer || altitude > input.maxAltitude + coarseBuffer) return null;
