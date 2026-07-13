@@ -11,7 +11,7 @@
   "theme_color": "#07111f",
   "icons": [
     {
-      "src": "./assets/icon.svg?v=22",
+      "src": "./assets/icon.svg?v=43",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
