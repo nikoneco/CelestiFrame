@@ -1,5 +1,6 @@
 import { calculatePolarisData } from "../astronomy/polaris-service.js";
 import { signedAngleDifference } from "../geometry/angle.js";
+import { projectCelestialTarget } from "./celestial-projection.js";
 
 const normalizeSigned = (value) => ((value + 540) % 360) - 180;
 const formatClock = (minutes) => `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
@@ -15,6 +16,7 @@ export function bindPolarAssist(showToast) {
   const ncpOutput = document.querySelector("#polar-ncp");
   const polarisOutput = document.querySelector("#polar-position");
   const clockOutput = document.querySelector("#polar-clock");
+  const poseOutput = document.querySelector("#polar-pose");
   const guidanceOutput = document.querySelector("#polar-guidance");
   const ncpMarker = document.querySelector("#polar-ncp-marker");
   const polarisMarker = document.querySelector("#polar-polaris-marker");
@@ -23,32 +25,40 @@ export function bindPolarAssist(showToast) {
   let location = null;
   let heading = null;
   let beta = null;
+  let gamma = null;
   let levelBeta = null;
+  let levelGamma = null;
   let tiltDirection = 1;
   let refreshTimer = null;
 
   function setState(message) { stateOutput.textContent = message; }
 
-  function placeMarker(marker, target, cameraAltitude = 0) {
-    const x = 50 + (signedAngleDifference(heading ?? 0, target.azimuth) / 60) * 50;
-    const y = 50 - ((target.altitude - cameraAltitude) / 45) * 50;
-    const clampedX = Math.min(94, Math.max(6, x));
-    const clampedY = Math.min(92, Math.max(8, y));
+  function placeMarker(marker, projection) {
+    const x = projection.x;
+    const y = projection.y;
+    const clampedX = Math.min(94, Math.max(6, Number.isFinite(x) ? x : 50));
+    const clampedY = Math.min(92, Math.max(8, Number.isFinite(y) ? y : 50));
     marker.style.left = `${clampedX}%`;
     marker.style.top = `${clampedY}%`;
-    marker.classList.toggle("is-offscreen", x !== clampedX || y !== clampedY);
+    marker.classList.toggle("is-offscreen", !projection.isVisible);
+    marker.classList.toggle("is-behind", !projection.isInFront);
   }
 
   function render() {
     if (!location) return;
     const polaris = calculatePolarisData(new Date(), location);
     const cameraAltitude = levelBeta == null || beta == null ? 0 : tiltDirection * normalizeSigned(beta - levelBeta);
+    const cameraRoll = levelGamma == null || gamma == null ? 0 : normalizeSigned(gamma - levelGamma);
+    const camera = { azimuth: heading ?? 0, altitude: cameraAltitude, roll: cameraRoll };
     ncpOutput.textContent = `北 0.0° / 高度 ${polaris.northCelestialPole.altitude.toFixed(1)}°`;
     polarisOutput.textContent = `方位 ${polaris.azimuth.toFixed(1)}° / 高度 ${polaris.altitude.toFixed(1)}°`;
     clockOutput.textContent = `空の配置 ${formatClock(polaris.skyClockMinutes)}`;
     headingOutput.textContent = heading == null ? "—" : `${heading.toFixed(1)}°`;
-    placeMarker(ncpMarker, polaris.northCelestialPole, cameraAltitude);
-    placeMarker(polarisMarker, polaris, cameraAltitude);
+    poseOutput.textContent = levelBeta == null
+      ? "未校正"
+      : `仰角 ${cameraAltitude.toFixed(1)}° / 傾き ${cameraRoll.toFixed(1)}°`;
+    placeMarker(ncpMarker, projectCelestialTarget(polaris.northCelestialPole, camera));
+    placeMarker(polarisMarker, projectCelestialTarget(polaris, camera));
     if (heading == null) {
       guidanceOutput.textContent = "端末方位を待っています。北を向けてください。";
     } else {
@@ -63,6 +73,7 @@ export function bindPolarAssist(showToast) {
     if (Number.isFinite(compass)) heading = compass;
     else if (event.absolute && Number.isFinite(Number(event.alpha))) heading = (360 - Number(event.alpha)) % 360;
     if (Number.isFinite(Number(event.beta))) beta = Number(event.beta);
+    if (Number.isFinite(Number(event.gamma))) gamma = Number(event.gamma);
     render();
   }
 
@@ -88,7 +99,7 @@ export function bindPolarAssist(showToast) {
       video.srcObject = stream;
       await video.play();
       await requestSensors();
-      setState("カメラ・現在地・方位を利用中");
+      setState("カメラ・現在地・センサーを利用中。続けて姿勢を校正してください。");
       startButton.textContent = "極軸アシストを利用中";
       refreshTimer = window.setInterval(render, 10000);
     } catch (error) {
@@ -121,8 +132,9 @@ export function bindPolarAssist(showToast) {
   levelButton.addEventListener("click", () => {
     if (beta == null) return showToast("先に端末センサーを開始してください");
     levelBeta = beta;
-    levelButton.textContent = "水平基準を更新";
-    setState("地平線を基準にしました。上下が逆なら反転できます。");
+    levelGamma = gamma ?? 0;
+    levelButton.textContent = "姿勢を再校正";
+    setState("3D姿勢を校正しました。上下が逆なら反転できます。");
     render();
   });
   flipButton.addEventListener("click", () => {

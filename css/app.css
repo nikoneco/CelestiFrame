@@ -526,13 +526,16 @@ main { min-height: 100dvh; }
 .polar-marker-ncp i { border-style: dashed; }
 .polar-marker-polaris { color: var(--solar); }
 .polar-marker-polaris i { border-width: 2px; }
-.polar-marker.is-offscreen i::after { content: "↗"; position: absolute; font-size: 14px; text-shadow: 0 0 7px var(--ink); }
+.polar-marker.is-offscreen { opacity: .82; }
+.polar-marker.is-offscreen i::after { content: "画面外"; position: absolute; padding: 2px 4px; border-radius: 4px; background: color-mix(in srgb, var(--ink) 80%, transparent); color: currentColor; font: 8px var(--data); white-space: nowrap; text-shadow: 0 0 7px var(--ink); }
+.polar-marker.is-behind { opacity: .45; filter: grayscale(.45); }
 .polar-view-note { position: absolute; z-index: 3; left: 10px; bottom: 9px; padding: 4px 6px; border: 1px solid color-mix(in srgb, var(--line) 78%, transparent); border-radius: 5px; background: color-mix(in srgb, var(--ink) 62%, transparent); color: var(--muted); font: 8px var(--data); }
 .polar-state { margin: 9px 2px; color: var(--horizon); font-size: 10px; }
 .polar-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); overflow: hidden; border: 1px solid var(--line); border-radius: 11px; }
 .polar-metrics > div { min-height: 62px; padding: 10px; }
 .polar-metrics > div:nth-child(even) { border-left: 1px solid var(--line); }
 .polar-metrics > div:nth-child(n + 3) { border-top: 1px solid var(--line); }
+.polar-metrics > div:last-child { grid-column: 1 / -1; }
 .polar-metrics span, .polar-metrics strong { display: block; }
 .polar-metrics span { color: var(--muted); font-size: 8px; }
 .polar-metrics strong { margin-top: 4px; overflow: hidden; color: var(--text); font: 11px var(--data); text-overflow: ellipsis; white-space: nowrap; }
