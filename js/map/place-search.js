@@ -42,6 +42,7 @@ export function bindPlaceSearch(store, getMapController, showToast, { geocoderEn
   const list = document.querySelector("#place-search-list");
   const status = document.querySelector("#place-search-status");
   let lastRequestAt = 0;
+  let lastTouchToggleAt = 0;
 
   function setCollapsed(collapsed, { persist = true } = {}) {
     container.classList.toggle("is-collapsed", collapsed);
@@ -65,8 +66,20 @@ export function bindPlaceSearch(store, getMapController, showToast, { geocoderEn
   }
   setCollapsed(startsCollapsed, { persist: false });
 
-  toggle.addEventListener("click", () => {
+  function toggleSearchBar() {
     setCollapsed(!container.classList.contains("is-collapsed"));
+  }
+
+  toggle.addEventListener("pointerup", (event) => {
+    if (event.pointerType !== "touch" && event.pointerType !== "pen") return;
+    event.preventDefault();
+    lastTouchToggleAt = Date.now();
+    toggleSearchBar();
+  });
+
+  toggle.addEventListener("click", () => {
+    if (Date.now() - lastTouchToggleAt < 700) return;
+    toggleSearchBar();
   });
 
   function renderResults(results, source) {

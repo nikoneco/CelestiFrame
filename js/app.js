@@ -1,6 +1,6 @@
 import { createStore } from "./state.js?v=40";
-import { createMapController } from "./map/map-controller.js?v=40";
-import { bindPlaceSearch } from "./map/place-search.js?v=33";
+import { createMapController, focusCurrentLocation } from "./map/map-controller.js?v=41";
+import { bindPlaceSearch } from "./map/place-search.js?v=34";
 import { loadRuntimeConfig } from "./config/runtime-config.js?v=32";
 import { bindDateTimeControls } from "./ui/datetime-controls.js?v=11";
 import { normalizeThemePreference, resolveThemePreference, themeColor } from "./ui/theme.js?v=6";
@@ -529,11 +529,12 @@ subjectLocationButton.addEventListener("click", () => {
 });
 
 document.querySelector("#locate-button").addEventListener("click", () => {
+  if (!mapController) return showToast("地図を読み込んでから現在地へ移動してください");
   if (!navigator.geolocation) return showToast("この端末では現在地を利用できません");
   navigator.geolocation.getCurrentPosition(
     ({ coords }) => {
-      setCameraLocation({ latitude: coords.latitude, longitude: coords.longitude });
-      showToast("現在地へ移動しました");
+      focusCurrentLocation(mapController, { latitude: coords.latitude, longitude: coords.longitude });
+      showToast("現在地へ移動しました。撮影地点は変更していません");
     },
     () => showToast("現在地を取得できませんでした。地図から地点を選べます"),
     { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },

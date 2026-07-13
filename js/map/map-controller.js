@@ -1,5 +1,17 @@
 import { destinationPoint } from "../geometry/destination.js";
 
+export function focusCurrentLocation(mapController, coords, minimumZoom = 14) {
+  if (!mapController) return false;
+  const latitude = Number(coords?.latitude);
+  const longitude = Number(coords?.longitude);
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return false;
+
+  const currentZoom = Number(mapController.map?.getZoom?.());
+  const zoom = Math.max(Number.isFinite(currentZoom) ? currentZoom : minimumZoom, minimumZoom);
+  mapController.focusLocation({ latitude, longitude }, zoom);
+  return true;
+}
+
 export function directionLineLocations(location, azimuth, origin, distanceMeters = 35000) {
   const celestialDirection = destinationPoint(location, azimuth, distanceMeters);
   if (origin !== "subject") return [location, celestialDirection];
