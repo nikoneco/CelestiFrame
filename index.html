@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#07111f">
     <meta name="description" content="太陽と月の位置から、写真の一瞬を計画するPWA。">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: blob: https:; connect-src 'self' https:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: blob: https:; media-src 'self' blob:; connect-src 'self' https:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
     <title>CelestiFrame</title>
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./assets/icon.svg?v=43" type="image/svg+xml">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
-    <link rel="stylesheet" href="./css/app.css?v=47">
+    <link rel="stylesheet" href="./css/app.css?v=48">
   </head>
   <body>
     <div class="app-shell">
@@ -464,8 +464,33 @@
           <div><span>GPS精度</span><strong id="field-accuracy">—</strong></div>
         </div>
         <button class="field-primary" id="field-start" type="button">現在地と方位を開始</button>
+        <button class="field-polar-assist" id="field-polar-assist" type="button">✦ 北極星で極軸を合わせる</button>
         <button class="field-secondary" id="field-wake" type="button" aria-pressed="false">画面点灯を維持</button>
         <p>端末の磁気センサーは周囲の金属やケースの影響を受けます。方位は現地確認用の目安です。</p>
+      </section>
+    </dialog>
+
+    <dialog class="polar-dialog" id="polar-assist-dialog" aria-labelledby="polar-title">
+      <section class="polar-panel">
+        <header><div><span class="eyebrow">POLAR ALIGNMENT</span><h2 id="polar-title">極軸アシスト</h2></div><button id="polar-close" type="button" aria-label="極軸アシストを閉じる">×</button></header>
+        <div class="polar-view" aria-label="北極星を探すカメラ案内">
+          <video id="polar-camera" autoplay muted playsinline></video>
+          <div class="polar-horizon" aria-hidden="true"><span>地平線</span></div>
+          <div class="polar-marker polar-marker-ncp" id="polar-ncp-marker"><i>+</i><span>北天の極</span></div>
+          <div class="polar-marker polar-marker-polaris" id="polar-polaris-marker"><i>✦</i><span>北極星</span></div>
+          <div class="polar-view-note">水平基準の目安</div>
+        </div>
+        <p class="polar-state" id="polar-state">開始すると端末内でカメラを表示します</p>
+        <div class="polar-metrics">
+          <div><span>端末方位</span><strong id="polar-heading">—</strong></div>
+          <div><span>北天の極</span><strong id="polar-ncp">—</strong></div>
+          <div><span>北極星</span><strong id="polar-position">—</strong></div>
+          <div><span>北極星の空の配置</span><strong id="polar-clock">—</strong></div>
+        </div>
+        <p class="polar-guidance" id="polar-guidance">開始後、北を向けて北天の極と北極星を探します。</p>
+        <button class="field-primary" id="polar-start" type="button">カメラとセンサーを開始</button>
+        <div class="polar-actions"><button id="polar-level" type="button">地平線を基準にする</button><button id="polar-flip" type="button" aria-pressed="false">上下を反転</button></div>
+        <p class="polar-note">カメラ映像は端末内でのみ表示し、保存・送信しません。表示は北極星を見つけるための目安です。長時間露光の最終調整は、赤道儀の極軸望遠鏡や専用アプリで確認してください。</p>
       </section>
     </dialog>
 
@@ -479,6 +504,6 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
     <script src="./js/vendor/suncalc.js"></script>
-    <script type="module" src="./js/app.js?v=48"></script>
+    <script type="module" src="./js/app.js?v=49"></script>
   </body>
 </html>

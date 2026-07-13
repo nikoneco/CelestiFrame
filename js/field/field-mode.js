@@ -1,5 +1,6 @@
 import { subjectGeometry } from "../geometry/bearing.js?v=7";
 import { signedAngleDifference } from "../geometry/angle.js";
+import { bindPolarAssist } from "./polar-assist.js?v=1";
 
 const formatDistance = (meters) => meters >= 1000 ? `${(meters / 1000).toFixed(2)} km` : `${Math.round(meters)} m`;
 
@@ -62,7 +63,7 @@ export function bindFieldMode(store, showToast) {
     if (!navigator.geolocation) return showToast("この端末では現在地を利用できません");
     if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
       try {
-        const permission = await DeviceOrientationEvent.requestPermission();
+        const permission = await DeviceOrientationEvent.requestPermission(true);
         if (permission !== "granted") showToast("端末方位の利用が許可されませんでした");
       } catch (error) {
         console.warn(error);
@@ -130,4 +131,5 @@ export function bindFieldMode(store, showToast) {
     wakeButton.setAttribute("aria-pressed", "false");
   });
   store.subscribe(() => dialog.open && render());
+  bindPolarAssist(showToast);
 }

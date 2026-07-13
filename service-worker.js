@@ -1,12 +1,12 @@
-const CACHE_VERSION = "celestiframe-shell-v49";
+const CACHE_VERSION = "celestiframe-shell-v50";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./offline.html",
   "./manifest.webmanifest",
   "./assets/icon.svg?v=43",
-  "./css/app.css?v=47",
-  "./js/app.js?v=48",
+  "./css/app.css?v=48",
+  "./js/app.js?v=49",
   "./js/config/runtime-config.js?v=32",
   "./js/state.js?v=40",
   "./js/astronomy/sun-service.js",
@@ -35,7 +35,9 @@ const APP_SHELL = [
   "./js/planning/shooting-planner.js?v=40",
   "./js/terrain/terrain-profile.js?v=40",
   "./js/terrain/terrain-profile-controller.js?v=40",
-  "./js/field/field-mode.js?v=41",
+  "./js/field/field-mode.js?v=42",
+  "./js/field/polar-assist.js?v=1",
+  "./js/astronomy/polaris-service.js",
   "./js/vendor/suncalc.js",
 ];
 

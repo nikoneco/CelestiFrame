@@ -505,8 +505,47 @@ main { min-height: 100dvh; }
 .field-metrics strong { margin-top: 4px; font: 16px var(--data); }
 .field-primary, .field-secondary { width: 100%; min-height: 48px; margin-top: 10px; border-radius: 10px; font-weight: 750; cursor: pointer; }
 .field-primary { border: 1px solid var(--horizon); background: var(--horizon); color: var(--ink); }
+.field-polar-assist { width: 100%; min-height: 48px; margin-top: 10px; border: 1px solid color-mix(in srgb, var(--solar) 64%, var(--line)); border-radius: 10px; background: linear-gradient(110deg, color-mix(in srgb, var(--moon-blue) 22%, var(--panel-raised)), color-mix(in srgb, var(--solar) 14%, var(--panel-raised))); color: var(--text); font-weight: 750; cursor: pointer; }
 .field-secondary { border: 1px solid var(--line); background: transparent; color: var(--moon); }
 .field-panel > p { color: var(--muted); font-size: 9px; line-height: 1.65; }
+
+.polar-dialog { width: min(620px, calc(100vw - 18px)); max-height: calc(100dvh - 18px); padding: 0; overflow: hidden; border: 1px solid color-mix(in srgb, var(--moon-blue) 56%, var(--line)); border-radius: 20px; background: var(--ink); color: var(--text); box-shadow: 0 28px 90px rgba(0, 0, 0, .76); }
+.polar-dialog::backdrop { background: rgba(1, 5, 10, .92); backdrop-filter: blur(8px); }
+.polar-panel { padding: max(16px, env(safe-area-inset-top)) 16px max(18px, env(safe-area-inset-bottom)); overflow-y: auto; background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--moon-blue) 10%, var(--panel)), var(--ink) 68%); }
+.polar-panel > header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 13px; }
+.polar-panel h2 { margin: 3px 0 0; font: 580 24px var(--display); }
+.polar-panel > header button { width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 50%; background: transparent; color: var(--muted); font-size: 24px; cursor: pointer; }
+.polar-view { position: relative; min-height: min(52dvh, 410px); overflow: hidden; border: 1px solid color-mix(in srgb, var(--moon-blue) 32%, var(--line)); border-radius: 13px; background: radial-gradient(circle at 50% 76%, #1a2b3a, #03070d 70%); isolation: isolate; }
+.polar-view video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #03070d; }
+.polar-view::before { content: ""; position: absolute; z-index: 1; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgba(2, 8, 18, .16), rgba(2, 8, 18, .02) 44%, rgba(2, 8, 18, .42)); }
+.polar-horizon { position: absolute; z-index: 2; left: 0; right: 0; top: 50%; height: 1px; border-top: 1px dashed color-mix(in srgb, var(--text) 45%, transparent); pointer-events: none; }
+.polar-horizon span { position: absolute; right: 9px; top: 4px; color: color-mix(in srgb, var(--text) 68%, var(--muted)); font: 9px var(--data); }
+.polar-marker { position: absolute; z-index: 3; display: grid; gap: 3px; place-items: center; min-width: 62px; transform: translate(-50%, -50%); color: var(--text); font: 9px var(--data); text-align: center; pointer-events: none; transition: left 160ms linear, top 160ms linear; }
+.polar-marker i { display: grid; width: 30px; height: 30px; place-items: center; border: 1px solid currentColor; border-radius: 50%; background: color-mix(in srgb, var(--ink) 55%, transparent); font-style: normal; font-size: 21px; line-height: 1; box-shadow: 0 0 18px currentColor; }
+.polar-marker-ncp { color: var(--moon-blue); }
+.polar-marker-ncp i { border-style: dashed; }
+.polar-marker-polaris { color: var(--solar); }
+.polar-marker-polaris i { border-width: 2px; }
+.polar-marker.is-offscreen i::after { content: "↗"; position: absolute; font-size: 14px; text-shadow: 0 0 7px var(--ink); }
+.polar-view-note { position: absolute; z-index: 3; left: 10px; bottom: 9px; padding: 4px 6px; border: 1px solid color-mix(in srgb, var(--line) 78%, transparent); border-radius: 5px; background: color-mix(in srgb, var(--ink) 62%, transparent); color: var(--muted); font: 8px var(--data); }
+.polar-state { margin: 9px 2px; color: var(--horizon); font-size: 10px; }
+.polar-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); overflow: hidden; border: 1px solid var(--line); border-radius: 11px; }
+.polar-metrics > div { min-height: 62px; padding: 10px; }
+.polar-metrics > div:nth-child(even) { border-left: 1px solid var(--line); }
+.polar-metrics > div:nth-child(n + 3) { border-top: 1px solid var(--line); }
+.polar-metrics span, .polar-metrics strong { display: block; }
+.polar-metrics span { color: var(--muted); font-size: 8px; }
+.polar-metrics strong { margin-top: 4px; overflow: hidden; color: var(--text); font: 11px var(--data); text-overflow: ellipsis; white-space: nowrap; }
+.polar-guidance { min-height: 40px; margin: 11px 2px 0; color: var(--text); font-size: 11px; line-height: 1.55; }
+.polar-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 8px; }
+.polar-actions button { min-height: 42px; border: 1px solid var(--line); border-radius: 9px; background: transparent; color: var(--moon); font-size: 10px; font-weight: 700; cursor: pointer; }
+.polar-actions button[aria-pressed="true"] { border-color: var(--solar); color: var(--solar); }
+.polar-note { margin: 11px 2px 0; color: var(--muted); font-size: 9px; line-height: 1.6; }
+
+@media (max-width: 430px) {
+  .polar-view { min-height: min(48dvh, 360px); }
+  .polar-metrics strong { font-size: 10px; }
+}
 
 .toast { position: fixed; z-index: 2000; left: 14px; right: 14px; bottom: max(18px, env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel-raised); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.42); font-size: 12px; }
 .toast-actions { display: flex; align-items: center; gap: 4px; }
