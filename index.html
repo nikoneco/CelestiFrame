@@ -10,7 +10,7 @@
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./assets/icon.svg?v=43" type="image/svg+xml">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
-    <link rel="stylesheet" href="./css/app.css?v=45">
+    <link rel="stylesheet" href="./css/app.css?v=46">
   </head>
   <body>
     <div class="app-shell">
@@ -63,6 +63,7 @@
               <label class="sr-only" for="place-search-input">地名・施設名を検索</label>
               <input id="place-search-input" type="search" placeholder="スカイツリー、富士山…" maxlength="120" autocomplete="off" enterkeyhint="search">
               <button id="place-search-submit" type="submit" aria-label="場所を検索">⌕</button>
+              <button class="place-search-toggle" id="place-search-toggle" type="button" aria-expanded="true" aria-controls="place-search-input place-search-results" aria-label="検索バーを収納" title="検索バーを収納"><span aria-hidden="true">&lt;</span></button>
             </form>
             <section class="place-search-results" id="place-search-results" aria-label="場所の検索結果" hidden>
               <header><span id="place-search-status">検索結果</span><button id="place-search-close" type="button" aria-label="検索結果を閉じる">×</button></header>
@@ -478,6 +479,6 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
     <script src="./js/vendor/suncalc.js"></script>
-    <script type="module" src="./js/app.js?v=46"></script>
+    <script type="module" src="./js/app.js?v=47"></script>
   </body>
 </html>

@@ -1,6 +1,6 @@
 import { createStore } from "./state.js?v=40";
 import { createMapController } from "./map/map-controller.js?v=40";
-import { bindPlaceSearch } from "./map/place-search.js?v=32";
+import { bindPlaceSearch } from "./map/place-search.js?v=33";
 import { loadRuntimeConfig } from "./config/runtime-config.js?v=32";
 import { bindDateTimeControls } from "./ui/datetime-controls.js?v=11";
 import { normalizeThemePreference, resolveThemePreference, themeColor } from "./ui/theme.js?v=6";

@@ -1,6 +1,7 @@
 import { MAX_PLACE_QUERY_LENGTH, normalizePlaceQuery, searchPlaces } from "./geocoder.js?v=32";
 
 const CACHE_KEY = "celestiframe:place-search:v1";
+const COLLAPSED_KEY = "celestiframe:place-search-collapsed:v1";
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const MIN_REQUEST_INTERVAL_MS = 1000;
 
@@ -32,13 +33,41 @@ function resultLabel(displayName) {
 }
 
 export function bindPlaceSearch(store, getMapController, showToast, { geocoderEndpoint } = {}) {
+  const container = document.querySelector(".place-search");
   const form = document.querySelector("#place-search-form");
   const input = document.querySelector("#place-search-input");
   const submit = document.querySelector("#place-search-submit");
+  const toggle = document.querySelector("#place-search-toggle");
   const panel = document.querySelector("#place-search-results");
   const list = document.querySelector("#place-search-list");
   const status = document.querySelector("#place-search-status");
   let lastRequestAt = 0;
+
+  function setCollapsed(collapsed, { persist = true } = {}) {
+    container.classList.toggle("is-collapsed", collapsed);
+    toggle.setAttribute("aria-expanded", String(!collapsed));
+    toggle.setAttribute("aria-label", collapsed ? "検索バーを開く" : "検索バーを収納");
+    toggle.title = collapsed ? "検索バーを開く" : "検索バーを収納";
+    if (collapsed) input.blur();
+    if (!persist) return;
+    try {
+      localStorage.setItem(COLLAPSED_KEY, collapsed ? "1" : "0");
+    } catch {
+      // Storage can be unavailable in private browsing; the control still works for this session.
+    }
+  }
+
+  let startsCollapsed = false;
+  try {
+    startsCollapsed = localStorage.getItem(COLLAPSED_KEY) === "1";
+  } catch {
+    startsCollapsed = false;
+  }
+  setCollapsed(startsCollapsed, { persist: false });
+
+  toggle.addEventListener("click", () => {
+    setCollapsed(!container.classList.contains("is-collapsed"));
+  });
 
   function renderResults(results, source) {
     list.replaceChildren();
