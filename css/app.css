@@ -320,7 +320,19 @@ main { min-height: 100dvh; }
 .time-slider { width: 100%; height: 22px; margin: 2px 0 0; accent-color: var(--moon-blue); }
 
 .celestial-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
-.celestial-card { overflow: hidden; border: 1px solid var(--line); border-radius: 13px; background: linear-gradient(135deg, rgba(20, 38, 58, 0.96), rgba(7, 17, 31, 0.98)); }
+.celestial-card {
+  --text: #f3f8ff;
+  --muted: #aebfd2;
+  --line: rgba(193, 216, 241, 0.16);
+  --moon: #dceaff;
+  --moon-blue: #91b8ec;
+  --solar: #ffb44a;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: linear-gradient(135deg, rgba(20, 38, 58, 0.96), rgba(7, 17, 31, 0.98));
+  color: var(--text);
+}
 .celestial-card header { display: flex; align-items: center; gap: 10px; padding: 12px 13px 8px; }
 .celestial-card h2 { margin: 2px 0 0; font: 560 17px/1 var(--display); }
 .celestial-symbol { position: relative; flex: 0 0 28px; width: 28px; height: 28px; border-radius: 50%; }
