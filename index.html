@@ -10,7 +10,7 @@
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./assets/icon.svg?v=43" type="image/svg+xml">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
-    <link rel="stylesheet" href="./css/app.css?v=49">
+    <link rel="stylesheet" href="./css/app.css?v=50">
   </head>
   <body>
     <div class="app-shell">
@@ -476,13 +476,13 @@
         <div class="polar-view" aria-label="北極星を探すカメラ案内">
           <video id="polar-camera" autoplay muted playsinline></video>
           <div class="polar-horizon" aria-hidden="true"><span>地平線</span></div>
-          <div class="polar-marker polar-marker-ncp" id="polar-ncp-marker"><i>+</i><span>北天の極</span></div>
-          <div class="polar-marker polar-marker-polaris" id="polar-polaris-marker"><i>✦</i><span>北極星</span></div>
-          <div class="polar-view-note">3D天球投影・姿勢校正が必要</div>
+          <div class="polar-marker polar-marker-ncp" id="polar-ncp-marker" hidden><i>+</i><span>北天の極</span></div>
+          <div class="polar-marker polar-marker-polaris" id="polar-polaris-marker" hidden><i>✦</i><span>北極星</span></div>
+          <div class="polar-view-note" id="polar-tracking-state" data-quality="pending">3D姿勢を同期中</div>
         </div>
         <p class="polar-state" id="polar-state">開始すると端末内でカメラを表示します</p>
         <div class="polar-metrics">
-          <div><span>端末方位</span><strong id="polar-heading">—</strong></div>
+          <div><span>カメラ方位</span><strong id="polar-heading">—</strong></div>
           <div><span>北天の極</span><strong id="polar-ncp">—</strong></div>
           <div><span>北極星</span><strong id="polar-position">—</strong></div>
           <div><span>北極星の空の配置</span><strong id="polar-clock">—</strong></div>
@@ -490,8 +490,8 @@
         </div>
         <p class="polar-guidance" id="polar-guidance">開始後、北を向けて北天の極と北極星を探します。</p>
         <button class="field-primary" id="polar-start" type="button">カメラとセンサーを開始</button>
-        <div class="polar-actions"><button id="polar-level" type="button">姿勢を校正する</button><button id="polar-flip" type="button" aria-pressed="false">上下を反転</button></div>
-        <p class="polar-note">地平線を画面中央に置き、端末を水平にしてから「姿勢を校正する」を押してください。方位・仰角・画面の傾きを使って天球をカメラ画面に3D投影します。映像は端末内でのみ表示し、保存・送信しません。長時間露光の最終調整は、赤道儀の極軸望遠鏡や専用アプリで確認してください。</p>
+        <div class="polar-actions"><button id="polar-level" type="button">姿勢を再同期</button></div>
+        <p class="polar-note">端末の方位・傾きを一つの3D姿勢として処理し、画面回転も補正して天球を投影します。方位がずれる場合は金属製品から離れ、端末を8の字にゆっくり動かしてから再同期してください。映像は保存・送信しません。長時間露光の最終調整は、赤道儀の極軸望遠鏡や専用アプリで確認してください。</p>
       </section>
     </dialog>
 
@@ -505,6 +505,6 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
     <script src="./js/vendor/suncalc.js"></script>
-    <script type="module" src="./js/app.js?v=50"></script>
+    <script type="module" src="./js/app.js?v=51"></script>
   </body>
 </html>
