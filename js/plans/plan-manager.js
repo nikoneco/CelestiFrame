@@ -1,5 +1,5 @@
 import { MAX_PLAN_IMPORT_BYTES, buildShareUrl, createPlan, defaultPlanName, normalizePlan, parsePlansFile, serializePlans } from "./plan-data.js?v=40";
-import { createPlanRepository } from "./plan-repository.js?v=14";
+import { createPlanRepository } from "./plan-repository.js?v=15";
 
 const formatDateTime = (value) => new Intl.DateTimeFormat("ja-JP", {
   year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false,
@@ -68,8 +68,7 @@ export async function sharePlan(plan, options = {}) {
   return "copied";
 }
 
-export function bindPlanManager(store, { applyState, showToast }) {
-  const repository = createPlanRepository();
+export function bindPlanManager(store, { applyState, showToast, repository = createPlanRepository() }) {
   const dialog = document.querySelector("#plans-dialog");
   const form = document.querySelector("#plan-form");
   const nameInput = document.querySelector("#plan-name");
@@ -265,4 +264,6 @@ export function bindPlanManager(store, { applyState, showToast }) {
       importInput.value = "";
     }
   });
+
+  return { refresh };
 }

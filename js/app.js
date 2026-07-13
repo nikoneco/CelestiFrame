@@ -10,7 +10,10 @@ import { calculateMilkyWay } from "./astronomy/milky-way-service.js?v=40";
 import { subjectGeometry } from "./geometry/bearing.js?v=7";
 import { signedAngleDifference } from "./geometry/angle.js";
 import { bindSearchControls } from "./search/search-controller.js?v=44";
-import { bindPlanManager } from "./plans/plan-manager.js?v=41";
+import { bindPlanManager } from "./plans/plan-manager.js?v=42";
+import { createPlanRepository } from "./plans/plan-repository.js?v=15";
+import { createPlanSyncCoordinator } from "./cloud/plan-sync.js?v=1";
+import { bindCloudAccount } from "./cloud/account-controller.js?v=1";
 import { parseSharedState } from "./plans/plan-data.js?v=40";
 import { calculateComposition, focalLengthForFill, SENSOR_PRESETS } from "./composition/composition.js?v=19";
 import { bindCompositionControls } from "./ui/composition-controls.js?v=24";
@@ -617,7 +620,19 @@ bindDateTimeControls(store);
 bindSearchControls(store, showToast);
 initializeMap();
 bindPlaceSearch(store, () => mapController, showToast, { geocoderEndpoint: runtimeConfig.nominatimEndpoint });
-bindPlanManager(store, { applyState: applyPlanState, showToast });
+const localPlanRepository = createPlanRepository();
+const planSyncCoordinator = createPlanSyncCoordinator(localPlanRepository);
+const planManager = bindPlanManager(store, {
+  applyState: applyPlanState,
+  showToast,
+  repository: planSyncCoordinator,
+});
+bindCloudAccount({
+  coordinator: planSyncCoordinator,
+  store,
+  showToast,
+  onPlansChanged: planManager.refresh,
+});
 bindShootingPlanner(store, () => mapController, showToast);
 bindTerrainProfile(store, () => mapController, showToast);
 bindFieldMode(store, showToast);

@@ -1,0 +1,134 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function owns(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    function validLocation(value) {
+      return value is map
+        && value.keys().hasOnly(['latitude', 'longitude'])
+        && value.latitude is number
+        && value.latitude >= -90
+        && value.latitude <= 90
+        && value.longitude is number
+        && value.longitude >= -180
+        && value.longitude <= 180;
+    }
+
+    function validSubject(value) {
+      return value is map
+        && value.keys().hasOnly([
+          'name', 'heightMeters', 'groundElevationMeters', 'groundElevationStatus',
+          'groundElevationSource', 'groundElevationMode', 'groundElevationKey', 'targetMode'
+        ])
+        && value.name is string
+        && value.name.size() <= 120
+        && (value.heightMeters == null || (value.heightMeters is number && value.heightMeters >= 0 && value.heightMeters <= 10000))
+        && value.groundElevationMeters is number
+        && value.groundElevationMeters >= -500
+        && value.groundElevationMeters <= 9000
+        && value.groundElevationStatus in ['ready', 'manual']
+        && value.groundElevationSource is string
+        && value.groundElevationSource.size() <= 120
+        && value.groundElevationMode in ['auto', 'manual']
+        && value.groundElevationKey is string
+        && value.groundElevationKey.size() <= 80
+        && value.targetMode in ['terrain', 'structure'];
+    }
+
+    function validComposition(value) {
+      return value is map
+        && value.keys().hasOnly([
+          'cameraElevationMeters', 'cameraHeightMeters', 'cameraElevationStatus',
+          'cameraElevationSource', 'cameraElevationMode', 'cameraElevationKey',
+          'focalLengthMm', 'sensorPreset', 'orientation'
+        ])
+        && value.cameraElevationMeters is number
+        && value.cameraElevationMeters >= -500
+        && value.cameraElevationMeters <= 9000
+        && value.cameraHeightMeters is number
+        && value.cameraHeightMeters >= 0
+        && value.cameraHeightMeters <= 100
+        && value.cameraElevationStatus in ['ready', 'manual']
+        && value.cameraElevationSource is string
+        && value.cameraElevationSource.size() <= 120
+        && value.cameraElevationMode in ['auto', 'manual']
+        && value.cameraElevationKey is string
+        && value.cameraElevationKey.size() <= 80
+        && value.focalLengthMm is number
+        && value.focalLengthMm >= 1
+        && value.focalLengthMm <= 2000
+        && value.sensorPreset in ['full-frame', 'aps-c', 'mft', 'one-inch']
+        && value.orientation in ['landscape', 'portrait'];
+    }
+
+    function validPlan(planId) {
+      let data = request.resource.data;
+      return data.keys().hasOnly([
+          'id', 'version', 'name', 'notes', 'favorite', 'createdAt', 'updatedAt', 'state'
+        ])
+        && data.id == planId
+        && data.id is string
+        && data.id.size() <= 128
+        && data.version is int
+        && data.version >= 1
+        && data.version <= 4
+        && data.name is string
+        && data.name.size() > 0
+        && data.name.size() <= 120
+        && data.notes is string
+        && data.notes.size() <= 2000
+        && data.favorite is bool
+        && data.createdAt is string
+        && data.createdAt.size() <= 40
+        && data.updatedAt is string
+        && data.updatedAt.size() <= 40
+        && data.state is map
+        && data.state.keys().hasOnly(['selectedDateTime', 'selectedBody', 'cameraLocation', 'subjectLocation', 'subject', 'composition', 'map'])
+        && data.state.selectedDateTime is string
+        && data.state.selectedDateTime.size() <= 40
+        && data.state.selectedBody in ['sun', 'moon', 'milkyway', 'all']
+        && validLocation(data.state.cameraLocation)
+        && (data.state.subjectLocation == null || validLocation(data.state.subjectLocation))
+        && validSubject(data.state.subject)
+        && validComposition(data.state.composition)
+        && data.state.map is map
+        && data.state.map.keys().hasOnly(['zoom', 'center'])
+        && data.state.map.zoom is number
+        && data.state.map.zoom >= 2
+        && data.state.map.zoom <= 19
+        && validLocation(data.state.map.center);
+    }
+
+    function validPreferences() {
+      let data = request.resource.data;
+      return data.keys().hasOnly(['settings', 'updatedAt'])
+        && data.updatedAt is string
+        && data.updatedAt.size() <= 40
+        && data.settings is map
+        && data.settings.keys().hasOnly(['theme', 'directionLineOrigin', 'timeStepMinutes', 'coordinateFormat'])
+        && data.settings.theme in ['system', 'light', 'dark', 'red']
+        && data.settings.directionLineOrigin in ['camera', 'subject', 'both']
+        && data.settings.timeStepMinutes is number
+        && data.settings.timeStepMinutes >= 1
+        && data.settings.timeStepMinutes <= 60
+        && data.settings.coordinateFormat in ['decimal', 'dms'];
+    }
+
+    match /users/{userId}/plans/{planId} {
+      allow read, delete: if owns(userId);
+      allow create, update: if owns(userId) && validPlan(planId);
+    }
+
+    match /users/{userId}/preferences/{documentId} {
+      allow read, delete: if owns(userId) && documentId == 'app';
+      allow create, update: if owns(userId) && documentId == 'app' && validPreferences();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

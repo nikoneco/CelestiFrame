@@ -114,6 +114,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 }
 .topbar-actions { display: flex; gap: 8px; }
 .icon-button {
+  position: relative;
   display: grid;
   place-items: center;
   align-content: center;
@@ -129,6 +130,10 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   cursor: pointer;
 }
 .icon-button small { color: var(--muted); font: 8px/1 var(--data); letter-spacing: .02em; }
+#plans-button[data-cloud-state]::after { content: ""; position: absolute; top: 5px; right: 5px; width: 6px; height: 6px; border: 1px solid var(--ink); border-radius: 50%; background: var(--muted); box-shadow: 0 0 0 2px color-mix(in srgb, var(--muted) 18%, transparent); }
+#plans-button[data-cloud-state="synced"]::after { background: var(--horizon); box-shadow: 0 0 7px var(--horizon); }
+#plans-button[data-cloud-state="syncing"]::after, #plans-button[data-cloud-state="pending"]::after { background: var(--solar); box-shadow: 0 0 7px var(--solar); }
+#plans-button[data-cloud-state="offline"]::after { background: var(--danger); box-shadow: 0 0 7px color-mix(in srgb, var(--danger) 65%, transparent); }
 
 main { min-height: 100dvh; }
 .map-stage { position: relative; height: 56dvh; min-height: 340px; background: #142335; transition: height 380ms cubic-bezier(0.22, 1, 0.36, 1); }
@@ -575,6 +580,34 @@ main { min-height: 100dvh; }
 .plans-panel { height: 100%; padding: 18px; overflow-y: auto; }
 .plans-header { position: sticky; z-index: 3; top: -18px; display: flex; align-items: center; justify-content: space-between; margin: -18px -18px 14px; padding: 18px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--panel) 94%, transparent); backdrop-filter: blur(14px); }
 .plans-header h2 { margin: 3px 0 0; font: 580 24px/1.1 var(--display); }
+.cloud-account { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; margin-bottom: 13px; padding: 11px 12px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--moon-blue) 34%, var(--line)); border-radius: 13px; background: linear-gradient(110deg, color-mix(in srgb, var(--panel-raised) 72%, transparent), color-mix(in srgb, var(--ink) 36%, transparent)); }
+.cloud-account::after { content: ""; position: absolute; right: 74px; top: -48px; width: 116px; height: 116px; border: 1px solid color-mix(in srgb, var(--moon-blue) 11%, transparent); border-radius: 50%; pointer-events: none; }
+.cloud-orbit { position: relative; display: grid; width: 42px; height: 42px; flex: 0 0 auto; place-items: center; border: 1px solid color-mix(in srgb, var(--moon-blue) 42%, var(--line)); border-radius: 50%; color: var(--moon-blue); }
+.cloud-orbit::before, .cloud-orbit::after { content: ""; position: absolute; border: 1px solid color-mix(in srgb, var(--moon-blue) 26%, transparent); border-radius: 50%; transform: rotate(-23.4deg); }
+.cloud-orbit::before { inset: 7px -4px; }
+.cloud-orbit::after { inset: -4px 7px; }
+.cloud-orbit i { position: absolute; z-index: 2; top: 2px; left: 6px; width: 5px; height: 5px; border-radius: 50%; background: var(--muted); box-shadow: 0 0 6px currentColor; }
+.cloud-orbit b { font: 12px var(--data); }
+.cloud-account[data-state="synced"] .cloud-orbit i { background: var(--horizon); color: var(--horizon); }
+.cloud-account[data-state="syncing"] .cloud-orbit i, .cloud-account[data-state="pending"] .cloud-orbit i { background: var(--solar); color: var(--solar); }
+.cloud-account[data-state="offline"] .cloud-orbit i { background: var(--danger); color: var(--danger); }
+.cloud-account[data-state="syncing"] .cloud-orbit { animation: cloud-orbit-turn 1.2s linear infinite; }
+@keyframes cloud-orbit-turn { to { transform: rotate(360deg); } }
+#cloud-account-avatar { position: relative; z-index: 1; width: 38px; height: 38px; border: 1px solid var(--line); border-radius: 50%; object-fit: cover; }
+.cloud-account:has(#cloud-account-avatar:not([hidden])) .cloud-orbit { display: none; }
+.cloud-account-copy { position: relative; z-index: 1; min-width: 0; }
+.cloud-account-copy strong, .cloud-account-copy small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cloud-account-copy strong { margin-top: 2px; font: 570 13px var(--display); }
+.cloud-account-copy small { margin-top: 3px; color: var(--muted); font-size: 8px; }
+.cloud-account-actions { position: relative; z-index: 1; display: flex; gap: 5px; }
+.cloud-account-actions button, .cloud-migration button { min-height: 36px; padding: 6px 9px; border: 1px solid var(--line); border-radius: 7px; background: color-mix(in srgb, var(--panel) 72%, transparent); color: var(--moon); font-size: 9px; font-weight: 700; cursor: pointer; }
+#cloud-sign-in, #cloud-migrate-merge { border-color: color-mix(in srgb, var(--horizon) 58%, var(--line)); color: var(--horizon); }
+#cloud-sign-out { color: var(--muted); }
+.cloud-account button:disabled { opacity: .52; cursor: wait; }
+.cloud-migration { position: relative; z-index: 2; grid-column: 1 / -1; padding-top: 10px; border-top: 1px solid var(--line); }
+.cloud-migration strong { font-size: 11px; }
+.cloud-migration p { margin: 4px 0 8px; color: var(--muted); font-size: 9px; line-height: 1.5; }
+.cloud-migration > div { display: flex; gap: 6px; }
 .plan-form { position: relative; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 9px; padding: 13px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--moon-blue) 44%, var(--line)); border-radius: 13px; background: linear-gradient(120deg, color-mix(in srgb, var(--panel-raised) 64%, transparent), transparent); }
 .plan-form::after { content: ""; position: absolute; right: -28px; top: -42px; width: 110px; height: 110px; border: 1px solid color-mix(in srgb, var(--moon-blue) 24%, transparent); border-radius: 50%; box-shadow: inset 0 0 0 18px color-mix(in srgb, var(--moon-blue) 4%, transparent), inset 0 0 0 36px color-mix(in srgb, var(--moon-blue) 4%, transparent); pointer-events: none; }
 .plan-form-heading { grid-column: 1 / -1; display: flex; align-items: baseline; justify-content: space-between; padding-right: 72px; }
@@ -698,6 +731,11 @@ main { min-height: 100dvh; }
   .plans-dialog { width: calc(100vw - 12px); height: calc(100dvh - 12px); border-radius: 16px; }
   .plans-panel { padding: 14px; }
   .plans-header { top: -14px; margin: -14px -14px 14px; padding: 14px; }
+  .cloud-account { grid-template-columns: auto minmax(0, 1fr); }
+  #cloud-account-avatar { grid-column: 1; grid-row: 1; }
+  .cloud-account-copy { grid-column: 2; }
+  .cloud-account-actions { grid-column: 1 / -1; }
+  .cloud-account-actions button { flex: 1; }
   .plan-form { grid-template-columns: 1fr; }
   .plan-form label, .plan-form-actions { grid-column: 1; }
   .plan-card { grid-template-columns: 1fr; }
@@ -750,5 +788,6 @@ main { min-height: 100dvh; }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .cloud-account[data-state="syncing"] .cloud-orbit { animation: none; }
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
 }
