@@ -1,6 +1,6 @@
 import { subjectGeometry } from "../geometry/bearing.js?v=7";
 import { signedAngleDifference } from "../geometry/angle.js";
-import { bindPolarAssist } from "./polar-assist.js?v=3";
+import { bindPolarAssist } from "./polar-assist.js?v=4";
 
 const formatDistance = (meters) => meters >= 1000 ? `${(meters / 1000).toFixed(2)} km` : `${Math.round(meters)} m`;
 

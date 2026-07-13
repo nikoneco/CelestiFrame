@@ -10,7 +10,7 @@
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./assets/icon.svg?v=43" type="image/svg+xml">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
-    <link rel="stylesheet" href="./css/app.css?v=50">
+    <link rel="stylesheet" href="./css/app.css?v=51">
   </head>
   <body>
     <div class="app-shell">
@@ -486,12 +486,13 @@
           <div><span>北天の極</span><strong id="polar-ncp">—</strong></div>
           <div><span>北極星</span><strong id="polar-position">—</strong></div>
           <div><span>北極星の空の配置</span><strong id="polar-clock">—</strong></div>
-          <div><span>カメラ姿勢</span><strong id="polar-pose">未校正</strong></div>
+          <div><span>真北補正</span><strong id="polar-declination">現在地を取得中</strong></div>
+          <div><span>カメラ姿勢</span><strong id="polar-pose">姿勢を取得中</strong></div>
         </div>
         <p class="polar-guidance" id="polar-guidance">開始後、北を向けて北天の極と北極星を探します。</p>
         <button class="field-primary" id="polar-start" type="button">カメラとセンサーを開始</button>
         <div class="polar-actions"><button id="polar-level" type="button">姿勢を再同期</button></div>
-        <p class="polar-note">端末の方位・傾きを一つの3D姿勢として処理し、画面回転も補正して天球を投影します。方位がずれる場合は金属製品から離れ、端末を8の字にゆっくり動かしてから再同期してください。映像は保存・送信しません。長時間露光の最終調整は、赤道儀の極軸望遠鏡や専用アプリで確認してください。</p>
+        <p class="polar-note">端末の方位・傾きを一つの3D姿勢として処理し、画面回転とカメラ映像の表示範囲を補正して天球を投影します。日本国内の磁気方位は国土地理院2020.0年値の近似式で真北へ補正します。方位がずれる場合は金属製品から離れ、端末を8の字にゆっくり動かしてから再同期してください。映像は保存・送信しません。長時間露光の最終調整は、赤道儀の極軸望遠鏡や専用アプリで確認してください。</p>
       </section>
     </dialog>
 
@@ -505,6 +506,6 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
     <script src="./js/vendor/suncalc.js"></script>
-    <script type="module" src="./js/app.js?v=51"></script>
+    <script type="module" src="./js/app.js?v=52"></script>
   </body>
 </html>

@@ -3,6 +3,7 @@ import { normalizeDegrees } from "../geometry/angle.js";
 const DEGREE = Math.PI / 180;
 const toRadians = (degrees) => degrees * DEGREE;
 const toDegrees = (radians) => radians / DEGREE;
+const nullableFiniteNumber = (value) => value == null || value === "" || !Number.isFinite(Number(value)) ? null : Number(value);
 
 const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 const cross = (a, b) => [
@@ -71,6 +72,27 @@ export function deviceOrientationQuaternion({ alpha, beta, gamma, screenAngle = 
   return multiplyQuaternions(multiplyQuaternions(multiplyQuaternions(zRotation, xRotation), yRotation), screenRotation);
 }
 
+export function resolveDeviceOrientation({ eventType = "deviceorientation", absolute = false, alpha, beta, gamma, compassHeading, magneticDeclinationDegrees = 0, screenAngle = 0 }) {
+  const parsedAlpha = nullableFiniteNumber(alpha);
+  const parsedBeta = nullableFiniteNumber(beta);
+  const parsedGamma = nullableFiniteNumber(gamma);
+  const parsedCompass = nullableFiniteNumber(compassHeading);
+  const parsedDeclination = nullableFiniteNumber(magneticDeclinationDegrees) ?? 0;
+  if (parsedBeta == null || parsedGamma == null || (parsedAlpha == null && parsedCompass == null)) return null;
+  const isAbsolute = eventType === "deviceorientationabsolute" || absolute === true;
+  const resolvedAlpha = isAbsolute && parsedAlpha != null
+    ? parsedAlpha
+    : parsedCompass != null
+      ? normalizeDegrees(360 - parsedCompass + parsedDeclination)
+      : parsedAlpha;
+  return {
+    quaternion: deviceOrientationQuaternion({ alpha: resolvedAlpha, beta: parsedBeta, gamma: parsedGamma, screenAngle }),
+    hasAbsoluteReference: isAbsolute || parsedCompass != null,
+    source: isAbsolute ? "absolute" : parsedCompass != null && Math.abs(parsedDeclination) > 0.01 ? "compass-corrected" : parsedCompass != null ? "compass" : "relative",
+    magneticDeclinationDegrees: parsedCompass != null ? parsedDeclination : null,
+  };
+}
+
 export function smoothQuaternion(previous, next, factor) {
   if (!previous) return normalizeQuaternion(next);
   const amount = Math.min(1, Math.max(0, factor));
@@ -111,6 +133,29 @@ export function celestialVector({ azimuth, altitude }) {
   const altitudeRadians = toRadians(altitude);
   const horizontal = Math.cos(altitudeRadians);
   return [horizontal * Math.sin(azimuthRadians), horizontal * Math.cos(azimuthRadians), Math.sin(altitudeRadians)];
+}
+
+export function effectiveCameraFov({ videoWidth, videoHeight, viewportWidth, viewportHeight, diagonalFov = 68 }) {
+  if (![videoWidth, videoHeight, viewportWidth, viewportHeight, diagonalFov].every((value) => Number.isFinite(value) && value > 0)) {
+    return { horizontalFov: 50, verticalFov: 38 };
+  }
+  const videoAspect = videoWidth / videoHeight;
+  const viewportAspect = viewportWidth / viewportHeight;
+  const diagonalTangent = Math.tan(toRadians(diagonalFov / 2));
+  const videoVerticalTangent = diagonalTangent / Math.sqrt(videoAspect ** 2 + 1);
+  const videoHorizontalTangent = videoVerticalTangent * videoAspect;
+  // object-fit: cover preserves the camera projection and crops whichever
+  // axis exceeds the viewport. Use the visible crop, not the full sensor FOV.
+  const visibleVerticalTangent = viewportAspect < videoAspect
+    ? videoVerticalTangent
+    : videoHorizontalTangent / viewportAspect;
+  const visibleHorizontalTangent = viewportAspect < videoAspect
+    ? videoVerticalTangent * viewportAspect
+    : videoHorizontalTangent;
+  return {
+    horizontalFov: toDegrees(2 * Math.atan(visibleHorizontalTangent)),
+    verticalFov: toDegrees(2 * Math.atan(visibleVerticalTangent)),
+  };
 }
 
 export function createCameraFrame({ azimuth, altitude, roll = 0 }) {
