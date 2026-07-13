@@ -9,7 +9,7 @@ import { calculateMoonData } from "./astronomy/moon-service.js?v=5";
 import { calculateMilkyWay } from "./astronomy/milky-way-service.js?v=40";
 import { subjectGeometry } from "./geometry/bearing.js?v=7";
 import { signedAngleDifference } from "./geometry/angle.js";
-import { bindSearchControls } from "./search/search-controller.js?v=32";
+import { bindSearchControls } from "./search/search-controller.js?v=41";
 import { bindPlanManager } from "./plans/plan-manager.js?v=40";
 import { parseSharedState } from "./plans/plan-data.js?v=40";
 import { calculateComposition, focalLengthForFill, SENSOR_PRESETS } from "./composition/composition.js?v=19";
@@ -18,7 +18,7 @@ import { bindElevationControls } from "./elevation/elevation-controller.js?v=24"
 import { apparentSolarAltitude, calculateTargetAltitude } from "./geometry/target-altitude.js?v=24";
 import { bindShootingPlanner } from "./planning/shooting-planner.js?v=40";
 import { bindTerrainProfile } from "./terrain/terrain-profile-controller.js?v=40";
-import { bindFieldMode } from "./field/field-mode.js?v=40";
+import { bindFieldMode } from "./field/field-mode.js?v=41";
 
 const runtimeConfig = await loadRuntimeConfig();
 const store = createStore();
@@ -283,7 +283,7 @@ function renderAlignment(state) {
   document.querySelector('[data-alignment-field="sun-difference"]').textContent = formatAlignmentDifference(sunDifference);
   document.querySelector('[data-alignment-field="moon-difference"]').textContent = formatAlignmentDifference(moonDifference);
   document.querySelector('[data-alignment-field="milkyway-difference"]').textContent = formatAlignmentDifference(milkyWayDifference);
-  document.querySelector("#alignment-search-button").hidden = state.selectedBody === "milkyway";
+  document.querySelector("#alignment-search-button").hidden = false;
   document.querySelector('[data-alignment-field="status"]').textContent = absoluteDifference <= 1
     ? "重なり候補"
     : absoluteDifference <= 5 ? "方向が近い" : "方位差あり";

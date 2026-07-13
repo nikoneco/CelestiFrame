@@ -67,3 +67,45 @@ test("diamond search matches both bearing and target altitude", () => {
   assert.equal(results[0].diamondState, "center");
   assert.ok(results[0].angularSeparation < 0.01);
 });
+
+test("Milky Way search matches the visible arch and filters daylight", () => {
+  const milkyWayCalculator = (date) => ({
+    azimuth: 180,
+    altitude: 35,
+    isAboveHorizon: true,
+    timestamp: date.getTime(),
+  });
+  const darkCalculator = {
+    getPosition: () => ({ azimuth: 0, altitude: -20 * Math.PI / 180 }),
+  };
+  const results = globalThis.CelestiSearchCore.searchCandidates({
+    ...baseInput,
+    target: "milkyway",
+    subjectBearing: 180,
+    startMinute: 1200,
+    endMinute: 1200,
+    stepMinutes: 10,
+    toleranceDegrees: 1,
+    minAltitude: 0,
+    maxAltitude: 90,
+    maxSunAltitude: -18,
+  }, darkCalculator, () => {}, milkyWayCalculator);
+  assert.equal(results.length, 1);
+  assert.equal(results[0].azimuth, 180);
+  assert.equal(results[0].altitude, 35);
+  assert.ok(results[0].sunAltitude <= -18);
+
+  const daylightResults = globalThis.CelestiSearchCore.searchCandidates({
+    ...baseInput,
+    target: "milkyway",
+    subjectBearing: 180,
+    startMinute: 720,
+    endMinute: 720,
+    stepMinutes: 10,
+    toleranceDegrees: 1,
+    minAltitude: 0,
+    maxAltitude: 90,
+    maxSunAltitude: -18,
+  }, { getPosition: () => ({ azimuth: 0, altitude: 10 * Math.PI / 180 }) }, () => {}, milkyWayCalculator);
+  assert.equal(daylightResults.length, 0);
+});

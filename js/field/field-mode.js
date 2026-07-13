@@ -12,22 +12,28 @@ export function bindFieldMode(store, showToast) {
   const differenceOutput = document.querySelector("#field-heading-difference");
   const distanceOutput = document.querySelector("#field-distance");
   const accuracyOutput = document.querySelector("#field-accuracy");
-  const targetName = document.querySelector("#field-target-name");
+  const cameraTargetButton = document.querySelector("#field-target-camera");
+  const subjectTargetButton = document.querySelector("#field-target-subject");
   let watchId = null;
   let currentLocation = null;
   let heading = null;
   let wakeLock = null;
+  let targetMode = "camera";
+
+  function renderTargetSwitch(state) {
+    const hasSubject = Boolean(state.subjectLocation);
+    if (!hasSubject && targetMode === "subject") targetMode = "camera";
+    cameraTargetButton.setAttribute("aria-pressed", String(targetMode === "camera"));
+    subjectTargetButton.setAttribute("aria-pressed", String(targetMode === "subject"));
+    subjectTargetButton.disabled = !hasSubject;
+    subjectTargetButton.title = hasSubject ? state.subject.name || "被写体" : "被写体地点を設定してください";
+  }
 
   function render() {
     const state = store.getState();
-    if (!currentLocation) {
-      targetName.textContent = "撮影地点";
-      return;
-    }
-    const cameraApproach = subjectGeometry(currentLocation, state.cameraLocation);
-    const useSubject = cameraApproach.distanceMeters <= 30 && state.subjectLocation;
-    const target = useSubject ? state.subjectLocation : state.cameraLocation;
-    targetName.textContent = useSubject ? state.subject.name || "被写体" : "撮影地点";
+    renderTargetSwitch(state);
+    if (!currentLocation) return;
+    const target = targetMode === "subject" ? state.subjectLocation : state.cameraLocation;
     const geometry = subjectGeometry(currentLocation, target);
     targetOutput.textContent = `${geometry.bearingDegrees.toFixed(1)}°`;
     distanceOutput.textContent = formatDistance(geometry.distanceMeters);
@@ -102,6 +108,15 @@ export function bindFieldMode(store, showToast) {
     dialog.showModal();
   });
   document.querySelector("#field-close").addEventListener("click", () => dialog.close());
+  cameraTargetButton.addEventListener("click", () => {
+    targetMode = "camera";
+    render();
+  });
+  subjectTargetButton.addEventListener("click", () => {
+    if (!store.getState().subjectLocation) return showToast("先に被写体地点を設定してください");
+    targetMode = "subject";
+    render();
+  });
   startButton.addEventListener("click", startSensors);
   wakeButton.addEventListener("click", toggleWakeLock);
   dialog.addEventListener("close", () => {

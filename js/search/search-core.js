@@ -38,7 +38,7 @@
     return count;
   }
 
-  function searchCandidates(input, calculator, onProgress = () => {}) {
+  function searchCandidates(input, calculator, onProgress = () => {}, milkyWayCalculator = null) {
     const startDate = parseLocalDate(input.startDate);
     const endDate = parseLocalDate(input.endDate);
     const samplesPerDay = Math.floor((input.endMinute - input.startMinute) / input.stepMinutes) + 1;
@@ -49,17 +49,24 @@
     let completed = 0;
 
     function evaluate(date, { refinement = false } = {}) {
-      const position = input.target === "moon"
+      const milkyWay = input.target === "milkyway"
+        ? milkyWayCalculator?.(date, input.cameraLocation)
+        : null;
+      if (input.target === "milkyway" && !milkyWay) throw new Error("天の川の計算を読み込めませんでした");
+      const position = milkyWay ? null : input.target === "moon"
         ? calculator.getMoonPosition(date, input.cameraLocation.latitude, input.cameraLocation.longitude)
         : calculator.getPosition(date, input.cameraLocation.latitude, input.cameraLocation.longitude);
-      const azimuth = normalizeDegrees(toDegrees(position.azimuth) + 180);
-      const geometricAltitude = toDegrees(position.altitude);
+      const azimuth = milkyWay ? milkyWay.azimuth : normalizeDegrees(toDegrees(position.azimuth) + 180);
+      const geometricAltitude = milkyWay ? milkyWay.altitude : toDegrees(position.altitude);
       const altitude = input.matchTargetAltitude && input.target === "sun"
         ? apparentSolarAltitude(geometricAltitude)
         : geometricAltitude;
       const difference = signedDifference(input.subjectBearing, azimuth);
       const illumination = input.target === "moon"
         ? calculator.getMoonIllumination(date).fraction * 100
+        : null;
+      const sunAltitude = input.target === "milkyway"
+        ? toDegrees(calculator.getPosition(date, input.cameraLocation.latitude, input.cameraLocation.longitude).altitude)
         : null;
       const diamond = input.matchTargetAltitude && input.target === "sun"
         ? diamondMetrics(difference, altitude, input.targetAltitude, input.verticalToleranceDegrees)
@@ -69,12 +76,14 @@
       if (Math.abs(difference) > input.toleranceDegrees + coarseBuffer) return null;
       if (altitude < input.minAltitude - coarseBuffer || altitude > input.maxAltitude + coarseBuffer) return null;
       if (illumination !== null && illumination < input.minIllumination) return null;
+      if (sunAltitude !== null && sunAltitude > (input.maxSunAltitude ?? 90)) return null;
       if (diamond && Math.abs(diamond.verticalDifference) > SUN_RADIUS + input.verticalToleranceDegrees + coarseBuffer) return null;
 
       if (!refinement && diamond && input.stepMinutes > 1) return { seed: true, timestamp: date.getTime() };
       const alignmentScore = Math.max(0, 1 - Math.abs(difference) / input.toleranceDegrees);
       const illuminationScore = illumination === null ? 0 : 15 * illumination / 100;
       const horizonScore = altitude >= 0 ? 10 : 0;
+      const darknessScore = sunAltitude === null ? 0 : 15 * Math.max(0, Math.min(1, (-sunAltitude - 6) / 12));
       const diamondScore = diamond
         ? Math.max(0, 1 - diamond.angularSeparation / (SUN_RADIUS + input.verticalToleranceDegrees))
         : 0;
@@ -85,13 +94,14 @@
         altitude,
         difference,
         illumination,
+        sunAltitude,
         targetAltitude: diamond ? input.targetAltitude : null,
         verticalDifference: diamond?.verticalDifference ?? null,
         angularSeparation: diamond?.angularSeparation ?? null,
         diamondState: diamond?.diamondState ?? null,
         score: Math.min(100, diamond
           ? 45 * alignmentScore + 45 * diamondScore + horizonScore
-          : 75 * alignmentScore + illuminationScore + horizonScore),
+          : 75 * alignmentScore + illuminationScore + darknessScore + horizonScore),
       };
     }
 

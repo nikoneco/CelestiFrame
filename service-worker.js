@@ -1,17 +1,17 @@
-const CACHE_VERSION = "celestiframe-shell-v40";
+const CACHE_VERSION = "celestiframe-shell-v41";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./offline.html",
   "./manifest.webmanifest",
   "./assets/icon.svg?v=22",
-  "./css/app.css?v=40",
-  "./js/app.js?v=40",
+  "./css/app.css?v=41",
+  "./js/app.js?v=41",
   "./js/config/runtime-config.js?v=32",
   "./js/state.js?v=40",
   "./js/astronomy/sun-service.js",
   "./js/astronomy/moon-service.js?v=5",
-  "./js/astronomy/milky-way-service.js?v=40",
+  "./js/astronomy/milky-way-service.js?v=41",
   "./js/geometry/angle.js",
   "./js/geometry/bearing.js?v=7",
   "./js/geometry/destination.js",
@@ -25,9 +25,9 @@ const APP_SHELL = [
   "./js/plans/plan-manager.js?v=40",
   "./js/plans/plan-repository.js?v=14",
   "./js/composition/composition.js?v=19",
-  "./js/search/search-controller.js?v=32",
-  "./js/search/search-core.js",
-  "./js/search/search-worker.js?v=24",
+  "./js/search/search-controller.js?v=41",
+  "./js/search/search-core.js?v=41",
+  "./js/search/search-worker.js?v=41",
   "./js/ui/datetime-controls.js?v=11",
   "./js/ui/composition-controls.js?v=24",
   "./js/ui/theme.js?v=6",
@@ -35,7 +35,7 @@ const APP_SHELL = [
   "./js/planning/shooting-planner.js?v=40",
   "./js/terrain/terrain-profile.js?v=40",
   "./js/terrain/terrain-profile-controller.js?v=40",
-  "./js/field/field-mode.js?v=40",
+  "./js/field/field-mode.js?v=41",
   "./js/vendor/suncalc.js",
 ];
 
