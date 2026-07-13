@@ -3,15 +3,15 @@ import { normalizeDegrees, signedAngleDifference } from "../geometry/angle.js";
 
 const formatDistance = (meters) => meters >= 1000 ? `${(meters / 1000).toFixed(2)} km` : `${Math.round(meters)} m`;
 
-export function targetRelativeCardinalOffsets(targetBearing, radius = 68) {
-  if (!Number.isFinite(Number(targetBearing)) || !Number.isFinite(Number(radius))) return [];
+export function headingRelativeCardinalOffsets(heading, radius = 68) {
+  if (!Number.isFinite(Number(heading)) || !Number.isFinite(Number(radius))) return [];
   return [
     { label: "N", bearing: 0 },
     { label: "E", bearing: 90 },
     { label: "S", bearing: 180 },
     { label: "W", bearing: 270 },
   ].map((cardinal) => {
-    const angle = normalizeDegrees(cardinal.bearing - Number(targetBearing));
+    const angle = normalizeDegrees(cardinal.bearing - Number(heading));
     const radians = angle * Math.PI / 180;
     const x = Math.sin(radians) * Number(radius);
     const y = -Math.cos(radians) * Number(radius);
@@ -57,8 +57,8 @@ export function bindFieldMode(store, showToast) {
     subjectTargetButton.title = hasSubject ? state.subject.name || "被写体" : "被写体地点を設定してください";
   }
 
-  function renderCardinalScale(targetBearing) {
-    const offsets = targetRelativeCardinalOffsets(targetBearing);
+  function renderCardinalScale(currentHeading) {
+    const offsets = headingRelativeCardinalOffsets(currentHeading);
     offsets.forEach(({ bearing, x, y }) => {
       const label = compassRing.querySelector(`[data-cardinal-bearing="${bearing}"]`);
       label.style.setProperty("--cardinal-x", `${x.toFixed(2)}px`);
@@ -73,16 +73,17 @@ export function bindFieldMode(store, showToast) {
     if (!currentLocation) return;
     const target = targetMode === "subject" ? state.subjectLocation : state.cameraLocation;
     const geometry = subjectGeometry(currentLocation, target);
-    renderCardinalScale(geometry.bearingDegrees);
     targetOutput.textContent = `${geometry.bearingDegrees.toFixed(1)}°`;
     distanceOutput.textContent = formatDistance(geometry.distanceMeters);
     if (heading == null) {
       headingOutput.textContent = "—";
       differenceOutput.textContent = "端末方位を取得できません";
+      compassRing.dataset.bearingReady = "false";
       compassRing.dataset.headingReady = "false";
       compassArrow.style.transform = "rotate(0deg)";
       return;
     }
+    renderCardinalScale(heading);
     compassRing.dataset.headingReady = "true";
     headingOutput.textContent = `${heading.toFixed(1)}°`;
     const difference = signedAngleDifference(geometry.bearingDegrees, heading);

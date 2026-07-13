@@ -18,7 +18,7 @@ import { bindElevationControls } from "./elevation/elevation-controller.js?v=24"
 import { apparentSolarAltitude, calculateTargetAltitude } from "./geometry/target-altitude.js?v=24";
 import { bindShootingPlanner } from "./planning/shooting-planner.js?v=40";
 import { bindTerrainProfile } from "./terrain/terrain-profile-controller.js?v=40";
-import { bindFieldMode } from "./field/field-mode.js?v=47";
+import { bindFieldMode } from "./field/field-mode.js?v=48";
 
 const runtimeConfig = await loadRuntimeConfig();
 const store = createStore();
