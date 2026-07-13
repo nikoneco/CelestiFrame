@@ -1,0 +1,4 @@
+{
+  "nominatimEndpoint": "https://nominatim.openstreetmap.org/search",
+  "tileUrl": "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+}

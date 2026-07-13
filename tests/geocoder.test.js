@@ -32,3 +32,10 @@ test("searchPlaces builds a restricted Japanese query and normalizes results", a
 test("searchPlaces rejects short queries before requesting", async () => {
   await assert.rejects(() => searchPlaces("東", { fetchImpl: () => assert.fail("fetch should not run") }), /2文字以上/);
 });
+
+test("searchPlaces rejects overlong queries before requesting", async () => {
+  await assert.rejects(
+    () => searchPlaces("東".repeat(121), { fetchImpl: () => assert.fail("fetch should not run") }),
+    /120文字以内/,
+  );
+});

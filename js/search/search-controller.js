@@ -60,11 +60,26 @@ function renderResults(results, container, onSelect) {
     const secondaryText = result.diamondState
       ? `${diamondLabels[result.diamondState]}・高度差 ${Math.abs(result.verticalDifference).toFixed(2)}°`
       : `高度 ${result.altitude.toFixed(1)}° ${illuminationText}`;
-    button.innerHTML = `
-      <span class="result-date"><b>${dateText}</b><strong>${timeText}</strong></span>
-      <span class="result-metrics"><b>方位差 ${formatDifference(result.difference)}</b><span>${secondaryText}</span></span>
-      <span class="result-score">${Math.round(result.score)}</span>
-    `;
+    const dateBlock = document.createElement("span");
+    dateBlock.className = "result-date";
+    const dateLabel = document.createElement("b");
+    dateLabel.textContent = dateText;
+    const timeLabel = document.createElement("strong");
+    timeLabel.textContent = timeText;
+    dateBlock.append(dateLabel, timeLabel);
+
+    const metrics = document.createElement("span");
+    metrics.className = "result-metrics";
+    const difference = document.createElement("b");
+    difference.textContent = `方位差 ${formatDifference(result.difference)}`;
+    const secondary = document.createElement("span");
+    secondary.textContent = secondaryText;
+    metrics.append(difference, secondary);
+
+    const score = document.createElement("span");
+    score.className = "result-score";
+    score.textContent = String(Math.round(result.score));
+    button.append(dateBlock, metrics, score);
     button.addEventListener("click", () => onSelect(result));
     container.append(button);
   });

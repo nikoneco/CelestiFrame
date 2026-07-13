@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildShareUrl, createPlan, parsePlansFile, parseSharedState, serializePlans, snapshotPlanState } from "../js/plans/plan-data.js";
+import { MAX_PLAN_IMPORT_COUNT, buildShareUrl, createPlan, parsePlansFile, parseSharedState, serializePlans, snapshotPlanState } from "../js/plans/plan-data.js";
 
 const state = {
   selectedDateTime: "2026-08-13T15:30:00.000Z",
@@ -49,4 +49,9 @@ test("share URL restores locations, date, body and subject name", () => {
 
 test("invalid share coordinates are rejected", () => {
   assert.throws(() => parseSharedState("https://example.com/?plan=1&lat=999&lng=0&at=2026-01-01T00:00:00Z"), /緯度/);
+});
+
+test("plan import rejects excessive item counts", () => {
+  const payload = JSON.stringify({ app: "CelestiFrame", plans: Array(MAX_PLAN_IMPORT_COUNT + 1).fill({}) });
+  assert.throws(() => parsePlansFile(payload), /1000件まで/);
 });

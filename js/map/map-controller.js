@@ -7,7 +7,15 @@ export function directionLineLocations(location, azimuth, origin, distanceMeters
   return [cameraCandidateDirection, location, celestialDirection];
 }
 
-export function createMapController({ elementId, initialLocation, initialZoom, onLocationChange, onSubjectLocationChange, onMapMove }) {
+export function createMapController({
+  elementId,
+  initialLocation,
+  initialZoom,
+  onLocationChange,
+  onSubjectLocationChange,
+  onMapMove,
+  tileUrl = "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+}) {
   if (!window.L) throw new Error("Leaflet is unavailable");
 
   const map = L.map(elementId, { zoomControl: false }).setView(
@@ -16,7 +24,7 @@ export function createMapController({ elementId, initialLocation, initialZoom, o
   );
 
   L.control.zoom({ position: "bottomright" }).addTo(map);
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  L.tileLayer(tileUrl, {
     maxZoom: 19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   }).addTo(map);

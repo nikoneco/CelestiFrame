@@ -1,4 +1,6 @@
 export const PLAN_FILE_VERSION = 3;
+export const MAX_PLAN_IMPORT_BYTES = 5 * 1024 * 1024;
+export const MAX_PLAN_IMPORT_COUNT = 1000;
 
 const BODIES = new Set(["sun", "moon", "both"]);
 
@@ -100,9 +102,11 @@ export function serializePlans(plans, now = new Date()) {
 }
 
 export function parsePlansFile(text) {
+  if (new Blob([text]).size > MAX_PLAN_IMPORT_BYTES) throw new Error("撮影計画ファイルは5MB以内にしてください");
   let data;
   try { data = JSON.parse(text); } catch { throw new Error("JSONファイルを読み取れません"); }
   if (data?.app !== "CelestiFrame" || !Array.isArray(data.plans)) throw new Error("CelestiFrameの撮影計画ファイルではありません");
+  if (data.plans.length > MAX_PLAN_IMPORT_COUNT) throw new Error(`撮影計画は一度に${MAX_PLAN_IMPORT_COUNT}件まで読み込めます`);
   return data.plans.map(normalizePlan);
 }
 

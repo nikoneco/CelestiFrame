@@ -1,20 +1,22 @@
 import { createStore } from "./state.js?v=27";
-import { createMapController } from "./map/map-controller.js?v=29";
-import { bindPlaceSearch } from "./map/place-search.js?v=14";
+import { createMapController } from "./map/map-controller.js?v=32";
+import { bindPlaceSearch } from "./map/place-search.js?v=32";
+import { loadRuntimeConfig } from "./config/runtime-config.js?v=32";
 import { bindDateTimeControls } from "./ui/datetime-controls.js?v=11";
 import { normalizeThemePreference, resolveThemePreference, themeColor } from "./ui/theme.js?v=6";
 import { calculateSunData } from "./astronomy/sun-service.js";
 import { calculateMoonData } from "./astronomy/moon-service.js?v=5";
 import { subjectGeometry } from "./geometry/bearing.js?v=7";
 import { signedAngleDifference } from "./geometry/angle.js";
-import { bindSearchControls } from "./search/search-controller.js?v=25";
-import { bindPlanManager } from "./plans/plan-manager.js?v=24";
-import { parseSharedState } from "./plans/plan-data.js?v=24";
+import { bindSearchControls } from "./search/search-controller.js?v=32";
+import { bindPlanManager } from "./plans/plan-manager.js?v=32";
+import { parseSharedState } from "./plans/plan-data.js?v=32";
 import { calculateComposition, focalLengthForFill, SENSOR_PRESETS } from "./composition/composition.js?v=19";
 import { bindCompositionControls } from "./ui/composition-controls.js?v=24";
 import { bindElevationControls } from "./elevation/elevation-controller.js?v=24";
 import { apparentSolarAltitude, calculateTargetAltitude } from "./geometry/target-altitude.js?v=24";
 
+const runtimeConfig = await loadRuntimeConfig();
 const store = createStore();
 const mapStage = document.querySelector(".map-stage");
 const appShell = document.querySelector(".app-shell");
@@ -366,6 +368,7 @@ function initializeMap() {
       onLocationChange: (cameraLocation) => store.setState((current) => ({ ...current, cameraLocation })),
       onSubjectLocationChange: setSubjectLocationFromMap,
       onMapMove: (map) => store.setState((current) => ({ ...current, map })),
+      tileUrl: runtimeConfig.tileUrl,
     });
   } catch (error) {
     console.error(error);
@@ -505,7 +508,7 @@ document.querySelector("#timezone-label").textContent = Intl.DateTimeFormat().re
 bindDateTimeControls(store);
 bindSearchControls(store, showToast);
 initializeMap();
-bindPlaceSearch(store, () => mapController, showToast);
+bindPlaceSearch(store, () => mapController, showToast, { geocoderEndpoint: runtimeConfig.nominatimEndpoint });
 bindPlanManager(store, { applyState: applyPlanState, showToast });
 renderSun(store.getState());
 renderMoon(store.getState());

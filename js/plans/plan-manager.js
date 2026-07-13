@@ -1,4 +1,4 @@
-import { buildShareUrl, createPlan, defaultPlanName, normalizePlan, parsePlansFile, serializePlans } from "./plan-data.js?v=24";
+import { MAX_PLAN_IMPORT_BYTES, buildShareUrl, createPlan, defaultPlanName, normalizePlan, parsePlansFile, serializePlans } from "./plan-data.js?v=32";
 import { createPlanRepository } from "./plan-repository.js?v=14";
 
 const formatDateTime = (value) => new Intl.DateTimeFormat("ja-JP", {
@@ -194,6 +194,7 @@ export function bindPlanManager(store, { applyState, showToast }) {
     const file = importInput.files?.[0];
     if (!file) return;
     try {
+      if (file.size > MAX_PLAN_IMPORT_BYTES) throw new Error("撮影計画ファイルは5MB以内にしてください");
       const plans = parsePlansFile(await file.text());
       for (const plan of plans) await repository.put(normalizePlan(plan));
       await refresh();

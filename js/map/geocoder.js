@@ -1,4 +1,5 @@
 export const DEFAULT_GEOCODER_ENDPOINT = "https://nominatim.openstreetmap.org/search";
+export const MAX_PLACE_QUERY_LENGTH = 120;
 
 export function normalizePlaceQuery(query) {
   return String(query ?? "").trim().replace(/\s+/g, " ");
@@ -11,6 +12,7 @@ export async function searchPlaces(query, {
 } = {}) {
   const normalized = normalizePlaceQuery(query);
   if (normalized.length < 2) throw new Error("地名や施設名を2文字以上入力してください");
+  if (normalized.length > MAX_PLACE_QUERY_LENGTH) throw new Error(`検索語は${MAX_PLACE_QUERY_LENGTH}文字以内で入力してください`);
 
   const url = new URL(endpoint);
   url.searchParams.set("q", normalized);

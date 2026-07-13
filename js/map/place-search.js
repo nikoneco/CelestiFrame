@@ -1,4 +1,4 @@
-import { normalizePlaceQuery, searchPlaces } from "./geocoder.js?v=12";
+import { MAX_PLACE_QUERY_LENGTH, normalizePlaceQuery, searchPlaces } from "./geocoder.js?v=32";
 
 const CACHE_KEY = "celestiframe:place-search:v1";
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -31,7 +31,7 @@ function resultLabel(displayName) {
   return displayName.split(",")[0].trim();
 }
 
-export function bindPlaceSearch(store, getMapController, showToast) {
+export function bindPlaceSearch(store, getMapController, showToast, { geocoderEndpoint } = {}) {
   const form = document.querySelector("#place-search-form");
   const input = document.querySelector("#place-search-input");
   const submit = document.querySelector("#place-search-submit");
@@ -103,6 +103,7 @@ export function bindPlaceSearch(store, getMapController, showToast) {
     event.preventDefault();
     const query = normalizePlaceQuery(input.value);
     if (query.length < 2) return showToast("地名や施設名を2文字以上入力してください");
+    if (query.length > MAX_PLACE_QUERY_LENGTH) return showToast(`検索語は${MAX_PLACE_QUERY_LENGTH}文字以内で入力してください`);
     const cached = getCachedResults(query);
     if (cached) return renderResults(cached, "cache");
 
@@ -114,7 +115,7 @@ export function bindPlaceSearch(store, getMapController, showToast) {
       const wait = Math.max(0, MIN_REQUEST_INTERVAL_MS - (Date.now() - lastRequestAt));
       if (wait) await new Promise((resolve) => setTimeout(resolve, wait));
       lastRequestAt = Date.now();
-      const results = await searchPlaces(query);
+      const results = await searchPlaces(query, { endpoint: geocoderEndpoint });
       saveCachedResults(query, results);
       renderResults(results, "network");
     } catch (error) {
