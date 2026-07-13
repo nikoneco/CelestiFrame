@@ -490,6 +490,7 @@ main { min-height: 100dvh; }
 .toast { position: fixed; z-index: 2000; left: 14px; right: 14px; bottom: max(18px, env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel-raised); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.42); font-size: 12px; }
 .toast-actions { display: flex; align-items: center; gap: 4px; }
 .toast button { flex: 0 0 auto; min-height: 36px; padding: 0 9px; border: 0; border-radius: 7px; background: transparent; color: var(--horizon); font-weight: 700; cursor: pointer; }
+.toast button:disabled { opacity: .55; cursor: wait; }
 #toast-dismiss { color: var(--muted); }
 
 .settings-dialog { width: min(420px, calc(100vw - 28px)); max-height: min(720px, calc(100dvh - 28px)); padding: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 18px; background: var(--panel); color: var(--text); box-shadow: 0 28px 80px rgba(0, 0, 0, 0.48); }

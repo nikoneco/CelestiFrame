@@ -390,6 +390,8 @@ function showToast(message) {
   const dismiss = document.querySelector("#toast-dismiss");
   document.querySelector("#toast-message").textContent = message;
   action.hidden = true;
+  action.disabled = false;
+  action.textContent = "更新";
   action.onclick = null;
   dismiss.textContent = "×";
   dismiss.setAttribute("aria-label", "通知を閉じる");
@@ -404,8 +406,14 @@ function showServiceWorkerUpdate(worker) {
   const action = document.querySelector("#toast-action");
   const dismiss = document.querySelector("#toast-dismiss");
   document.querySelector("#toast-message").textContent = "CelestiFrameの新しいバージョンがあります";
+  action.textContent = "更新";
+  action.disabled = false;
   action.hidden = false;
-  action.onclick = () => worker.postMessage({ type: "SKIP_WAITING" });
+  action.onclick = () => {
+    action.disabled = true;
+    action.textContent = "更新中…";
+    worker.postMessage({ type: "SKIP_WAITING" });
+  };
   dismiss.textContent = "後で";
   dismiss.setAttribute("aria-label", "更新を後で行う");
   toast.hidden = false;
@@ -617,6 +625,13 @@ if ("serviceWorker" in navigator) {
   window.addEventListener("load", async () => {
     try {
       const registration = await navigator.serviceWorker.register("./service-worker.js");
+      let lastUpdateCheck = 0;
+      const checkForUpdates = () => {
+        const now = Date.now();
+        if (now - lastUpdateCheck < 60_000) return;
+        lastUpdateCheck = now;
+        registration.update().catch((error) => console.warn("Service Worker update check failed", error));
+      };
       if (registration.waiting && navigator.serviceWorker.controller) {
         showServiceWorkerUpdate(registration.waiting);
       }
@@ -627,9 +642,21 @@ if ("serviceWorker" in navigator) {
           showServiceWorkerUpdate(worker);
         });
       });
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) checkForUpdates();
+      });
+      window.addEventListener("focus", checkForUpdates);
+      window.addEventListener("online", checkForUpdates);
+      window.setInterval(checkForUpdates, 30 * 60_000);
+      checkForUpdates();
     } catch (error) {
       console.warn("Service Worker registration failed", error);
     }
   });
-  navigator.serviceWorker.addEventListener("controllerchange", () => window.location.reload());
+  let reloadingForUpdate = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (reloadingForUpdate) return;
+    reloadingForUpdate = true;
+    window.location.reload();
+  });
 }
