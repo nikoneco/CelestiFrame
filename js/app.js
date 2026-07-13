@@ -2,14 +2,14 @@ import { createStore } from "./state.js?v=40";
 import { createMapController, focusCurrentLocation } from "./map/map-controller.js?v=41";
 import { bindPlaceSearch } from "./map/place-search.js?v=34";
 import { loadRuntimeConfig } from "./config/runtime-config.js?v=32";
-import { bindDateTimeControls } from "./ui/datetime-controls.js?v=11";
+import { bindDateTimeControls } from "./ui/datetime-controls.js?v=12";
 import { normalizeThemePreference, resolveThemePreference, themeColor } from "./ui/theme.js?v=6";
 import { calculateSunData } from "./astronomy/sun-service.js";
 import { calculateMoonData } from "./astronomy/moon-service.js?v=5";
 import { calculateMilkyWay } from "./astronomy/milky-way-service.js?v=40";
 import { subjectGeometry } from "./geometry/bearing.js?v=7";
 import { signedAngleDifference } from "./geometry/angle.js";
-import { bindSearchControls } from "./search/search-controller.js?v=42";
+import { bindSearchControls } from "./search/search-controller.js?v=43";
 import { bindPlanManager } from "./plans/plan-manager.js?v=40";
 import { parseSharedState } from "./plans/plan-data.js?v=40";
 import { calculateComposition, focalLengthForFill, SENSOR_PRESETS } from "./composition/composition.js?v=19";
@@ -18,7 +18,7 @@ import { bindElevationControls } from "./elevation/elevation-controller.js?v=24"
 import { apparentSolarAltitude, calculateTargetAltitude } from "./geometry/target-altitude.js?v=24";
 import { bindShootingPlanner } from "./planning/shooting-planner.js?v=40";
 import { bindTerrainProfile } from "./terrain/terrain-profile-controller.js?v=40";
-import { bindFieldMode } from "./field/field-mode.js?v=45";
+import { bindFieldMode } from "./field/field-mode.js?v=46";
 
 const runtimeConfig = await loadRuntimeConfig();
 const store = createStore();

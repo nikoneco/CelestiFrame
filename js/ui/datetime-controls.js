@@ -23,6 +23,12 @@ export function dateWithWrappedMinutes(currentDate, targetMinutes) {
   return next;
 }
 
+export function dateWithOffsetDays(currentDate, offsetDays) {
+  const next = new Date(currentDate);
+  next.setDate(next.getDate() + Number(offsetDays));
+  return next;
+}
+
 export function bindDateTimeControls(store) {
   const dateInput = document.querySelector("#date-input");
   const timeInput = document.querySelector("#time-input");
@@ -62,6 +68,15 @@ export function bindDateTimeControls(store) {
   dateInput.addEventListener("change", () => commitInputs(false));
   timeInput.addEventListener("change", () => commitInputs(true));
   document.querySelector("#now-button").addEventListener("click", () => setDateTime(new Date()));
+
+  document.querySelectorAll("[data-days]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const current = new Date(store.getState().selectedDateTime);
+      const next = dateWithOffsetDays(current, button.dataset.days);
+      announceDateShift(current, next);
+      setDateTime(next);
+    });
+  });
 
   document.querySelectorAll("[data-minutes]").forEach((button) => {
     button.addEventListener("click", () => {

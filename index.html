@@ -10,7 +10,7 @@
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./assets/icon.svg?v=43" type="image/svg+xml">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
-    <link rel="stylesheet" href="./css/app.css?v=54">
+    <link rel="stylesheet" href="./css/app.css?v=55">
   </head>
   <body>
     <div class="app-shell">
@@ -116,6 +116,11 @@
                 <strong id="date-summary">—</strong>
               </div>
               <span class="timezone" id="timezone-label">LOCAL</span>
+            </div>
+
+            <div class="date-stepper" role="group" aria-label="撮影日を前後に移動">
+              <button type="button" data-days="-1" aria-label="前日に移動"><span aria-hidden="true">‹</span> 前日</button>
+              <button type="button" data-days="1" aria-label="翌日に移動">翌日 <span aria-hidden="true">›</span></button>
             </div>
 
             <div class="datetime-inputs">
@@ -308,7 +313,7 @@
             <p class="composition-note">標高は国土地理院DEMによる推定値です。建物・樹木・積雪・実際の大気状態は反映しません。</p>
           </article>
 
-          <p class="phase-note">Ver 1.1.1 - CelestiFrame by NikoNeco</p>
+          <p class="phase-note">Ver 1.1.2 - CelestiFrame by NikoNeco</p>
           </div>
         </section>
       </main>
@@ -431,6 +436,11 @@
               <div class="search-angle-range">
                 <label><span>最低仰角</span><span class="input-unit"><input type="number" name="minAltitude" value="0" min="-90" max="90" step="1"><i>°</i></span></label>
                 <label><span>最高仰角</span><span class="input-unit"><input type="number" name="maxAltitude" value="45" min="-90" max="90" step="1"><i>°</i></span></label>
+                <aside class="search-altitude-reference" aria-label="現在の照準仰角">
+                  <span><b>SIGHTLINE REFERENCE</b>撮影地点 → 被写体地点</span>
+                  <output id="search-target-altitude-reference">—</output>
+                  <small id="search-target-altitude-note">被写体地点を設定すると表示します</small>
+                </aside>
               </div>
             </div>
             <label class="diamond-toggle" id="diamond-toggle">
@@ -472,7 +482,14 @@
           </div>
         </div>
         <div class="field-compass" aria-label="目標方向">
-          <div class="field-compass-ring"><span>目標</span><i id="field-compass-arrow"></i></div>
+          <div class="field-compass-ring" id="field-compass-ring">
+            <span class="field-target-axis">目標</span>
+            <b class="field-cardinal field-cardinal-n" data-cardinal-bearing="0" aria-hidden="true">N</b>
+            <b class="field-cardinal" data-cardinal-bearing="90" aria-hidden="true">E</b>
+            <b class="field-cardinal" data-cardinal-bearing="180" aria-hidden="true">S</b>
+            <b class="field-cardinal" data-cardinal-bearing="270" aria-hidden="true">W</b>
+            <i id="field-compass-arrow" aria-hidden="true"></i>
+          </div>
           <strong id="field-heading-difference">現在地と端末方位を開始してください</strong>
         </div>
         <div class="field-metrics">
@@ -482,35 +499,8 @@
           <div><span>GPS精度</span><strong id="field-accuracy">—</strong></div>
         </div>
         <button class="field-primary" id="field-start" type="button">現在地と方位を開始</button>
-        <button class="field-polar-assist" id="field-polar-assist" type="button">✦ 北極星で極軸を合わせる</button>
         <button class="field-secondary" id="field-wake" type="button" aria-pressed="false">画面点灯を維持</button>
         <p>端末の磁気センサーは周囲の金属やケースの影響を受けます。方位は現地確認用の目安です。</p>
-      </section>
-    </dialog>
-
-    <dialog class="polar-dialog" id="polar-assist-dialog" aria-labelledby="polar-title">
-      <section class="polar-panel">
-        <header><div><span class="eyebrow">POLAR ALIGNMENT</span><h2 id="polar-title">極軸アシスト</h2></div><button id="polar-close" type="button" aria-label="極軸アシストを閉じる">×</button></header>
-        <div class="polar-view" aria-label="北極星を探すカメラ案内">
-          <video id="polar-camera" autoplay muted playsinline></video>
-          <div class="polar-horizon" aria-hidden="true"><span>地平線</span></div>
-          <div class="polar-marker polar-marker-ncp" id="polar-ncp-marker" hidden><i>+</i><span>北天の極</span></div>
-          <div class="polar-marker polar-marker-polaris" id="polar-polaris-marker" hidden><i>✦</i><span>北極星</span></div>
-          <div class="polar-view-note" id="polar-tracking-state" data-quality="pending">3D姿勢を同期中</div>
-        </div>
-        <p class="polar-state" id="polar-state">開始すると端末内でカメラを表示します</p>
-        <div class="polar-metrics">
-          <div><span>カメラ方位</span><strong id="polar-heading">—</strong></div>
-          <div><span>北天の極</span><strong id="polar-ncp">—</strong></div>
-          <div><span>北極星</span><strong id="polar-position">—</strong></div>
-          <div><span>北極星の空の配置</span><strong id="polar-clock">—</strong></div>
-          <div><span>真北補正</span><strong id="polar-declination">現在地を取得中</strong></div>
-          <div><span>カメラ姿勢</span><strong id="polar-pose">姿勢を取得中</strong></div>
-        </div>
-        <p class="polar-guidance" id="polar-guidance">開始後、北を向けて北天の極と北極星を探します。</p>
-        <button class="field-primary" id="polar-start" type="button">カメラとセンサーを開始</button>
-        <div class="polar-actions"><button id="polar-level" type="button">姿勢を再同期</button></div>
-        <p class="polar-note">端末の方位・傾きを一つの3D姿勢として処理し、画面回転とカメラ映像の表示範囲を補正して天球を投影します。日本国内の磁気方位は国土地理院2020.0年値の近似式で真北へ補正します。方位がずれる場合は金属製品から離れ、端末を8の字にゆっくり動かしてから再同期してください。映像は保存・送信しません。長時間露光の最終調整は、赤道儀の極軸望遠鏡や専用アプリで確認してください。</p>
       </section>
     </dialog>
 
@@ -524,6 +514,6 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
     <script src="./js/vendor/suncalc.js"></script>
-    <script type="module" src="./js/app.js?v=54"></script>
+    <script type="module" src="./js/app.js?v=55"></script>
   </body>
 </html>

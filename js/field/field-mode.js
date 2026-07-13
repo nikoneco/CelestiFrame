@@ -1,8 +1,33 @@
 import { subjectGeometry } from "../geometry/bearing.js?v=7";
-import { signedAngleDifference } from "../geometry/angle.js";
-import { bindPolarAssist } from "./polar-assist.js?v=4";
+import { normalizeDegrees, signedAngleDifference } from "../geometry/angle.js";
 
 const formatDistance = (meters) => meters >= 1000 ? `${(meters / 1000).toFixed(2)} km` : `${Math.round(meters)} m`;
+
+export function targetRelativeCardinalOffsets(targetBearing, radius = 68) {
+  if (!Number.isFinite(Number(targetBearing)) || !Number.isFinite(Number(radius))) return [];
+  return [
+    { label: "N", bearing: 0 },
+    { label: "E", bearing: 90 },
+    { label: "S", bearing: 180 },
+    { label: "W", bearing: 270 },
+  ].map((cardinal) => {
+    const angle = normalizeDegrees(cardinal.bearing - Number(targetBearing));
+    const radians = angle * Math.PI / 180;
+    const x = Math.sin(radians) * Number(radius);
+    const y = -Math.cos(radians) * Number(radius);
+    return {
+      ...cardinal,
+      angle,
+      x: Math.abs(x) < 1e-10 ? 0 : x,
+      y: Math.abs(y) < 1e-10 ? 0 : y,
+    };
+  });
+}
+
+export function targetRelativeHeadingOffset(targetBearing, heading) {
+  if (!Number.isFinite(Number(targetBearing)) || !Number.isFinite(Number(heading))) return null;
+  return signedAngleDifference(Number(targetBearing), Number(heading));
+}
 
 export function bindFieldMode(store, showToast) {
   const dialog = document.querySelector("#field-dialog");
@@ -15,6 +40,8 @@ export function bindFieldMode(store, showToast) {
   const accuracyOutput = document.querySelector("#field-accuracy");
   const cameraTargetButton = document.querySelector("#field-target-camera");
   const subjectTargetButton = document.querySelector("#field-target-subject");
+  const compassRing = document.querySelector("#field-compass-ring");
+  const compassArrow = document.querySelector("#field-compass-arrow");
   let watchId = null;
   let currentLocation = null;
   let heading = null;
@@ -30,25 +57,39 @@ export function bindFieldMode(store, showToast) {
     subjectTargetButton.title = hasSubject ? state.subject.name || "被写体" : "被写体地点を設定してください";
   }
 
+  function renderCardinalScale(targetBearing) {
+    const offsets = targetRelativeCardinalOffsets(targetBearing);
+    offsets.forEach(({ bearing, x, y }) => {
+      const label = compassRing.querySelector(`[data-cardinal-bearing="${bearing}"]`);
+      label.style.setProperty("--cardinal-x", `${x.toFixed(2)}px`);
+      label.style.setProperty("--cardinal-y", `${y.toFixed(2)}px`);
+    });
+    compassRing.dataset.bearingReady = "true";
+  }
+
   function render() {
     const state = store.getState();
     renderTargetSwitch(state);
     if (!currentLocation) return;
     const target = targetMode === "subject" ? state.subjectLocation : state.cameraLocation;
     const geometry = subjectGeometry(currentLocation, target);
+    renderCardinalScale(geometry.bearingDegrees);
     targetOutput.textContent = `${geometry.bearingDegrees.toFixed(1)}°`;
     distanceOutput.textContent = formatDistance(geometry.distanceMeters);
     if (heading == null) {
       headingOutput.textContent = "—";
       differenceOutput.textContent = "端末方位を取得できません";
+      compassRing.dataset.headingReady = "false";
+      compassArrow.style.transform = "rotate(0deg)";
       return;
     }
+    compassRing.dataset.headingReady = "true";
     headingOutput.textContent = `${heading.toFixed(1)}°`;
-    const difference = signedAngleDifference(geometry.bearingDegrees, heading);
+    const difference = targetRelativeHeadingOffset(geometry.bearingDegrees, heading);
     differenceOutput.textContent = Math.abs(difference) < 2
       ? "ほぼ正面です"
       : `${Math.abs(difference).toFixed(1)}° ${difference > 0 ? "左へ" : "右へ"}`;
-    document.querySelector("#field-compass-arrow").style.transform = `rotate(${signedAngleDifference(heading, geometry.bearingDegrees)}deg)`;
+    compassArrow.style.transform = `rotate(${difference}deg)`;
   }
 
   function handleOrientation(event) {
@@ -131,5 +172,4 @@ export function bindFieldMode(store, showToast) {
     wakeButton.setAttribute("aria-pressed", "false");
   });
   store.subscribe(() => dialog.open && render());
-  bindPolarAssist(showToast);
 }

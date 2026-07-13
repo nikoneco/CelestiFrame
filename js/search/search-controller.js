@@ -111,6 +111,8 @@ export function bindSearchControls(store, showToast) {
   const diamondToggle = document.querySelector("#diamond-toggle");
   const diamondTolerance = document.querySelector("#diamond-tolerance");
   const diamondSummary = document.querySelector("#diamond-target-summary");
+  const targetAltitudeReference = document.querySelector("#search-target-altitude-reference");
+  const targetAltitudeNote = document.querySelector("#search-target-altitude-note");
   const moonIlluminationCondition = document.querySelector("#moon-illumination-condition");
   const milkyWayDarknessCondition = document.querySelector("#milkyway-darkness-condition");
   const oneYearButton = document.querySelector("#search-end-one-year");
@@ -160,7 +162,32 @@ export function bindSearchControls(store, showToast) {
     });
   }
 
+  function updateTargetAltitudeReference() {
+    const state = store.getState();
+    if (!state.subjectLocation) {
+      targetAltitudeReference.value = "—";
+      targetAltitudeReference.textContent = "—";
+      targetAltitudeNote.textContent = "被写体地点を設定すると表示します";
+      return;
+    }
+    try {
+      const target = targetAltitudeForState(state);
+      const value = `${target.altitudeDegrees.toFixed(2)}°`;
+      targetAltitudeReference.value = value;
+      targetAltitudeReference.textContent = value;
+      const elevationsReady = [state.composition.cameraElevationStatus, state.subject.groundElevationStatus]
+        .every((status) => status === "ready" || status === "manual");
+      const targetLabel = state.subject.targetMode === "terrain" ? "地形点" : "建造物上端";
+      targetAltitudeNote.textContent = elevationsReady ? `${targetLabel}への現在値` : `${targetLabel}への暫定値・標高取得中`;
+    } catch {
+      targetAltitudeReference.value = "—";
+      targetAltitudeReference.textContent = "—";
+      targetAltitudeNote.textContent = "標高と高さを確認してください";
+    }
+  }
+
   function updateDiamondControls() {
+    updateTargetAltitudeReference();
     const target = form.elements.target.value;
     const isSun = target === "sun";
     diamondToggle.hidden = !isSun;
@@ -245,6 +272,10 @@ export function bindSearchControls(store, showToast) {
     stopWorker();
     submitButton.disabled = false;
     cancelButton.hidden = true;
+  });
+
+  store.subscribe(() => {
+    if (dialog.open) updateTargetAltitudeReference();
   });
 
   cancelButton.addEventListener("click", () => {
