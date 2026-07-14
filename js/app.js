@@ -1,5 +1,5 @@
 import { createStore } from "./state.js?v=40";
-import { createMapController, focusCurrentLocation } from "./map/map-controller.js?v=44";
+import { createMapController, focusCurrentLocation } from "./map/map-controller.js?v=46";
 import { bindPlaceSearch } from "./map/place-search.js?v=34";
 import { loadRuntimeConfig } from "./config/runtime-config.js?v=33";
 import { bindDateTimeControls } from "./ui/datetime-controls.js?v=12";
@@ -22,7 +22,7 @@ import { apparentSolarAltitude, calculateTargetAltitude } from "./geometry/targe
 import { bindShootingPlanner } from "./planning/shooting-planner.js?v=40";
 import { bindTerrainProfile } from "./terrain/terrain-profile-controller.js?v=40";
 import { bindFieldMode } from "./field/field-mode.js?v=48";
-import { bindWeatherOverlay } from "./weather/weather-controller.js?v=6";
+import { bindWeatherOverlay } from "./weather/weather-controller.js?v=7";
 
 const runtimeConfig = await loadRuntimeConfig();
 const store = createStore();

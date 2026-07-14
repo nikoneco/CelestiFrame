@@ -20,6 +20,7 @@ export function bindWeatherOverlay(store, getMapController, { endpoint, fetchImp
   const status = document.querySelector("#weather-status");
   const selectedTime = document.querySelector("#weather-time");
   const source = document.querySelector("#weather-source");
+  const metrics = document.querySelector(".weather-metrics");
   const primaryLabel = document.querySelector("#weather-primary-label");
   const secondaryLabel = document.querySelector("#weather-secondary-label");
   const total = document.querySelector("#weather-total");
@@ -48,8 +49,10 @@ export function bindWeatherOverlay(store, getMapController, { endpoint, fetchImp
     const mode = activeMode && CLOUD_MODES[activeMode];
     const primaryMode = mode || CLOUD_MODES.total;
     const secondaryMode = activeMode && activeMode !== "total" ? CLOUD_MODES.total : CLOUD_MODES.low;
+    const isTotalMode = primaryMode === CLOUD_MODES.total;
     root.classList.toggle("is-active", Boolean(mode && isLayerEnabled));
     root.classList.toggle("is-panel-open", !panel.hidden);
+    metrics.classList.toggle("is-total", isTotalMode);
     toggle.setAttribute("aria-expanded", String(!panel.hidden));
     layerToggle.setAttribute("aria-checked", String(Boolean(mode && isLayerEnabled)));
     toggle.querySelector("strong").textContent = mode && isLayerEnabled ? `${mode.label} ${latestForecast ? formatPercent(latestForecast[activeMode]) : "…"}` : "予報雲";
@@ -101,7 +104,7 @@ export function bindWeatherOverlay(store, getMapController, { endpoint, fetchImp
     const hour = toForecastHour(state.selectedDateTime);
     const bounds = mapController.getVisibleBounds();
     const key = `${hour}|${mapKey(bounds)}`;
-    const grid = createForecastGrid(bounds);
+    const grid = createForecastGrid(bounds, { rows: 7, columns: 7 });
     const locations = [state.cameraLocation, ...grid];
     selectedTime.textContent = `${formatSelectedTime(state.selectedDateTime)} の予報`;
     source.textContent = "Open-Meteo・予報値";
