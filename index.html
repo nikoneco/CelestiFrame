@@ -10,7 +10,7 @@
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./assets/icon.svg?v=43" type="image/svg+xml">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
-    <link rel="stylesheet" href="./css/app.css?v=59">
+    <link rel="stylesheet" href="./css/app.css?v=62">
   </head>
   <body>
     <div class="app-shell">
@@ -71,6 +71,40 @@
               <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">検索データ © OpenStreetMap contributors</a>
             </section>
           </div>
+
+          <aside class="weather-overlay" id="weather-overlay" aria-label="予報雲レイヤー">
+            <button class="weather-toggle" id="weather-toggle" type="button" aria-pressed="false" aria-expanded="false" aria-controls="weather-panel">
+              <span aria-hidden="true">☁</span><strong>予報雲</strong><i aria-hidden="true">⌄</i>
+            </button>
+            <section class="weather-panel" id="weather-panel" hidden aria-live="polite">
+              <header>
+                <div><span class="eyebrow">SKY VEIL</span><strong>予報雲</strong></div>
+                <button id="weather-panel-close" type="button" aria-label="予報雲パネルを閉じる">×</button>
+              </header>
+              <p class="weather-time" id="weather-time">撮影日時の予報</p>
+              <div class="weather-modes" role="group" aria-label="表示する雲の高さ">
+                <button type="button" data-weather-mode="total" aria-pressed="false">総雲</button>
+                <button type="button" data-weather-mode="low" aria-pressed="false">低層</button>
+                <button type="button" data-weather-mode="mid" aria-pressed="false">中層</button>
+                <button type="button" data-weather-mode="high" aria-pressed="false">高層</button>
+              </div>
+              <div class="weather-metrics">
+                <div><span>総雲量</span><output id="weather-total">—</output></div>
+                <div><span>低層雲</span><output id="weather-low">—</output></div>
+                <div><span>視程</span><output id="weather-visibility">—</output></div>
+                <div><span>風 / 瞬間風速</span><output id="weather-wind">—</output><small>km/h</small></div>
+              </div>
+              <footer>
+                <span id="weather-precipitation">降水 —</span>
+                <span id="weather-status">雲レイヤーを表示していません</span>
+              </footer>
+              <div class="weather-actions">
+                <button id="weather-clear" type="button">地図の雲を消す</button>
+                <button id="weather-refresh" type="button">再取得</button>
+              </div>
+              <a class="weather-source" id="weather-source" href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo・予報値</a>
+            </section>
+          </aside>
 
           <div class="map-actions">
             <button class="set-location-button" id="set-location-button" type="button">
@@ -313,7 +347,7 @@
             <p class="composition-note">標高は国土地理院DEMによる推定値です。建物・樹木・積雪・実際の大気状態は反映しません。</p>
           </article>
 
-          <p class="phase-note">Ver 1.2.1 - CelestiFrame by NikoNeco</p>
+          <p class="phase-note">Ver 1.3.0 - CelestiFrame by NikoNeco</p>
           </div>
         </section>
       </main>
@@ -570,6 +604,6 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
     <script src="./js/vendor/suncalc.js"></script>
-    <script type="module" src="./js/app.js?v=61"></script>
+    <script type="module" src="./js/app.js?v=64"></script>
   </body>
 </html>

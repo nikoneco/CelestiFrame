@@ -41,6 +41,9 @@ export function createMapController({
     maxZoom: 19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   }).addTo(map);
+  const weatherPane = map.createPane("weather-pane");
+  weatherPane.style.zIndex = "350";
+  weatherPane.style.pointerEvents = "none";
 
   const markerIcon = L.divIcon({
     className: "",
@@ -58,6 +61,7 @@ export function createMapController({
   let moonDirectionLines = [];
   let milkyWayDirectionLines = [];
   let shootingCandidateLayers = [];
+  let cloudOverlayLayers = [];
   let terrainObstructionMarker = null;
   let subjectMarker = null;
   let subjectLine = null;
@@ -85,6 +89,37 @@ export function createMapController({
     map,
     focusLocation(location, zoom = 16) {
       map.flyTo([location.latitude, location.longitude], zoom);
+    },
+    getVisibleBounds() {
+      const bounds = map.getBounds();
+      return {
+        north: bounds.getNorth(),
+        south: bounds.getSouth(),
+        east: bounds.getEast(),
+        west: bounds.getWest(),
+      };
+    },
+    setCloudOverlay(cells, { color = "#dceaff" } = {}) {
+      cloudOverlayLayers.forEach((layer) => layer.remove());
+      cloudOverlayLayers = cells.map((cell) => {
+        const density = Math.max(0, Math.min(100, Number(cell?.value) || 0));
+        return L.rectangle(
+          [[cell.bounds.south, cell.bounds.west], [cell.bounds.north, cell.bounds.east]],
+          {
+            pane: "weather-pane",
+            stroke: false,
+            fill: true,
+            fillColor: color,
+            fillOpacity: 0.035 + density / 100 * 0.5,
+            interactive: false,
+            className: "forecast-cloud-cell",
+          },
+        ).addTo(map);
+      });
+    },
+    clearCloudOverlay() {
+      cloudOverlayLayers.forEach((layer) => layer.remove());
+      cloudOverlayLayers = [];
     },
     setLocation(location, { pan = true } = {}) {
       marker.setLatLng([location.latitude, location.longitude]);

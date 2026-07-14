@@ -1,4 +1,5 @@
 {
   "nominatimEndpoint": "https://nominatim.openstreetmap.org/search",
-  "tileUrl": "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+  "tileUrl": "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+  "weatherForecastEndpoint": "https://api.open-meteo.com/v1/forecast"
 }

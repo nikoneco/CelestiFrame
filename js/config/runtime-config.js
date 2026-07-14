@@ -1,6 +1,7 @@
 export const DEFAULT_RUNTIME_CONFIG = Object.freeze({
   nominatimEndpoint: "https://nominatim.openstreetmap.org/search",
   tileUrl: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+  weatherForecastEndpoint: "https://api.open-meteo.com/v1/forecast",
 });
 
 function validateHttpsUrl(value, label) {
@@ -17,10 +18,11 @@ export function normalizeRuntimeConfig(value) {
   }
   const nominatimEndpoint = validateHttpsUrl(value.nominatimEndpoint, "Nominatim endpoint");
   const tileUrl = validateHttpsUrl(value.tileUrl, "Tile URL");
+  const weatherForecastEndpoint = validateHttpsUrl(value.weatherForecastEndpoint, "Weather forecast endpoint");
   if (!["{z}", "{x}", "{y}"].every((token) => tileUrl.includes(token))) {
     throw new Error("Tile URLには{z}、{x}、{y}が必要です");
   }
-  return Object.freeze({ nominatimEndpoint, tileUrl });
+  return Object.freeze({ nominatimEndpoint, tileUrl, weatherForecastEndpoint });
 }
 
 export async function loadRuntimeConfig({
