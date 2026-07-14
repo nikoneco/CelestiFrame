@@ -1,5 +1,5 @@
 import { createStore } from "./state.js?v=41";
-import { createMapController, focusCurrentLocation } from "./map/map-controller.js?v=47";
+import { createMapController, focusCurrentLocation } from "./map/map-controller.js?v=48";
 import { bindPlaceSearch } from "./map/place-search.js?v=34";
 import { loadRuntimeConfig } from "./config/runtime-config.js?v=33";
 import { bindDateTimeControls } from "./ui/datetime-controls.js?v=12";

@@ -36,6 +36,7 @@ export function createMapController({
     initialZoom,
   );
 
+  map.attributionControl.setPosition("bottomleft");
   L.control.zoom({ position: "bottomright" }).addTo(map);
   L.tileLayer(tileUrl, {
     maxZoom: 19,
