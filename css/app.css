@@ -260,7 +260,6 @@ main { min-height: 100dvh; }
 .light-pollution-toggle[aria-checked="true"] { border-color: color-mix(in srgb, var(--solar) 68%, var(--line)); background: color-mix(in srgb, var(--solar) 17%, var(--panel)); color: var(--text); box-shadow: 0 8px 22px rgba(0, 0, 0, .24), 0 0 16px color-mix(in srgb, var(--solar) 20%, transparent); }
 .light-pollution-toggle[aria-checked="true"] > span { text-shadow: 0 0 10px var(--solar); }
 .light-pollution-toggle.is-error { border-color: color-mix(in srgb, var(--danger) 64%, var(--line)); color: var(--danger); }
-.light-pollution-tiles { filter: sepia(1) saturate(3.4) hue-rotate(350deg) brightness(.72) contrast(1.28); }
 .weather-panel { width: min(326px, calc(100vw - 28px)); margin-top: 6px; padding: 11px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--moon-blue) 42%, var(--line)); border-radius: 12px; background: color-mix(in srgb, var(--panel) 94%, transparent); box-shadow: 0 14px 34px rgba(0, 0, 0, .44); backdrop-filter: blur(16px); }
 .weather-panel > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
 .weather-panel > header .eyebrow { display: block; color: var(--moon-blue); font: 8px var(--data); letter-spacing: .14em; }
@@ -293,7 +292,7 @@ main { min-height: 100dvh; }
 .light-pollution-legend > div { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; }
 .light-pollution-legend strong { color: var(--text); font-size: 9px; }
 .light-pollution-legend > div span { color: var(--muted); font: 6px var(--data); }
-.light-pollution-legend > i { display: block; height: 5px; margin-top: 6px; border-radius: 999px; background: linear-gradient(90deg, #07111f, #5b4820 43%, #ffbe47 76%, #fff 100%); box-shadow: 0 0 8px color-mix(in srgb, var(--solar) 18%, transparent); }
+.light-pollution-legend > i { display: block; height: 5px; margin-top: 6px; border-radius: 999px; background: linear-gradient(90deg, #161a3a, #3e2c6e 22%, #973766 48%, #f17630 72%, #fff1a6 100%); box-shadow: 0 0 8px color-mix(in srgb, var(--solar) 18%, transparent); }
 .light-pollution-legend p { display: flex; justify-content: space-between; margin: 3px 0 0; color: var(--muted); font-size: 6px; }
 .light-pollution-legend a { display: block; margin-top: 3px; color: var(--muted); font: 6px var(--data); text-align: right; text-decoration: none; }
 .light-pollution-legend a:hover { color: var(--moon-blue); }

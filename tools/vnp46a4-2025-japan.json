@@ -1,0 +1,30 @@
+{
+  "product": "VNP46A4",
+  "collection": "002",
+  "year": 2025,
+  "dayOfYear": "001",
+  "doi": "10.5067/VIIRS/VNP46A4.002",
+  "bounds": {
+    "west": 120,
+    "south": 20,
+    "east": 160,
+    "north": 50
+  },
+  "maxNativeZoom": 8,
+  "datasetPath": "/HDFEOS/GRIDS/VIIRS_Grid_DNB_2d/Data Fields/AllAngle_Composite_Snow_Free",
+  "qualityPath": "/HDFEOS/GRIDS/VIIRS_Grid_DNB_2d/Data Fields/AllAngle_Composite_Snow_Free_Quality",
+  "tiles": [
+    { "h": 30, "v": 4, "filename": "VNP46A4.A2025001.h30v04.002.2026077003945.h5" },
+    { "h": 30, "v": 5, "filename": "VNP46A4.A2025001.h30v05.002.2026077004206.h5" },
+    { "h": 30, "v": 6, "filename": "VNP46A4.A2025001.h30v06.002.2026077004511.h5" },
+    { "h": 31, "v": 4, "filename": "VNP46A4.A2025001.h31v04.002.2026077022152.h5" },
+    { "h": 31, "v": 5, "filename": "VNP46A4.A2025001.h31v05.002.2026077022316.h5" },
+    { "h": 31, "v": 6, "filename": "VNP46A4.A2025001.h31v06.002.2026077022339.h5" },
+    { "h": 32, "v": 4, "filename": "VNP46A4.A2025001.h32v04.002.2026077031044.h5" },
+    { "h": 32, "v": 5, "filename": "VNP46A4.A2025001.h32v05.002.2026077031155.h5" },
+    { "h": 32, "v": 6, "filename": "VNP46A4.A2025001.h32v06.002.2026077031213.h5" },
+    { "h": 33, "v": 4, "filename": "VNP46A4.A2025001.h33v04.002.2026077031507.h5" },
+    { "h": 33, "v": 5, "filename": "VNP46A4.A2025001.h33v05.002.2026077031537.h5" },
+    { "h": 33, "v": 6, "filename": "VNP46A4.A2025001.h33v06.002.2026077031556.h5" }
+  ]
+}

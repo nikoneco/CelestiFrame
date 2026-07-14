@@ -1,0 +1,18 @@
+{
+  "product": "VNP46A4",
+  "collection": "002",
+  "year": 2025,
+  "doi": "10.5067/VIIRS/VNP46A4.002",
+  "bounds": {
+    "west": 120,
+    "south": 20,
+    "east": 160,
+    "north": 50
+  },
+  "maxNativeZoom": 8,
+  "sourceBand": "AllAngle_Composite_Snow_Free",
+  "units": "nW/(cm^2 sr)",
+  "tileFormat": "WebP RGBA",
+  "tileCount": 1127,
+  "radianceDisplayMaximum": 60
+}

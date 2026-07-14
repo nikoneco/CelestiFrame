@@ -49,7 +49,6 @@ export function createMapController({
   const lightPollutionPane = map.createPane("light-pollution-pane");
   lightPollutionPane.style.zIndex = "330";
   lightPollutionPane.style.pointerEvents = "none";
-  lightPollutionPane.style.mixBlendMode = "screen";
 
   const markerIcon = L.divIcon({
     className: "",
@@ -131,16 +130,18 @@ export function createMapController({
       cloudOverlayLayers.forEach((layer) => layer.remove());
       cloudOverlayLayers = [];
     },
-    setLightPollutionOverlay(tileUrl, { onLoad = () => {}, onError = () => {} } = {}) {
+    setLightPollutionOverlay(tileUrl, { dataYear, onLoad = () => {}, onError = () => {} } = {}) {
       lightPollutionLayer?.remove();
       lightPollutionLayer = L.tileLayer(tileUrl, {
         pane: "light-pollution-pane",
         minZoom: 0,
         maxZoom: 19,
         maxNativeZoom: 8,
-        opacity: 0.55,
+        opacity: 1,
+        bounds: [[20, 120], [50, 160]],
+        noWrap: true,
         crossOrigin: true,
-        attribution: 'Nighttime lights: <a href="https://earthdata.nasa.gov/gibs" target="_blank" rel="noopener noreferrer">NASA GIBS</a> / VIIRS',
+        attribution: `Nighttime lights: <a href="https://doi.org/10.5067/VIIRS/VNP46A4.002" target="_blank" rel="noopener noreferrer">NASA VIIRS VNP46A4</a> (${dataYear})`,
         className: "light-pollution-tiles",
       });
       lightPollutionLayer.once("load", onLoad);

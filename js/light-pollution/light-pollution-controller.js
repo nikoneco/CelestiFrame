@@ -1,7 +1,8 @@
-export function bindLightPollutionOverlay(getMapController, { tileUrl } = {}) {
+export function bindLightPollutionOverlay(getMapController, { tileUrl, dataYear } = {}) {
   const toggle = document.querySelector("#light-pollution-toggle");
   const legend = document.querySelector("#light-pollution-legend");
   const status = document.querySelector("#light-pollution-status");
+  const dataLabel = document.querySelector("#light-pollution-data-label");
   let enabled = false;
 
   function render({ error = false } = {}) {
@@ -29,9 +30,10 @@ export function bindLightPollutionOverlay(getMapController, { tileUrl } = {}) {
     status.textContent = "光害の目安を読み込んでいます";
     render();
     mapController.setLightPollutionOverlay(tileUrl, {
+      dataYear,
       onLoad: () => {
         if (!enabled) return;
-        status.textContent = "光害の目安を表示中です。夜間光を基にした参考表示です";
+        status.textContent = `光害の目安を表示中です。VNP46A4 ${dataYear}年次合成を基にした参考表示です`;
         render();
       },
       onError: () => {
@@ -47,6 +49,7 @@ export function bindLightPollutionOverlay(getMapController, { tileUrl } = {}) {
     else enable();
   });
 
+  dataLabel.textContent = `VNP46A4・${dataYear}`;
   render();
   return { enable, disable, isEnabled: () => enabled };
 }

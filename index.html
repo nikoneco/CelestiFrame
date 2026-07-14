@@ -10,7 +10,7 @@
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./assets/icon.svg?v=43" type="image/svg+xml">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
-    <link rel="stylesheet" href="./css/app.css?v=73">
+    <link rel="stylesheet" href="./css/app.css?v=74">
   </head>
   <body>
     <div class="app-shell">
@@ -111,10 +111,10 @@
           </div>
 
           <aside class="light-pollution-legend" id="light-pollution-legend" aria-label="光害の目安の凡例" hidden>
-            <div><strong>光害の目安</strong><span>VIIRS 夜間光・2012</span></div>
+            <div><strong>光害の目安</strong><span id="light-pollution-data-label">VNP46A4・2025</span></div>
             <i aria-hidden="true"></i>
             <p><span>暗い</span><span>明るい</span></p>
-            <a href="https://earthdata.nasa.gov/gibs" target="_blank" rel="noopener noreferrer">NASA GIBS / VIIRS</a>
+            <a href="https://doi.org/10.5067/VIIRS/VNP46A4.002" target="_blank" rel="noopener noreferrer">NASA VIIRS / VNP46A4</a>
           </aside>
           <span class="sr-only" id="light-pollution-status" aria-live="polite">光害の目安を表示していません</span>
 
@@ -635,6 +635,6 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
     <script src="./js/vendor/suncalc.js"></script>
     <script src="./js/vendor/astronomy-engine.min.js"></script>
-    <script type="module" src="./js/app.js?v=80"></script>
+    <script type="module" src="./js/app.js?v=81"></script>
   </body>
 </html>

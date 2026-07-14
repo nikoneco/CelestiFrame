@@ -1,4 +1,4 @@
-const CACHE_VERSION = "celestiframe-shell-v88";
+const CACHE_VERSION = "celestiframe-shell-v89";
 const TRUSTED_STATIC_HOSTS = new Set(["unpkg.com", "www.gstatic.com"]);
 const APP_SHELL = [
   "./",
@@ -6,9 +6,9 @@ const APP_SHELL = [
   "./offline.html",
   "./manifest.webmanifest",
   "./assets/icon.svg?v=43",
-  "./css/app.css?v=73",
-  "./js/app.js?v=80",
-  "./js/config/runtime-config.js?v=34",
+  "./css/app.css?v=74",
+  "./js/app.js?v=81",
+  "./js/config/runtime-config.js?v=35",
   "./js/config/firebase-config.js?v=1",
   "./js/state.js?v=42",
   "./js/astronomy/sun-service.js",
@@ -23,7 +23,7 @@ const APP_SHELL = [
   "./js/elevation/elevation-service.js?v=25",
   "./js/elevation/elevation-controller.js?v=25",
   "./js/map/geocoder.js?v=32",
-  "./js/map/map-controller.js?v=51",
+  "./js/map/map-controller.js?v=52",
   "./js/map/place-search.js?v=34",
   "./js/plans/plan-data.js?v=41",
   "./js/plans/plan-manager.js?v=44",
@@ -31,7 +31,7 @@ const APP_SHELL = [
   "./js/map/google-maps-url.js?v=1",
   "./js/weather/forecast-service.js?v=2",
   "./js/weather/weather-controller.js?v=9",
-  "./js/light-pollution/light-pollution-controller.js?v=1",
+  "./js/light-pollution/light-pollution-controller.js?v=2",
   "./js/cloud/plan-sync.js?v=1",
   "./js/cloud/firebase-client.js?v=1",
   "./js/cloud/account-controller.js?v=2",

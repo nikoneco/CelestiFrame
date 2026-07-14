@@ -44,7 +44,7 @@ Version 1.4.0として、最大5対象の統一天体選択、惑星・星雲・
 - 保存計画からGoogleマップで撮影地への経路、撮影地・被写体の位置を開く
 - 撮影日時に同期した総雲・低層・中層・高層の予報雲を地図に重ねて表示
 - 撮影地点の総雲量、低層雲、視程、風・瞬間風速、降水確率を確認
-- NASA GIBSのVIIRS夜間光を光害の目安として地図へ重ねて表示
+- NASA VIIRSのVNP46A4年次夜間光を光害の目安として地図へ重ねて表示
 - 左上のCelestiFrameブランドマークと揃えたPWAアイコン
 - 被写体高・撮影地点標高・被写体地点標高の手入力
 - フルサイズ・APS-C・マイクロフォーサーズ・1型の画角計算
@@ -79,9 +79,21 @@ Phase 8で開発草案の段階ロードマップは完了し、Phase 9以降は
 
 ## 光害の目安レイヤー
 
-左上の「光害」スイッチから、NASA GIBSが公開するSuomi NPP / VIIRSの2012年夜間光を地図へ重ねられます。明るい場所ほど人工光が強い傾向を示し、暗い撮影地を探すための広域的な目安として使えます。
+左上の「光害」スイッチから、NASA VIIRSのVNP46A4 2025年次夜間光を日本周辺の地図へ重ねられます。雪のない期間の全観測角度合成を使用し、明るい場所ほど人工光が強い傾向を示します。暗い撮影地を探すための広域的な目安として使えます。
 
-これは空の明るさ、ボートル階級、透明度を直接示すデータではありません。2012年の地表夜間光を使った参考表示であり、最新の照明環境、地形による遮光、上空の雲・大気、月明かりは反映しません。データ表示には`NASA GIBS / VIIRS`の帰属を付けています。
+これは空の明るさ、ボートル階級、透明度を直接示すデータではありません。2025年の地表夜間光を使った参考表示であり、地形による遮光、撮影当日の雲・大気、月明かりは反映しません。データ表示には`NASA VIIRS / VNP46A4`の帰属とDOIを付けています。
+
+### VNP46A4タイルの更新
+
+元HDF5はGit管理せず、`data/vnp46a4-source/`へ保存します。NASA Earthdataのダウンロードトークンを一時環境変数`EARTHDATA_TOKEN`へ設定してから、次を実行します。トークンをファイルやシェル履歴へ残さないでください。
+
+```powershell
+py -3 -m pip install -r tools/requirements-vnp46a4.txt
+py -3 tools/generate-vnp46a4-tiles.py
+Remove-Item Env:EARTHDATA_TOKEN
+```
+
+対象年・日本周辺を覆うLAADSファイルは`tools/vnp46a4-2025-japan.json`で固定し、生成物は`assets/light-pollution/vnp46a4-2025/`へ出力します。
 
 ## Version 1.1の撮影支援
 
@@ -141,12 +153,13 @@ npm test
 {
   "nominatimEndpoint": "https://nominatim.openstreetmap.org/search",
   "tileUrl": "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-  "lightPollutionTileUrl": "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_CityLights_2012/default/default/GoogleMapsCompatible_Level8/{z}/{y}/{x}.jpg",
+  "lightPollutionTileUrl": "./assets/light-pollution/vnp46a4-2025/{z}/{x}/{y}.webp",
+  "lightPollutionDataYear": 2025,
   "weatherForecastEndpoint": "https://api.open-meteo.com/v1/forecast"
 }
 ```
 
-すべてHTTPSのみ許可します。タイルURLには`{z}`、`{x}`、`{y}`が必要です。不正な設定や取得失敗時は安全な既定値へ戻ります。OpenStreetMap標準タイルを使う場合は、[Tile Usage Policy](https://operations.osmfoundation.org/policies/tiles/)に従い、URLや帰属表示を維持してください。
+外部接続先はHTTPSのみ許可します。光害タイルは`assets`配下の同一オリジン相対パスも許可します。タイルURLには`{z}`、`{x}`、`{y}`が必要です。不正な設定や取得失敗時は安全な既定値へ戻ります。OpenStreetMap標準タイルを使う場合は、[Tile Usage Policy](https://operations.osmfoundation.org/policies/tiles/)に従い、URLや帰属表示を維持してください。
 
 ## セキュリティとプライバシー
 

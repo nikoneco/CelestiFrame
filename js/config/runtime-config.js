@@ -1,16 +1,36 @@
 export const DEFAULT_RUNTIME_CONFIG = Object.freeze({
   nominatimEndpoint: "https://nominatim.openstreetmap.org/search",
   tileUrl: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-  lightPollutionTileUrl: "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_CityLights_2012/default/default/GoogleMapsCompatible_Level8/{z}/{y}/{x}.jpg",
+  lightPollutionTileUrl: "./assets/light-pollution/vnp46a4-2025/{z}/{x}/{y}.webp",
+  lightPollutionDataYear: 2025,
   weatherForecastEndpoint: "https://api.open-meteo.com/v1/forecast",
 });
 
 function validateHttpsUrl(value, label) {
-  const url = new URL(String(value));
+  let url;
+  try {
+    url = new URL(String(value));
+  } catch {
+    throw new Error(`${label}は認証情報やフラグメントを含まないHTTPS URLで指定してください`);
+  }
   if (url.protocol !== "https:" || url.username || url.password || url.hash) {
     throw new Error(`${label}は認証情報やフラグメントを含まないHTTPS URLで指定してください`);
   }
   return String(value);
+}
+
+function validateLightPollutionTileUrl(value) {
+  const text = String(value);
+  if (text.startsWith("./") || text.startsWith("/")) {
+    const segments = text.replace(/\\/g, "/").split("/");
+    const url = new URL(text, "https://celestiframe.invalid/");
+    if (text.includes("\\") || text.includes("?") || text.includes("#") || segments.includes("..")
+      || url.origin !== "https://celestiframe.invalid" || !url.pathname.startsWith("/assets/")) {
+      throw new Error("Light pollution tile URLの相対パスはassets配下で指定してください");
+    }
+    return text;
+  }
+  return validateHttpsUrl(text, "Light pollution tile URL");
 }
 
 export function normalizeRuntimeConfig(value) {
@@ -19,7 +39,11 @@ export function normalizeRuntimeConfig(value) {
   }
   const nominatimEndpoint = validateHttpsUrl(value.nominatimEndpoint, "Nominatim endpoint");
   const tileUrl = validateHttpsUrl(value.tileUrl, "Tile URL");
-  const lightPollutionTileUrl = validateHttpsUrl(value.lightPollutionTileUrl, "Light pollution tile URL");
+  const lightPollutionTileUrl = validateLightPollutionTileUrl(value.lightPollutionTileUrl);
+  const lightPollutionDataYear = Number(value.lightPollutionDataYear);
+  if (!Number.isInteger(lightPollutionDataYear) || lightPollutionDataYear < 2012 || lightPollutionDataYear > 2100) {
+    throw new Error("Light pollution data yearが正しくありません");
+  }
   const weatherForecastEndpoint = validateHttpsUrl(value.weatherForecastEndpoint, "Weather forecast endpoint");
   [
     [tileUrl, "Tile URL"],
@@ -29,7 +53,7 @@ export function normalizeRuntimeConfig(value) {
       throw new Error(`${label}には{z}、{x}、{y}が必要です`);
     }
   });
-  return Object.freeze({ nominatimEndpoint, tileUrl, lightPollutionTileUrl, weatherForecastEndpoint });
+  return Object.freeze({ nominatimEndpoint, tileUrl, lightPollutionTileUrl, lightPollutionDataYear, weatherForecastEndpoint });
 }
 
 export async function loadRuntimeConfig({

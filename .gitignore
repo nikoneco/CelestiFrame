@@ -3,6 +3,11 @@ LOCAL_URLS.md
 Thumbs.db
 node_modules/
 coverage/
+.python-vnp46a4/
+__pycache__/
+*.py[cod]
+data/vnp46a4-source/
+tmp/
 *.log
 .env
 .env.*
