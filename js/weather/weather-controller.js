@@ -1,4 +1,4 @@
-import { CLOUD_MODES, createForecastGrid, fetchForecastGrid, isForecastHour, toForecastHour } from "./forecast-service.js?v=1";
+import { CLOUD_MODES, createForecastGrid, fetchForecastGrid, isForecastHour, isPastForecastHour, toForecastHour } from "./forecast-service.js?v=2";
 
 const formatPercent = (value) => `${Math.round(Number(value) || 0)}%`;
 const formatVisibility = (meters) => meters >= 1000 ? `${(meters / 1000).toFixed(meters >= 10000 ? 0 : 1)} km` : `${Math.round(meters)} m`;
@@ -85,7 +85,7 @@ export function bindWeatherOverlay(store, getMapController, { endpoint, fetchImp
     if (!isForecastHour(state.selectedDateTime)) {
       mapController.clearCloudOverlay();
       setMetrics(null);
-      setStatus("予報雲は現在から16日先まで表示できます");
+      setStatus("予報雲は前日から16日先まで表示できます");
       render();
       return;
     }
@@ -103,7 +103,7 @@ export function bindWeatherOverlay(store, getMapController, { endpoint, fetchImp
       const sequence = ++requestSequence;
       setStatus("地図の雲を読んでいます…", { busy: true });
       try {
-        records = await fetchForecastGrid({ endpoint, locations, hour, fetchImpl, signal: requestController.signal });
+        records = await fetchForecastGrid({ endpoint, locations, hour, includePast: isPastForecastHour(hour), fetchImpl, signal: requestController.signal });
         if (sequence !== requestSequence) return;
         cache.set(key, records);
       } catch (error) {

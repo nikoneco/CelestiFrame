@@ -43,9 +43,13 @@ export function toForecastHour(value, timeZone = "Asia/Tokyo") {
 
 export function isForecastHour(value, now = new Date()) {
   const target = new Date(value).getTime();
-  const earliest = new Date(now).setMinutes(0, 0, 0) - 60 * 60 * 1000;
+  const earliest = new Date(now).getTime() - 48 * 60 * 60 * 1000;
   const latest = new Date(now).getTime() + 16 * 24 * 60 * 60 * 1000;
   return Number.isFinite(target) && target >= earliest && target <= latest;
+}
+
+export function isPastForecastHour(hour, now = new Date()) {
+  return hour < toForecastHour(now);
 }
 
 export function createForecastGrid(bounds, { rows = 5, columns = 5 } = {}) {
@@ -77,7 +81,7 @@ export function createForecastGrid(bounds, { rows = 5, columns = 5 } = {}) {
   return cells;
 }
 
-export function buildForecastUrl(endpoint, locations, hour) {
+export function buildForecastUrl(endpoint, locations, hour, { includePast = false } = {}) {
   if (!Array.isArray(locations) || !locations.length || locations.length > 65) throw new Error("予報地点数が正しくありません");
   const url = new URL(endpoint);
   if (url.protocol !== "https:") throw new Error("予報APIはHTTPSで指定してください");
@@ -92,8 +96,13 @@ export function buildForecastUrl(endpoint, locations, hour) {
   url.searchParams.set("longitude", coordinates.map(({ longitude }) => longitude.toFixed(4)).join(","));
   url.searchParams.set("hourly", HOURLY_FIELDS.join(","));
   url.searchParams.set("timezone", "Asia/Tokyo");
-  url.searchParams.set("start_hour", hour);
-  url.searchParams.set("end_hour", hour);
+  if (includePast) {
+    url.searchParams.set("past_days", "1");
+    url.searchParams.set("forecast_days", "1");
+  } else {
+    url.searchParams.set("start_hour", hour);
+    url.searchParams.set("end_hour", hour);
+  }
   url.searchParams.set("wind_speed_unit", "kmh");
   return url;
 }
@@ -124,8 +133,8 @@ export function parseForecastResponse(payload, locations, hour) {
   });
 }
 
-export async function fetchForecastGrid({ endpoint, locations, hour, fetchImpl = fetch, signal }) {
-  const response = await fetchImpl(buildForecastUrl(endpoint, locations, hour), {
+export async function fetchForecastGrid({ endpoint, locations, hour, includePast = false, fetchImpl = fetch, signal }) {
+  const response = await fetchImpl(buildForecastUrl(endpoint, locations, hour, { includePast }), {
     headers: { Accept: "application/json" },
     signal,
   });

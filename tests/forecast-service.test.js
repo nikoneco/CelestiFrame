@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildForecastUrl, createForecastGrid, isForecastHour, parseForecastResponse, toForecastHour } from "../js/weather/forecast-service.js";
+import { buildForecastUrl, createForecastGrid, isForecastHour, isPastForecastHour, parseForecastResponse, toForecastHour } from "../js/weather/forecast-service.js";
 
 test("forecast grid divides the visible map into bounded cells", () => {
   const cells = createForecastGrid({ north: 36, south: 35, east: 140, west: 139 }, { rows: 2, columns: 2 });
@@ -19,6 +19,14 @@ test("forecast URL batches locations and only asks for the selected hour", () =>
   assert.match(url.searchParams.get("hourly"), /cloud_cover_low/);
 });
 
+test("past forecast URL includes the previous day without a conflicting fixed range", () => {
+  const url = buildForecastUrl("https://weather.example.test/forecast", [{ latitude: 35.68, longitude: 139.76 }], "2026-07-14T03:00", { includePast: true });
+  assert.equal(url.searchParams.get("past_days"), "1");
+  assert.equal(url.searchParams.get("forecast_days"), "1");
+  assert.equal(url.searchParams.has("start_hour"), false);
+  assert.equal(url.searchParams.has("end_hour"), false);
+});
+
 test("forecast response selects the requested hour and normalizes cloud metrics", () => {
   const locations = [{ latitude: 35.68, longitude: 139.76 }];
   const [result] = parseForecastResponse({
@@ -34,8 +42,12 @@ test("forecast response selects the requested hour and normalizes cloud metrics"
   assert.equal(result.forecast.gustKmh, 20);
 });
 
-test("forecast hour follows Asia Tokyo and is limited to the forecast window", () => {
+test("forecast hour follows Asia Tokyo and accepts the prior 48 hours", () => {
   assert.equal(toForecastHour("2026-07-14T12:42:00.000Z"), "2026-07-14T21:00");
   assert.equal(isForecastHour("2026-07-29T12:00:00.000Z", new Date("2026-07-14T00:00:00.000Z")), true);
   assert.equal(isForecastHour("2026-07-31T12:00:00.000Z", new Date("2026-07-14T00:00:00.000Z")), false);
+  assert.equal(isForecastHour("2026-07-12T02:38:00.000Z", new Date("2026-07-14T02:38:00.000Z")), true);
+  assert.equal(isForecastHour("2026-07-12T02:37:59.000Z", new Date("2026-07-14T02:38:00.000Z")), false);
+  assert.equal(isPastForecastHour("2026-07-14T03:00", new Date("2026-07-14T02:38:00.000Z")), true);
+  assert.equal(isPastForecastHour("2026-07-14T11:00", new Date("2026-07-14T02:38:00.000Z")), false);
 });
