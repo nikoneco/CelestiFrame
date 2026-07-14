@@ -103,6 +103,8 @@ export function createMapController({
       cloudOverlayLayers.forEach((layer) => layer.remove());
       cloudOverlayLayers = cells.map((cell) => {
         const density = Math.max(0, Math.min(100, Number(cell?.value) || 0));
+        const coverage = density / 100;
+        const fillOpacity = coverage === 0 ? 0 : 0.12 + Math.pow(coverage, 0.62) * 0.68;
         return L.rectangle(
           [[cell.bounds.south, cell.bounds.west], [cell.bounds.north, cell.bounds.east]],
           {
@@ -110,7 +112,7 @@ export function createMapController({
             stroke: false,
             fill: true,
             fillColor: color,
-            fillOpacity: 0.035 + density / 100 * 0.5,
+            fillOpacity,
             interactive: false,
             className: "forecast-cloud-cell",
           },
