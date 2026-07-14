@@ -10,7 +10,7 @@
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./assets/icon.svg?v=43" type="image/svg+xml">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
-    <link rel="stylesheet" href="./css/app.css?v=70">
+    <link rel="stylesheet" href="./css/app.css?v=71">
   </head>
   <body>
     <div class="app-shell">
@@ -196,6 +196,10 @@
                 </div>
                 <span class="horizon-state" data-moon-field="state">計算準備中</span>
               </header>
+              <div class="card-vector-key" role="img" aria-label="月の方向線。実線は撮影地点、破線は被写体地点">
+                <span class="card-vector-line is-camera" aria-hidden="true"></span>
+                <span class="card-vector-line is-subject" aria-hidden="true"></span>
+              </div>
               <div class="metric-pair">
                 <div><span>方位角 <em data-moon-field="direction">—</em></span><strong><b data-moon-field="azimuth">—</b><small>°</small></strong></div>
                 <div><span>高度角</span><strong><b data-moon-field="altitude">—</b><small>°</small></strong></div>
@@ -217,6 +221,10 @@
                 </div>
                 <span class="horizon-state" data-sun-field="state">計算準備中</span>
               </header>
+              <div class="card-vector-key" role="img" aria-label="太陽の方向線。実線は撮影地点、破線は被写体地点">
+                <span class="card-vector-line is-camera" aria-hidden="true"></span>
+                <span class="card-vector-line is-subject" aria-hidden="true"></span>
+              </div>
               <div class="metric-pair">
                 <div><span>方位角 <em data-sun-field="direction">—</em></span><strong><b data-sun-field="azimuth">—</b><small>°</small></strong></div>
                 <div><span>高度角</span><strong><b data-sun-field="altitude">—</b><small>°</small></strong></div>
@@ -233,6 +241,10 @@
                 </div>
                 <span class="horizon-state" data-milkyway-field="state">計算準備中</span>
               </header>
+              <div class="card-vector-key" role="img" aria-label="天の川の方向線。実線は撮影地点、破線は被写体地点">
+                <span class="card-vector-line is-camera" aria-hidden="true"></span>
+                <span class="card-vector-line is-subject" aria-hidden="true"></span>
+              </div>
               <div class="metric-pair">
                 <div><span>アーチ最高点 <em data-milkyway-field="direction">—</em></span><strong><b data-milkyway-field="azimuth">—</b><small>°</small></strong></div>
                 <div><span>高度角</span><strong><b data-milkyway-field="altitude">—</b><small>°</small></strong></div>
@@ -612,6 +624,6 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
     <script src="./js/vendor/suncalc.js"></script>
     <script src="./js/vendor/astronomy-engine.min.js"></script>
-    <script type="module" src="./js/app.js?v=76"></script>
+    <script type="module" src="./js/app.js?v=77"></script>
   </body>
 </html>

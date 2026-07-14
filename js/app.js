@@ -238,6 +238,17 @@ function renderStellarTargets(targetData) {
     stateLabel.className = `horizon-state ${data.isAboveHorizon ? "is-above" : "is-below"}`;
     stateLabel.textContent = data.isAboveHorizon ? "地平線の上" : "地平線の下（計算値）";
     header.append(symbol, title, stateLabel);
+    const vectorKey = document.createElement("div");
+    vectorKey.className = "card-vector-key";
+    vectorKey.setAttribute("role", "img");
+    vectorKey.setAttribute("aria-label", `${data.target.label}の方向線。実線は撮影地点、破線は被写体地点`);
+    const cameraVector = document.createElement("span");
+    cameraVector.className = "card-vector-line is-camera";
+    cameraVector.setAttribute("aria-hidden", "true");
+    const subjectVector = document.createElement("span");
+    subjectVector.className = "card-vector-line is-subject";
+    subjectVector.setAttribute("aria-hidden", "true");
+    vectorKey.append(cameraVector, subjectVector);
     const metrics = document.createElement("div");
     metrics.className = "metric-pair";
     const azimuth = document.createElement("div");
@@ -247,7 +258,7 @@ function renderStellarTargets(targetData) {
     metrics.append(azimuth, altitude);
     const footer = document.createElement("footer");
     footer.textContent = data.target.kind === "planet" ? "現在の観測地点から見た計算位置" : "代表点の方位・高度";
-    card.append(header, metrics, footer);
+    card.append(header, vectorKey, metrics, footer);
     container.append(card);
   });
 }
@@ -620,6 +631,7 @@ function renderState(state) {
   const directionLineOrigin = ["camera", "subject", "both"].includes(state.settings.directionLineOrigin)
     ? state.settings.directionLineOrigin
     : "both";
+  document.querySelector("#celestial-grid").dataset.lineOrigin = directionLineOrigin;
   document.querySelectorAll('input[name="direction-line-origin"]').forEach((input) => {
     input.checked = input.value === directionLineOrigin;
   });

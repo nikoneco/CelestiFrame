@@ -1,4 +1,4 @@
-const CACHE_VERSION = "celestiframe-shell-v84";
+const CACHE_VERSION = "celestiframe-shell-v85";
 const TRUSTED_STATIC_HOSTS = new Set(["unpkg.com", "www.gstatic.com"]);
 const APP_SHELL = [
   "./",
@@ -6,8 +6,8 @@ const APP_SHELL = [
   "./offline.html",
   "./manifest.webmanifest",
   "./assets/icon.svg?v=43",
-  "./css/app.css?v=70",
-  "./js/app.js?v=76",
+  "./css/app.css?v=71",
+  "./js/app.js?v=77",
   "./js/config/runtime-config.js?v=33",
   "./js/config/firebase-config.js?v=1",
   "./js/state.js?v=42",

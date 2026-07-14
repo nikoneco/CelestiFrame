@@ -415,6 +415,30 @@ main { min-height: 100dvh; }
 }
 .celestial-card header { display: flex; align-items: center; gap: 10px; padding: 12px 13px 8px; }
 .celestial-card h2 { margin: 2px 0 0; font: 560 17px/1 var(--display); }
+.celestial-card-moon { --target-color: var(--moon-blue); }
+.celestial-card-sun { --target-color: var(--solar); }
+.celestial-card-milkyway { --target-color: var(--milkyway); }
+.card-vector-key {
+  display: grid;
+  gap: 2px;
+  min-height: 7px;
+  padding: 0 13px 5px;
+  color: var(--target-color, var(--moon-blue));
+}
+.card-vector-line {
+  display: block;
+  height: 2px;
+  border-radius: 999px;
+  filter: drop-shadow(0 0 4px color-mix(in srgb, currentColor 44%, transparent));
+}
+.card-vector-line.is-camera {
+  background: linear-gradient(90deg, transparent, currentColor 2%, currentColor 98%, transparent);
+}
+.card-vector-line.is-subject {
+  background: repeating-linear-gradient(90deg, currentColor 0 12px, transparent 12px 19px, currentColor 19px 21px, transparent 21px 28px);
+}
+.celestial-grid[data-line-origin="camera"] .card-vector-line.is-subject,
+.celestial-grid[data-line-origin="subject"] .card-vector-line.is-camera { display: none; }
 .celestial-symbol { position: relative; flex: 0 0 28px; width: 28px; height: 28px; border-radius: 50%; }
 .moon-symbol { border: 2px solid var(--moon); border-left-color: transparent; transform: rotate(-25deg); box-shadow: 4px 0 12px rgba(145, 184, 236, 0.18); }
 .sun-symbol { background: var(--solar); box-shadow: 0 0 16px rgba(255, 180, 74, 0.35); }
