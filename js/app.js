@@ -1,4 +1,4 @@
-import { createStore } from "./state.js?v=40";
+import { createStore } from "./state.js?v=41";
 import { createMapController, focusCurrentLocation } from "./map/map-controller.js?v=47";
 import { bindPlaceSearch } from "./map/place-search.js?v=34";
 import { loadRuntimeConfig } from "./config/runtime-config.js?v=33";
@@ -13,17 +13,19 @@ import { bindSearchControls } from "./search/search-controller.js?v=44";
 import { bindPlanManager } from "./plans/plan-manager.js?v=43";
 import { createPlanRepository } from "./plans/plan-repository.js?v=15";
 import { createPlanSyncCoordinator } from "./cloud/plan-sync.js?v=1";
-import { bindCloudAccount } from "./cloud/account-controller.js?v=1";
+import { bindCloudAccount } from "./cloud/account-controller.js?v=2";
 import { parseSharedState } from "./plans/plan-data.js?v=40";
 import { calculateComposition, focalLengthForFill, SENSOR_PRESETS } from "./composition/composition.js?v=19";
 import { bindCompositionControls } from "./ui/composition-controls.js?v=24";
-import { bindElevationControls } from "./elevation/elevation-controller.js?v=24";
+import { bindElevationControls } from "./elevation/elevation-controller.js?v=25";
 import { apparentSolarAltitude, calculateTargetAltitude } from "./geometry/target-altitude.js?v=24";
 import { bindShootingPlanner } from "./planning/shooting-planner.js?v=40";
 import { bindTerrainProfile } from "./terrain/terrain-profile-controller.js?v=40";
 import { bindFieldMode } from "./field/field-mode.js?v=48";
-import { bindWeatherOverlay } from "./weather/weather-controller.js?v=8";
+import { bindWeatherOverlay } from "./weather/weather-controller.js?v=9";
 
+let toastTimer;
+registerServiceWorker();
 const runtimeConfig = await loadRuntimeConfig();
 const store = createStore();
 const mapStage = document.querySelector(".map-stage");
@@ -394,6 +396,11 @@ function renderComposition(state) {
   }
 }
 
+function clearToastTimer() {
+  window.clearTimeout(toastTimer);
+  toastTimer = null;
+}
+
 function showToast(message) {
   const toast = document.querySelector("#toast");
   const action = document.querySelector("#toast-action");
@@ -406,8 +413,10 @@ function showToast(message) {
   dismiss.textContent = "×";
   dismiss.setAttribute("aria-label", "通知を閉じる");
   toast.hidden = false;
-  window.setTimeout(() => {
+  clearToastTimer();
+  toastTimer = window.setTimeout(() => {
     if (action.hidden) toast.hidden = true;
+    toastTimer = null;
   }, 3600);
 }
 
@@ -426,10 +435,12 @@ function showServiceWorkerUpdate(worker) {
   };
   dismiss.textContent = "後で";
   dismiss.setAttribute("aria-label", "更新を後で行う");
+  clearToastTimer();
   toast.hidden = false;
 }
 
 document.querySelector("#toast-dismiss").addEventListener("click", () => {
+  clearToastTimer();
   document.querySelector("#toast").hidden = true;
 });
 
@@ -645,50 +656,45 @@ renderAlignment(store.getState());
 renderComposition(store.getState());
 if (sharedState) showToast("共有された撮影計画を開きました");
 
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", async () => {
-    try {
-      const registration = await navigator.serviceWorker.register("./service-worker.js");
-      let lastUpdateCheck = 0;
-      const checkForUpdates = () => {
-        const now = Date.now();
-        if (now - lastUpdateCheck < 60_000) return;
-        lastUpdateCheck = now;
-        registration.update().catch((error) => console.warn("Service Worker update check failed", error));
-      };
-      const observedWorkers = new WeakSet();
-      const observeUpdateWorker = (worker) => {
-        if (!worker || observedWorkers.has(worker)) return;
-        observedWorkers.add(worker);
-        const announceWhenReady = () => {
-          if (worker.state !== "installed" || !navigator.serviceWorker.controller) return;
-          showServiceWorkerUpdate(worker);
-        };
-        worker.addEventListener("statechange", announceWhenReady);
-        announceWhenReady();
-      };
-      if (registration.waiting && navigator.serviceWorker.controller) {
-        showServiceWorkerUpdate(registration.waiting);
-      }
-      observeUpdateWorker(registration.installing);
-      registration.addEventListener("updatefound", () => {
-        observeUpdateWorker(registration.installing);
-      });
-      document.addEventListener("visibilitychange", () => {
-        if (!document.hidden) checkForUpdates();
-      });
-      window.addEventListener("focus", checkForUpdates);
-      window.addEventListener("online", checkForUpdates);
-      window.setInterval(checkForUpdates, 30 * 60_000);
-      checkForUpdates();
-    } catch (error) {
-      console.warn("Service Worker registration failed", error);
-    }
-  });
+async function registerServiceWorker() {
+  if (!("serviceWorker" in navigator)) return;
   let reloadingForUpdate = false;
   navigator.serviceWorker.addEventListener("controllerchange", () => {
     if (reloadingForUpdate) return;
     reloadingForUpdate = true;
     window.location.reload();
   });
+  try {
+    const registration = await navigator.serviceWorker.register("./service-worker.js");
+    let lastUpdateCheck = 0;
+    const checkForUpdates = () => {
+      const now = Date.now();
+      if (now - lastUpdateCheck < 60_000) return;
+      lastUpdateCheck = now;
+      registration.update().catch((error) => console.warn("Service Worker update check failed", error));
+    };
+    const observedWorkers = new WeakSet();
+    const observeUpdateWorker = (worker) => {
+      if (!worker || observedWorkers.has(worker)) return;
+      observedWorkers.add(worker);
+      const announceWhenReady = () => {
+        if (worker.state !== "installed" || !navigator.serviceWorker.controller) return;
+        showServiceWorkerUpdate(worker);
+      };
+      worker.addEventListener("statechange", announceWhenReady);
+      announceWhenReady();
+    };
+    if (registration.waiting && navigator.serviceWorker.controller) showServiceWorkerUpdate(registration.waiting);
+    observeUpdateWorker(registration.installing);
+    registration.addEventListener("updatefound", () => observeUpdateWorker(registration.installing));
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) checkForUpdates();
+    });
+    window.addEventListener("focus", checkForUpdates);
+    window.addEventListener("online", checkForUpdates);
+    window.setInterval(checkForUpdates, 30 * 60_000);
+    checkForUpdates();
+  } catch (error) {
+    console.warn("Service Worker registration failed", error);
+  }
 }

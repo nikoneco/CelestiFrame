@@ -1,5 +1,7 @@
+import { createLruCache } from "../utils/lru-cache.js?v=1";
+
 const ENDPOINT = "https://cyberjapandata2.gsi.go.jp/general/dem/scripts/getelevation.php";
-const cache = new Map();
+const cache = createLruCache(200);
 
 export function elevationLocationKey(location) {
   const latitude = Number(location?.latitude);
@@ -11,7 +13,8 @@ export function elevationLocationKey(location) {
 
 export async function fetchElevation(location, { signal, fetcher = fetch, force = false } = {}) {
   const key = elevationLocationKey(location);
-  if (!force && cache.has(key)) return cache.get(key);
+  const cached = !force ? cache.get(key) : undefined;
+  if (cached) return cached;
   const [latitude, longitude] = key.split(",");
   const url = new URL(ENDPOINT);
   url.searchParams.set("lon", longitude);

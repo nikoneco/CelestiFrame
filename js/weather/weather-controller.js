@@ -1,4 +1,5 @@
 import { CLOUD_MODES, createForecastGrid, fetchForecastGrid, isForecastHour, isPastForecastHour, toForecastHour } from "./forecast-service.js?v=2";
+import { createLruCache } from "../utils/lru-cache.js?v=1";
 
 const formatPercent = (value) => `${Math.round(Number(value) || 0)}%`;
 const formatVisibility = (meters) => meters >= 1000 ? `${(meters / 1000).toFixed(meters >= 10000 ? 0 : 1)} km` : `${Math.round(meters)} m`;
@@ -29,7 +30,7 @@ export function bindWeatherOverlay(store, getMapController, { endpoint, fetchImp
   const wind = document.querySelector("#weather-wind");
   const precipitation = document.querySelector("#weather-precipitation");
   const modeButtons = [...document.querySelectorAll("[data-weather-mode]")];
-  const cache = new Map();
+  const cache = createLruCache(24);
   let activeMode = null;
   let isLayerEnabled = false;
   let latestForecast = null;

@@ -28,6 +28,7 @@ export function bindCloudAccount({ coordinator, store, showToast, onPlansChanged
   const mergeButton = document.querySelector("#cloud-migrate-merge");
   const skipButton = document.querySelector("#cloud-migrate-skip");
   let client = null;
+  let clientInitialization = null;
   let currentUser = null;
   let applyingRemoteSettings = false;
   let settingsPushTimer;
@@ -178,29 +179,49 @@ export function bindCloudAccount({ coordinator, store, showToast, onPlansChanged
     }, 600);
   });
 
-  signInButton.disabled = true;
-  signInButton.textContent = "同期準備中…";
-  createFirebaseClient().then((nextClient) => {
-    client = nextClient;
-    signInButton.disabled = false;
-    signInButton.textContent = "Googleで同期";
-    client.onAuthStateChanged((user) => handleUser(user).catch((error) => {
-      console.error(error);
-      setState(navigator.onLine ? "pending" : "offline", "同期を開始できません", error.message || "通信を確認してください");
-    }));
-  }).catch((error) => {
-    console.error(error);
-    signInButton.textContent = "クラウドを利用できません";
-    setState("offline", "この端末に保存中", "Firebaseへ接続できません。ローカル機能は使えます");
-  });
+  function initializeClient() {
+    if (client) return Promise.resolve(client);
+    if (clientInitialization) return clientInitialization;
+    signInButton.disabled = true;
+    signInButton.textContent = "同期準備中…";
+    clientInitialization = createFirebaseClient().then((nextClient) => {
+      client = nextClient;
+      signInButton.disabled = false;
+      signInButton.textContent = "Googleで同期";
+      client.onAuthStateChanged((user) => handleUser(user).catch((error) => {
+        console.error(error);
+        setState(navigator.onLine ? "pending" : "offline", "同期を開始できません", error.message || "通信を確認してください");
+      }));
+      return client;
+    }).catch((error) => {
+      clientInitialization = null;
+      signInButton.disabled = false;
+      signInButton.textContent = "クラウドを再接続";
+      setState("offline", "この端末に保存中", "Firebaseへ接続できません。ローカル機能は使えます");
+      throw error;
+    });
+    return clientInitialization;
+  }
 
-  signInButton.addEventListener("click", () => {
-    if (!client) return;
-    client.signIn().catch((error) => {
-      if (error.code === "auth/popup-closed-by-user" || error.code === "auth/cancelled-popup-request") return;
+  function scheduleClientInitialization() {
+    const initialize = () => initializeClient().catch((error) => console.warn("Firebase initialization deferred", error));
+    const schedule = () => {
+      if ("requestIdleCallback" in window) window.requestIdleCallback(initialize, { timeout: 5000 });
+      else window.setTimeout(initialize, 2500);
+    };
+    if (document.readyState === "complete") schedule();
+    else window.addEventListener("load", schedule, { once: true });
+  }
+
+  signInButton.addEventListener("click", async () => {
+    try {
+      const activeClient = await initializeClient();
+      await activeClient.signIn();
+    } catch (error) {
+      if (error?.code === "auth/popup-closed-by-user" || error?.code === "auth/cancelled-popup-request") return;
       console.error(error);
       showToast("Googleログインを完了できませんでした");
-    });
+    }
   });
   syncButton.addEventListener("click", () => syncAll({ announce: true }));
   signOutButton.addEventListener("click", () => client?.signOut().catch((error) => {
@@ -212,4 +233,5 @@ export function bindCloudAccount({ coordinator, store, showToast, onPlansChanged
   window.addEventListener("online", () => currentUser && syncAll());
 
   renderSignedOut();
+  scheduleClientInitialization();
 }

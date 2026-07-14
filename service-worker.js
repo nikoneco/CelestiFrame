@@ -1,4 +1,5 @@
-const CACHE_VERSION = "celestiframe-shell-v81";
+const CACHE_VERSION = "celestiframe-shell-v82";
+const TRUSTED_STATIC_HOSTS = new Set(["unpkg.com", "www.gstatic.com"]);
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -6,10 +7,10 @@ const APP_SHELL = [
   "./manifest.webmanifest",
   "./assets/icon.svg?v=43",
   "./css/app.css?v=69",
-  "./js/app.js?v=73",
+  "./js/app.js?v=74",
   "./js/config/runtime-config.js?v=33",
   "./js/config/firebase-config.js?v=1",
-  "./js/state.js?v=40",
+  "./js/state.js?v=41",
   "./js/astronomy/sun-service.js",
   "./js/astronomy/moon-service.js?v=5",
   "./js/astronomy/milky-way-service.js?v=41",
@@ -17,8 +18,8 @@ const APP_SHELL = [
   "./js/geometry/bearing.js?v=7",
   "./js/geometry/destination.js",
   "./js/geometry/target-altitude.js?v=24",
-  "./js/elevation/elevation-service.js?v=24",
-  "./js/elevation/elevation-controller.js?v=24",
+  "./js/elevation/elevation-service.js?v=25",
+  "./js/elevation/elevation-controller.js?v=25",
   "./js/map/geocoder.js?v=32",
   "./js/map/map-controller.js?v=47",
   "./js/map/place-search.js?v=34",
@@ -27,10 +28,11 @@ const APP_SHELL = [
   "./js/plans/plan-repository.js?v=15",
   "./js/map/google-maps-url.js?v=1",
   "./js/weather/forecast-service.js?v=2",
-  "./js/weather/weather-controller.js?v=8",
+  "./js/weather/weather-controller.js?v=9",
   "./js/cloud/plan-sync.js?v=1",
   "./js/cloud/firebase-client.js?v=1",
-  "./js/cloud/account-controller.js?v=1",
+  "./js/cloud/account-controller.js?v=2",
+  "./js/utils/lru-cache.js?v=1",
   "./js/composition/composition.js?v=19",
   "./js/search/search-controller.js?v=44",
   "./js/search/search-core.js?v=42",
@@ -96,16 +98,30 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      const network = fetch(event.request).then((response) => {
+  const isTrustedStaticAsset = requestUrl.origin !== self.location.origin
+    && TRUSTED_STATIC_HOSTS.has(requestUrl.hostname)
+    && (event.request.destination === "script" || event.request.destination === "style");
+  if (isTrustedStaticAsset) {
+    event.respondWith(
+      caches.match(event.request).then((cached) => cached || fetch(event.request).then((response) => {
         if (response.ok || response.type === "opaque") {
           const copy = response.clone();
           caches.open(CACHE_VERSION).then((cache) => cache.put(event.request, copy));
         }
         return response;
-      });
-      return cached || network;
-    }).catch(() => new Response("Offline", { status: 503, statusText: "Offline" })),
+      })).catch(() => new Response("Offline", { status: 503, statusText: "Offline" })),
+    );
+    return;
+  }
+
+  if (requestUrl.origin !== self.location.origin) {
+    event.respondWith(fetch(event.request).catch(() => new Response("Offline", { status: 503, statusText: "Offline" })));
+    return;
+  }
+
+  event.respondWith(
+    caches.match(event.request)
+      .then((cached) => cached || fetch(event.request))
+      .catch(() => new Response("Offline", { status: 503, statusText: "Offline" })),
   );
 });
