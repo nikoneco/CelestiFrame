@@ -10,7 +10,7 @@ import { calculateMilkyWay } from "./astronomy/milky-way-service.js?v=40";
 import { subjectGeometry } from "./geometry/bearing.js?v=7";
 import { signedAngleDifference } from "./geometry/angle.js";
 import { bindSearchControls } from "./search/search-controller.js?v=44";
-import { bindPlanManager } from "./plans/plan-manager.js?v=42";
+import { bindPlanManager } from "./plans/plan-manager.js?v=43";
 import { createPlanRepository } from "./plans/plan-repository.js?v=15";
 import { createPlanSyncCoordinator } from "./cloud/plan-sync.js?v=1";
 import { bindCloudAccount } from "./cloud/account-controller.js?v=1";

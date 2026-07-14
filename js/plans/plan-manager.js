@@ -1,5 +1,6 @@
 import { MAX_PLAN_IMPORT_BYTES, buildShareUrl, createPlan, defaultPlanName, normalizePlan, parsePlansFile, serializePlans } from "./plan-data.js?v=40";
 import { createPlanRepository } from "./plan-repository.js?v=15";
+import { buildGoogleMapsDirectionsUrl, buildGoogleMapsSearchUrl } from "../map/google-maps-url.js?v=1";
 
 const formatDateTime = (value) => new Intl.DateTimeFormat("ja-JP", {
   year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false,
@@ -77,8 +78,17 @@ export function bindPlanManager(store, { applyState, showToast, repository = cre
   const cancelEditButton = document.querySelector("#plan-cancel-edit");
   const list = document.querySelector("#plans-list");
   const count = document.querySelector("#plans-count");
+  const mapDialog = document.querySelector("#plan-map-dialog");
+  const mapPlanName = document.querySelector("#plan-map-name");
+  const mapDirections = document.querySelector("#plan-map-directions");
+  const mapCamera = document.querySelector("#plan-map-camera");
+  const mapSubject = document.querySelector("#plan-map-subject");
+  const mapRouteSubject = document.querySelector("#plan-map-route-subject");
+  const moreDialog = document.querySelector("#plan-more-dialog");
+  const morePlanName = document.querySelector("#plan-more-name");
   let editingId = null;
   let visiblePlans = [];
+  let morePlanId = null;
 
   function resetForm() {
     editingId = null;
@@ -127,10 +137,10 @@ export function bindPlanManager(store, { applyState, showToast, repository = cre
     actions.className = "plan-card-actions";
     actions.append(
       actionButton(plan.favorite ? "★" : "☆", "favorite", plan.favorite ? "お気に入りを解除" : "お気に入りに追加"),
+      actionButton("地図", "map", "Googleマップで開く"),
       actionButton("共有", "share"),
       actionButton("編集", "edit"),
-      actionButton("複製", "duplicate"),
-      actionButton("削除", "delete"),
+      actionButton("…", "more", "その他の操作"),
     );
     card.append(main, actions);
     return card;
@@ -163,6 +173,44 @@ export function bindPlanManager(store, { applyState, showToast, repository = cre
   });
   document.querySelector("#plans-close").addEventListener("click", () => dialog.close());
   cancelEditButton.addEventListener("click", resetForm);
+
+  function openMapDialog(plan) {
+    mapPlanName.textContent = plan.name;
+    mapDirections.href = buildGoogleMapsDirectionsUrl(plan.state.cameraLocation);
+    mapCamera.href = buildGoogleMapsSearchUrl(plan.state.cameraLocation);
+    const hasSubject = Boolean(plan.state.subjectLocation);
+    mapSubject.hidden = !hasSubject;
+    mapRouteSubject.hidden = !hasSubject;
+    if (hasSubject) {
+      mapSubject.href = buildGoogleMapsSearchUrl(plan.state.subjectLocation);
+      mapSubject.querySelector("small").textContent = plan.state.subject.name || "被写体地点にピンを立てる";
+      mapRouteSubject.querySelector("b").textContent = plan.state.subject.name || "被写体";
+    } else {
+      mapSubject.removeAttribute("href");
+    }
+    mapDialog.showModal();
+  }
+
+  function openMoreDialog(plan) {
+    morePlanId = plan.id;
+    morePlanName.textContent = plan.name;
+    moreDialog.showModal();
+  }
+
+  async function duplicatePlan(plan) {
+    const duplicate = createPlan({ state: plan.state, name: `${plan.name} のコピー`, notes: plan.notes });
+    await repository.put(duplicate);
+    await refresh();
+    showToast("撮影計画を複製しました");
+  }
+
+  async function deletePlan(plan) {
+    if (!window.confirm(`「${plan.name}」を削除しますか？`)) return;
+    await repository.delete(plan.id);
+    if (editingId === plan.id) resetForm();
+    await refresh();
+    showToast("撮影計画を削除しました");
+  }
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -203,6 +251,8 @@ export function bindPlanManager(store, { applyState, showToast, repository = cre
     } else if (button.dataset.action === "favorite") {
       await repository.put({ ...plan, favorite: !plan.favorite, updatedAt: new Date().toISOString() });
       await refresh();
+    } else if (button.dataset.action === "map") {
+      openMapDialog(plan);
     } else if (button.dataset.action === "share") {
       const originalLabel = button.textContent;
       button.disabled = true;
@@ -225,17 +275,31 @@ export function bindPlanManager(store, { applyState, showToast, repository = cre
       saveButton.textContent = "名前とメモを更新";
       cancelEditButton.hidden = false;
       nameInput.focus();
-    } else if (button.dataset.action === "duplicate") {
-      const duplicate = createPlan({ state: plan.state, name: `${plan.name} のコピー`, notes: plan.notes });
-      await repository.put(duplicate);
-      await refresh();
-      showToast("撮影計画を複製しました");
-    } else if (button.dataset.action === "delete" && window.confirm(`「${plan.name}」を削除しますか？`)) {
-      await repository.delete(plan.id);
-      if (editingId === plan.id) resetForm();
-      await refresh();
-      showToast("撮影計画を削除しました");
+    } else if (button.dataset.action === "more") {
+      openMoreDialog(plan);
     }
+  });
+
+  document.querySelectorAll("[data-plan-sheet-close]").forEach((button) => {
+    button.addEventListener("click", () => button.closest("dialog").close());
+  });
+  [mapDirections, mapCamera, mapSubject].forEach((link) => {
+    link.addEventListener("click", () => mapDialog.close());
+  });
+  [mapDialog, moreDialog].forEach((sheet) => {
+    sheet.addEventListener("click", (event) => {
+      if (event.target === sheet) sheet.close();
+    });
+  });
+  moreDialog.addEventListener("close", () => { morePlanId = null; });
+  moreDialog.addEventListener("click", async (event) => {
+    const action = event.target.closest("button[data-plan-more-action]")?.dataset.planMoreAction;
+    if (!action) return;
+    const plan = visiblePlans.find((item) => item.id === morePlanId);
+    if (!plan) return showToast("撮影計画が見つかりません");
+    moreDialog.close();
+    if (action === "duplicate") await duplicatePlan(plan);
+    if (action === "delete") await deletePlan(plan);
   });
 
   document.querySelector("#plans-export").addEventListener("click", async () => {
