@@ -10,7 +10,7 @@
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./assets/icon.svg?v=43" type="image/svg+xml">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
-    <link rel="stylesheet" href="./css/app.css?v=62">
+    <link rel="stylesheet" href="./css/app.css?v=63">
   </head>
   <body>
     <div class="app-shell">
@@ -73,9 +73,12 @@
           </div>
 
           <aside class="weather-overlay" id="weather-overlay" aria-label="予報雲レイヤー">
-            <button class="weather-toggle" id="weather-toggle" type="button" aria-pressed="false" aria-expanded="false" aria-controls="weather-panel">
-              <span aria-hidden="true">☁</span><strong>予報雲</strong><i aria-hidden="true">⌄</i>
-            </button>
+            <div class="weather-quick">
+              <button class="weather-toggle" id="weather-toggle" type="button" aria-expanded="false" aria-controls="weather-panel">
+                <span aria-hidden="true">☁</span><strong>予報雲</strong><i aria-hidden="true">⌄</i>
+              </button>
+              <button class="weather-layer-toggle" id="weather-layer-toggle" type="button" role="switch" aria-checked="false" aria-label="雲レイヤーを地図に表示"><span aria-hidden="true"></span></button>
+            </div>
             <section class="weather-panel" id="weather-panel" hidden aria-live="polite">
               <header>
                 <div><span class="eyebrow">SKY VEIL</span><strong>予報雲</strong></div>
@@ -99,7 +102,6 @@
                 <span id="weather-status">雲レイヤーを表示していません</span>
               </footer>
               <div class="weather-actions">
-                <button id="weather-clear" type="button">地図の雲を消す</button>
                 <button id="weather-refresh" type="button">再取得</button>
               </div>
               <a class="weather-source" id="weather-source" href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo・予報値</a>
@@ -604,6 +606,6 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
     <script src="./js/vendor/suncalc.js"></script>
-    <script type="module" src="./js/app.js?v=67"></script>
+    <script type="module" src="./js/app.js?v=68"></script>
   </body>
 </html>

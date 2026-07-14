@@ -241,13 +241,18 @@ main { min-height: 100dvh; }
 .place-search-results > a { display: block; padding: 6px 10px; color: var(--muted); font-size: 8px; text-decoration: none; }
 
 .weather-overlay { position: absolute; z-index: 580; top: 192px; left: 14px; width: min(326px, calc(100% - 28px)); }
-.weather-toggle { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; min-height: 44px; padding: 0 11px; border: 1px solid var(--line); border-radius: 999px; background: var(--glass); color: var(--moon); box-shadow: 0 8px 22px rgba(0, 0, 0, .28); backdrop-filter: blur(12px); font-size: 10px; cursor: pointer; }
+.weather-quick { display: flex; align-items: stretch; gap: 6px; }
+.weather-toggle { flex: 1 1 auto; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; min-height: 44px; padding: 0 11px; border: 1px solid var(--line); border-radius: 999px; background: var(--glass); color: var(--moon); box-shadow: 0 8px 22px rgba(0, 0, 0, .28); backdrop-filter: blur(12px); font-size: 10px; cursor: pointer; }
 .weather-toggle > span { color: var(--moon-blue); font-size: 15px; line-height: 1; }
 .weather-toggle strong { font: 700 10px var(--data); letter-spacing: .06em; text-align: left; }
 .weather-toggle i { color: var(--muted); font: normal 15px/1 var(--data); transition: transform .2s ease; }
 .weather-overlay.is-active .weather-toggle { border-color: color-mix(in srgb, var(--moon-blue) 62%, var(--line)); box-shadow: 0 8px 22px rgba(0, 0, 0, .28), 0 0 18px color-mix(in srgb, var(--moon-blue) 18%, transparent); }
 .weather-overlay.is-active .weather-toggle > span { text-shadow: 0 0 12px var(--moon-blue); }
 .weather-toggle[aria-expanded="true"] i { transform: rotate(180deg); }
+.weather-layer-toggle { position: relative; width: 52px; min-height: 44px; flex: 0 0 auto; padding: 0; border: 1px solid var(--line); border-radius: 999px; background: color-mix(in srgb, var(--panel) 82%, transparent); box-shadow: 0 8px 22px rgba(0, 0, 0, .24); cursor: pointer; }
+.weather-layer-toggle::before { content: ""; position: absolute; top: 50%; left: 6px; width: 18px; height: 18px; border-radius: 50%; background: var(--muted); box-shadow: 0 1px 5px rgba(0, 0, 0, .4); transform: translateY(-50%); transition: left .2s ease, background .2s ease, box-shadow .2s ease; }
+.weather-layer-toggle[aria-checked="true"] { border-color: color-mix(in srgb, var(--horizon) 70%, var(--line)); background: color-mix(in srgb, var(--horizon) 25%, var(--panel)); }
+.weather-layer-toggle[aria-checked="true"]::before { left: 26px; background: var(--horizon); box-shadow: 0 0 11px color-mix(in srgb, var(--horizon) 80%, transparent); }
 .weather-panel { margin-top: 6px; padding: 11px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--moon-blue) 42%, var(--line)); border-radius: 12px; background: color-mix(in srgb, var(--panel) 94%, transparent); box-shadow: 0 14px 34px rgba(0, 0, 0, .44); backdrop-filter: blur(16px); }
 .weather-panel > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
 .weather-panel > header .eyebrow { display: block; color: var(--moon-blue); font: 8px var(--data); letter-spacing: .14em; }
@@ -268,7 +273,7 @@ main { min-height: 100dvh; }
 #weather-precipitation { color: var(--moon-blue); font: 8px var(--data); }
 #weather-status { overflow: hidden; text-align: right; text-overflow: ellipsis; white-space: nowrap; }
 .weather-overlay.is-loading #weather-status::before { content: ""; display: inline-block; width: 5px; height: 5px; margin-right: 4px; border-radius: 50%; background: var(--horizon); box-shadow: 0 0 8px var(--horizon); animation: weather-pulse 1s ease-in-out infinite alternate; }
-.weather-actions { display: grid; grid-template-columns: 1fr auto; gap: 6px; }
+.weather-actions { display: grid; grid-template-columns: 1fr; gap: 6px; }
 .weather-actions button { min-height: 38px; padding: 0 10px; border: 1px solid var(--line); border-radius: 7px; background: transparent; color: var(--muted); font-size: 9px; font-weight: 700; cursor: pointer; }
 #weather-refresh { border-color: color-mix(in srgb, var(--horizon) 54%, var(--line)); color: var(--horizon); }
 .weather-source { display: block; margin: 8px 2px 0; color: var(--muted); font-size: 7px; text-align: right; text-decoration: none; }

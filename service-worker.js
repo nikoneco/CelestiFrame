@@ -1,12 +1,12 @@
-const CACHE_VERSION = "celestiframe-shell-v71";
+const CACHE_VERSION = "celestiframe-shell-v72";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./offline.html",
   "./manifest.webmanifest",
   "./assets/icon.svg?v=43",
-  "./css/app.css?v=62",
-  "./js/app.js?v=67",
+  "./css/app.css?v=63",
+  "./js/app.js?v=68",
   "./js/config/runtime-config.js?v=33",
   "./js/config/firebase-config.js?v=1",
   "./js/state.js?v=40",
@@ -27,7 +27,7 @@ const APP_SHELL = [
   "./js/plans/plan-repository.js?v=15",
   "./js/map/google-maps-url.js?v=1",
   "./js/weather/forecast-service.js?v=2",
-  "./js/weather/weather-controller.js?v=5",
+  "./js/weather/weather-controller.js?v=6",
   "./js/cloud/plan-sync.js?v=1",
   "./js/cloud/firebase-client.js?v=1",
   "./js/cloud/account-controller.js?v=1",

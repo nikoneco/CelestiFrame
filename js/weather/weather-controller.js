@@ -13,9 +13,9 @@ function mapKey(bounds) {
 export function bindWeatherOverlay(store, getMapController, { endpoint, fetchImpl = fetch } = {}) {
   const root = document.querySelector("#weather-overlay");
   const toggle = document.querySelector("#weather-toggle");
+  const layerToggle = document.querySelector("#weather-layer-toggle");
   const panel = document.querySelector("#weather-panel");
   const panelClose = document.querySelector("#weather-panel-close");
-  const clearButton = document.querySelector("#weather-clear");
   const refreshButton = document.querySelector("#weather-refresh");
   const status = document.querySelector("#weather-status");
   const selectedTime = document.querySelector("#weather-time");
@@ -30,6 +30,7 @@ export function bindWeatherOverlay(store, getMapController, { endpoint, fetchImp
   const modeButtons = [...document.querySelectorAll("[data-weather-mode]")];
   const cache = new Map();
   let activeMode = null;
+  let isLayerEnabled = false;
   let latestForecast = null;
   let requestController = null;
   let refreshTimer = null;
@@ -47,11 +48,11 @@ export function bindWeatherOverlay(store, getMapController, { endpoint, fetchImp
     const mode = activeMode && CLOUD_MODES[activeMode];
     const primaryMode = mode || CLOUD_MODES.total;
     const secondaryMode = activeMode && activeMode !== "total" ? CLOUD_MODES.total : CLOUD_MODES.low;
-    root.classList.toggle("is-active", Boolean(mode));
+    root.classList.toggle("is-active", Boolean(mode && isLayerEnabled));
     root.classList.toggle("is-panel-open", !panel.hidden);
-    toggle.setAttribute("aria-pressed", String(Boolean(mode)));
     toggle.setAttribute("aria-expanded", String(!panel.hidden));
-    toggle.querySelector("strong").textContent = mode ? `${mode.label} ${latestForecast ? formatPercent(latestForecast[activeMode]) : "…"}` : "予報雲";
+    layerToggle.setAttribute("aria-checked", String(Boolean(mode && isLayerEnabled)));
+    toggle.querySelector("strong").textContent = mode && isLayerEnabled ? `${mode.label} ${latestForecast ? formatPercent(latestForecast[activeMode]) : "…"}` : "予報雲";
     primaryLabel.textContent = primaryMode.label === "総雲" ? "総雲量" : `${primaryMode.label}雲`;
     secondaryLabel.textContent = secondaryMode.label === "総雲" ? "総雲量" : `${secondaryMode.label}雲`;
     total.textContent = latestForecast ? formatPercent(latestForecast[activeMode || "total"]) : "—";
@@ -69,13 +70,14 @@ export function bindWeatherOverlay(store, getMapController, { endpoint, fetchImp
     refreshButton.disabled = busy;
   }
 
-  function clearOverlay({ message = "雲レイヤーを表示していません" } = {}) {
+  function setLayerEnabled(enabled, { message } = {}) {
     requestController?.abort();
     requestController = null;
-    activeMode = null;
-    getMapController()?.clearCloudOverlay();
-    setMetrics(null);
-    setStatus(message);
+    isLayerEnabled = Boolean(enabled);
+    if (!isLayerEnabled) {
+      getMapController()?.clearCloudOverlay();
+      setStatus(message || "雲レイヤーを非表示にしました");
+    }
     render();
   }
 
@@ -87,10 +89,11 @@ export function bindWeatherOverlay(store, getMapController, { endpoint, fetchImp
   async function refresh({ force = false } = {}) {
     const mapController = getMapController();
     const state = store.getState();
-    if (!activeMode || !mapController) return;
+    if (!activeMode || !isLayerEnabled || !mapController) return;
     if (!isForecastHour(state.selectedDateTime)) {
       mapController.clearCloudOverlay();
       setMetrics(null);
+      isLayerEnabled = false;
       setStatus("予報雲は前日から16日先まで表示できます");
       render();
       return;
@@ -117,11 +120,12 @@ export function bindWeatherOverlay(store, getMapController, { endpoint, fetchImp
         console.warn("Weather forecast fetch failed", error);
         mapController.clearCloudOverlay();
         setMetrics(null);
+        isLayerEnabled = false;
         setStatus(navigator.onLine ? "空況データを取得できません" : "オフラインでは予報雲を更新できません");
         render();
         return;
       } finally {
-        if (sequence === requestSequence) setStatus("予報雲を地図に表示中");
+        if (sequence === requestSequence && isLayerEnabled) setStatus("予報雲を地図に表示中");
       }
     }
     const [cameraRecord, ...gridRecords] = records;
@@ -136,9 +140,12 @@ export function bindWeatherOverlay(store, getMapController, { endpoint, fetchImp
 
   function openPanel() {
     panel.hidden = false;
-    if (!activeMode) activeMode = "total";
+    if (!activeMode) {
+      activeMode = "total";
+      isLayerEnabled = true;
+    }
     render();
-    scheduleRefresh({ delay: 0 });
+    if (isLayerEnabled) scheduleRefresh({ delay: 0 });
   }
 
   toggle.addEventListener("click", () => {
@@ -152,7 +159,16 @@ export function bindWeatherOverlay(store, getMapController, { endpoint, fetchImp
     panel.hidden = true;
     render();
   });
-  clearButton.addEventListener("click", () => clearOverlay());
+  layerToggle.addEventListener("click", () => {
+    if (isLayerEnabled) {
+      setLayerEnabled(false);
+    } else {
+      if (!activeMode) activeMode = "total";
+      isLayerEnabled = true;
+      render();
+      scheduleRefresh({ delay: 0 });
+    }
+  });
   refreshButton.addEventListener("click", () => {
     cache.clear();
     scheduleRefresh({ force: true, delay: 0 });
@@ -160,18 +176,20 @@ export function bindWeatherOverlay(store, getMapController, { endpoint, fetchImp
   modeButtons.forEach((button) => button.addEventListener("click", () => {
     activeMode = button.dataset.weatherMode;
     render();
-    scheduleRefresh({ delay: 0 });
+    if (isLayerEnabled) scheduleRefresh({ delay: 0 });
   }));
 
   store.subscribe((state) => {
     selectedTime.textContent = `${formatSelectedTime(state.selectedDateTime)} の予報`;
-    if (!activeMode) return;
+    if (!activeMode || !isLayerEnabled) return;
     const stateKey = `${state.selectedDateTime}|${state.cameraLocation.latitude.toFixed(3)}|${state.cameraLocation.longitude.toFixed(3)}|${state.map.center.latitude.toFixed(3)}|${state.map.center.longitude.toFixed(3)}|${state.map.zoom}`;
     if (stateKey === lastStateKey) return;
     lastStateKey = stateKey;
     scheduleRefresh();
   });
 
-  clearOverlay();
-  return { refresh: () => refresh(), clear: clearOverlay };
+  setMetrics(null);
+  setStatus("雲レイヤーを表示していません");
+  render();
+  return { refresh: () => refresh(), clear: () => setLayerEnabled(false) };
 }
