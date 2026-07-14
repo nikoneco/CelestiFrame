@@ -48,7 +48,7 @@ export function bindWeatherOverlay(store, getMapController, { endpoint, fetchImp
   function render() {
     const mode = activeMode && CLOUD_MODES[activeMode];
     const primaryMode = mode || CLOUD_MODES.total;
-    const secondaryMode = activeMode && activeMode !== "total" ? CLOUD_MODES.total : CLOUD_MODES.low;
+    const secondaryMode = CLOUD_MODES.total;
     const isTotalMode = primaryMode === CLOUD_MODES.total;
     root.classList.toggle("is-active", Boolean(mode && isLayerEnabled));
     root.classList.toggle("is-panel-open", !panel.hidden);
@@ -59,7 +59,7 @@ export function bindWeatherOverlay(store, getMapController, { endpoint, fetchImp
     primaryLabel.textContent = primaryMode.label === "総雲" ? "総雲量" : `${primaryMode.label}雲`;
     secondaryLabel.textContent = secondaryMode.label === "総雲" ? "総雲量" : `${secondaryMode.label}雲`;
     total.textContent = latestForecast ? formatPercent(latestForecast[activeMode || "total"]) : "—";
-    low.textContent = latestForecast ? formatPercent(latestForecast[secondaryMode === CLOUD_MODES.total ? "total" : "low"]) : "—";
+    low.textContent = latestForecast ? formatPercent(latestForecast.total) : "—";
     modeButtons.forEach((button) => {
       const selected = button.dataset.weatherMode === activeMode;
       button.classList.toggle("is-active", selected);

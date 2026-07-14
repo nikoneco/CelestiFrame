@@ -270,11 +270,7 @@ main { min-height: 100dvh; }
 .weather-metrics span, .weather-metrics small { display: block; color: var(--muted); font-size: 8px; }
 .weather-metrics output { display: block; margin-top: 3px; color: var(--text); font: 600 16px var(--data); }
 .weather-metrics small { position: absolute; right: 8px; bottom: 8px; font: 7px var(--data); }
-.weather-metrics.is-total { grid-template-columns: repeat(3, 1fr); }
-.weather-metrics.is-total > div { min-height: 58px; border-top: 0; border-right: 0; }
-.weather-metrics.is-total > div:nth-child(2) { display: none; }
-.weather-metrics.is-total > div:nth-child(3) { border-right: 1px solid var(--line); }
-.weather-metrics.is-total output { font-size: 15px; }
+.weather-metrics.is-total > div:first-child { visibility: hidden; }
 .weather-panel footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 8px 2px; color: var(--muted); font-size: 8px; }
 #weather-precipitation { color: var(--moon-blue); font: 8px var(--data); }
 #weather-status { overflow: hidden; text-align: right; text-overflow: ellipsis; white-space: nowrap; }
