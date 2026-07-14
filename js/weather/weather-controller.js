@@ -20,6 +20,8 @@ export function bindWeatherOverlay(store, getMapController, { endpoint, fetchImp
   const status = document.querySelector("#weather-status");
   const selectedTime = document.querySelector("#weather-time");
   const source = document.querySelector("#weather-source");
+  const primaryLabel = document.querySelector("#weather-primary-label");
+  const secondaryLabel = document.querySelector("#weather-secondary-label");
   const total = document.querySelector("#weather-total");
   const low = document.querySelector("#weather-low");
   const visibility = document.querySelector("#weather-visibility");
@@ -36,8 +38,6 @@ export function bindWeatherOverlay(store, getMapController, { endpoint, fetchImp
 
   function setMetrics(forecast) {
     latestForecast = forecast || null;
-    total.textContent = forecast ? formatPercent(forecast.total) : "—";
-    low.textContent = forecast ? formatPercent(forecast.low) : "—";
     visibility.textContent = forecast ? formatVisibility(forecast.visibilityMeters) : "—";
     wind.textContent = forecast ? `${Math.round(forecast.windKmh)} / ${Math.round(forecast.gustKmh)}` : "—";
     precipitation.textContent = forecast ? `降水 ${formatPercent(forecast.precipitationProbability)}` : "降水 —";
@@ -45,11 +45,17 @@ export function bindWeatherOverlay(store, getMapController, { endpoint, fetchImp
 
   function render() {
     const mode = activeMode && CLOUD_MODES[activeMode];
+    const primaryMode = mode || CLOUD_MODES.total;
+    const secondaryMode = activeMode && activeMode !== "total" ? CLOUD_MODES.total : CLOUD_MODES.low;
     root.classList.toggle("is-active", Boolean(mode));
     root.classList.toggle("is-panel-open", !panel.hidden);
     toggle.setAttribute("aria-pressed", String(Boolean(mode)));
     toggle.setAttribute("aria-expanded", String(!panel.hidden));
     toggle.querySelector("strong").textContent = mode ? `${mode.label} ${latestForecast ? formatPercent(latestForecast[activeMode]) : "…"}` : "予報雲";
+    primaryLabel.textContent = primaryMode.label === "総雲" ? "総雲量" : `${primaryMode.label}雲`;
+    secondaryLabel.textContent = secondaryMode.label === "総雲" ? "総雲量" : `${secondaryMode.label}雲`;
+    total.textContent = latestForecast ? formatPercent(latestForecast[activeMode || "total"]) : "—";
+    low.textContent = latestForecast ? formatPercent(latestForecast[secondaryMode === CLOUD_MODES.total ? "total" : "low"]) : "—";
     modeButtons.forEach((button) => {
       const selected = button.dataset.weatherMode === activeMode;
       button.classList.toggle("is-active", selected);

@@ -89,8 +89,8 @@
                 <button type="button" data-weather-mode="high" aria-pressed="false">高層</button>
               </div>
               <div class="weather-metrics">
-                <div><span>総雲量</span><output id="weather-total">—</output></div>
-                <div><span>低層雲</span><output id="weather-low">—</output></div>
+                <div><span id="weather-primary-label">総雲量</span><output id="weather-total">—</output></div>
+                <div><span id="weather-secondary-label">低層雲</span><output id="weather-low">—</output></div>
                 <div><span>視程</span><output id="weather-visibility">—</output></div>
                 <div><span>風 / 瞬間風速</span><output id="weather-wind">—</output><small>km/h</small></div>
               </div>
@@ -604,6 +604,6 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
     <script src="./js/vendor/suncalc.js"></script>
-    <script type="module" src="./js/app.js?v=65"></script>
+    <script type="module" src="./js/app.js?v=66"></script>
   </body>
 </html>
