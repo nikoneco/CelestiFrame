@@ -5,7 +5,7 @@ import { normalizeState } from "../js/state.js";
 test("normalizeState keeps valid persisted values", () => {
   const state = normalizeState({
     selectedDateTime: "2026-08-28T03:50:00+09:00",
-    selectedBody: "sun",
+    selectedTargets: ["sun", "mars", "andromeda"],
     cameraLocation: { latitude: "35.4", longitude: "138.7" },
     subjectLocation: { latitude: 35.36, longitude: 138.73 },
     subject: { name: "富士山", heightMeters: 3776, targetMode: "terrain" },
@@ -20,6 +20,7 @@ test("normalizeState keeps valid persisted values", () => {
   assert.equal(state.composition.focalLengthMm, 200);
   assert.equal(state.map.zoom, 16);
   assert.equal(state.settings.theme, "red");
+  assert.deepEqual(state.selectedTargets, ["sun", "mars", "andromeda"]);
 });
 
 test("normalizeState replaces only corrupted persisted fields", () => {
@@ -35,7 +36,7 @@ test("normalizeState replaces only corrupted persisted fields", () => {
   });
   assert.deepEqual(state.cameraLocation, { latitude: 35.681236, longitude: 139.767125 });
   assert.equal(state.subjectLocation, null);
-  assert.equal(state.selectedBody, "moon");
+  assert.deepEqual(state.selectedTargets, ["moon"]);
   assert.equal(state.subject.name.length, 120);
   assert.equal(state.subject.heightMeters, 10);
   assert.equal(state.composition.focalLengthMm, 50);
@@ -43,4 +44,10 @@ test("normalizeState replaces only corrupted persisted fields", () => {
   assert.deepEqual(state.map.center, state.cameraLocation);
   assert.equal(state.settings.theme, "dark");
   assert.ok(Number.isFinite(new Date(state.selectedDateTime).getTime()));
+});
+
+test("normalizeState migrates legacy body selections and caps targets at five", () => {
+  assert.deepEqual(normalizeState({ selectedBody: "all" }).selectedTargets, ["sun", "moon", "milkyway"]);
+  const selectedTargets = normalizeState({ selectedTargets: ["sun", "moon", "mars", "jupiter", "saturn", "venus", "unknown", "sun"] }).selectedTargets;
+  assert.deepEqual(selectedTargets, ["sun", "moon", "mars", "jupiter", "saturn"]);
 });

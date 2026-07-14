@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#07111f">
-    <meta name="description" content="太陽と月の位置から、写真の一瞬を計画するPWA。">
+    <meta name="description" content="太陽・月・星景の位置から、写真の一瞬を計画するPWA。">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: blob: https:; media-src 'self' blob:; connect-src 'self' https:; frame-src 'self' https://*.firebaseapp.com https://accounts.google.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
     <title>CelestiFrame</title>
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./assets/icon.svg?v=43" type="image/svg+xml">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
-    <link rel="stylesheet" href="./css/app.css?v=69">
+    <link rel="stylesheet" href="./css/app.css?v=70">
   </head>
   <body>
     <div class="app-shell">
@@ -130,12 +130,12 @@
 
           <div class="control-deck-content" id="control-deck-content">
 
-          <div class="body-selector" role="group" aria-label="表示する天体">
-            <button type="button" data-body="sun" aria-pressed="false">太陽</button>
-            <button type="button" data-body="moon" class="is-active" aria-pressed="true">月</button>
-            <button type="button" data-body="milkyway" aria-pressed="false">天の川</button>
-            <button type="button" data-body="all" aria-pressed="false">全て</button>
-          </div>
+          <button class="target-selector-button" id="target-selector-button" type="button" aria-haspopup="dialog" aria-controls="target-selector-dialog">
+            <span><small>CELESTIAL TARGETS</small><b>撮影対象を選択</b></span>
+            <span class="target-selection-summary" id="target-selection-summary" aria-hidden="true"></span>
+            <strong id="target-selection-count">1/5</strong>
+            <i aria-hidden="true">›</i>
+          </button>
 
           <nav class="deck-shortcuts" aria-label="コントロール内を移動">
             <button type="button" data-deck-target="time-panel">日時</button>
@@ -247,6 +247,7 @@
                 <span>暗さ <b data-milkyway-field="darkness">—</b></span>
               </footer>
             </article>
+            <div class="stellar-target-grid" id="stellar-target-grid"></div>
           </div>
 
           <article class="alignment-card" id="alignment-card" hidden>
@@ -257,14 +258,12 @@
             <div class="alignment-metrics">
               <div><span>距離</span><strong data-alignment-field="distance">—</strong></div>
               <div><span>被写体方位</span><strong><b data-alignment-field="bearing">—</b><small>°</small></strong></div>
-              <div><span>太陽との差</span><strong data-alignment-field="sun-difference">—</strong></div>
-              <div><span>月との差</span><strong data-alignment-field="moon-difference">—</strong></div>
-              <div><span>天の川との差</span><strong data-alignment-field="milkyway-difference">—</strong></div>
+              <div class="alignment-target-metrics" id="alignment-target-metrics"></div>
             </div>
             <p data-alignment-field="message">被写体地点を基準に天体の左右差を表示します。</p>
             <button class="alignment-search-button" id="alignment-search-button" type="button">重なる日時を検索</button>
             <section class="shooting-planner" id="shooting-planner">
-              <div class="planning-tool-heading"><div><span class="eyebrow">REVERSE LOCATION</span><b>撮影地点候補</b></div><select id="candidate-body" aria-label="候補の基準天体"><option value="sun">太陽</option><option value="moon">月</option><option value="milkyway">天の川アーチ</option></select></div>
+              <div class="planning-tool-heading"><div><span class="eyebrow">REVERSE LOCATION</span><b>撮影地点候補</b></div><select id="candidate-body" aria-label="候補の基準天体"></select></div>
               <p id="candidate-summary">被写体と天体の延長線上へ候補を表示します。</p>
               <button id="candidate-toggle" type="button">候補を表示</button>
               <div class="candidate-list" id="candidate-list"></div>
@@ -292,9 +291,7 @@
               <i class="frame-line frame-line-h1"></i><i class="frame-line frame-line-h2"></i>
               <span class="composition-horizon" id="composition-horizon"><b>水平</b></span>
               <span class="composition-subject" id="composition-subject"><b id="composition-subject-label">被写体</b></span>
-              <span class="composition-body composition-body-sun" data-composition-body="sun"><i></i><b>太陽</b></span>
-              <span class="composition-body composition-body-moon" data-composition-body="moon"><i></i><b>月</b></span>
-              <span class="composition-body composition-body-milkyway" data-composition-body="milkyway"><i></i><b>天の川</b></span>
+              <span id="composition-celestial-bodies"></span>
               <span class="composition-frame-label" id="composition-frame-label">FULL FRAME · 50mm</span>
             </div>
 
@@ -348,7 +345,7 @@
             <p class="composition-note">標高は国土地理院DEMによる推定値です。建物・樹木・積雪・実際の大気状態は反映しません。</p>
           </article>
 
-          <p class="phase-note">Ver 1.3.0 - CelestiFrame by NikoNeco</p>
+          <p class="phase-note">Ver 1.4.0 - CelestiFrame by NikoNeco</p>
           </div>
         </section>
       </main>
@@ -486,6 +483,20 @@
       </section>
     </dialog>
 
+    <dialog class="target-selector-dialog" id="target-selector-dialog" aria-labelledby="target-selector-title">
+      <section class="target-selector-panel">
+        <header>
+          <div><span class="eyebrow">CELESTIAL CATALOG</span><h2 id="target-selector-title">撮影対象を選択</h2><p>地図・構図・重なり判定に表示する対象を、5個まで選べます。</p></div>
+          <button type="button" data-target-selector-close aria-label="撮影対象の選択を閉じる">×</button>
+        </header>
+        <div class="target-selector-list" id="target-selector-list"></div>
+        <footer>
+          <p id="target-selector-feedback" aria-live="polite"></p>
+          <button type="button" data-target-selector-close>選択を反映</button>
+        </footer>
+      </section>
+    </dialog>
+
     <dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title">
       <div class="search-panel">
         <header>
@@ -494,12 +505,7 @@
         </header>
 
         <form id="search-form" novalidate>
-          <fieldset class="search-target">
-            <legend>対象天体</legend>
-            <label><input type="radio" name="target" value="sun"><span>太陽</span></label>
-            <label><input type="radio" name="target" value="moon" checked><span>月</span></label>
-            <label><input type="radio" name="target" value="milkyway"><span>天の川</span></label>
-          </fieldset>
+          <label class="search-target-select"><span>検索する撮影対象</span><select name="target" id="search-target-select"></select></label>
 
           <section class="search-section">
             <span class="search-section-label">探索範囲</span>
@@ -605,6 +611,7 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
     <script src="./js/vendor/suncalc.js"></script>
-    <script type="module" src="./js/app.js?v=75"></script>
+    <script src="./js/vendor/astronomy-engine.min.js"></script>
+    <script type="module" src="./js/app.js?v=76"></script>
   </body>
 </html>

@@ -1,5 +1,5 @@
 import { FIREBASE_CONFIG } from "../config/firebase-config.js?v=1";
-import { normalizePlan } from "../plans/plan-data.js?v=40";
+import { normalizePlan } from "../plans/plan-data.js?v=41";
 
 const SDK_VERSION = "12.16.0";
 const sdkUrl = (name) => `https://www.gstatic.com/firebasejs/${SDK_VERSION}/firebase-${name}.js`;

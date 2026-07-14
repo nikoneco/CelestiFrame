@@ -1,14 +1,9 @@
-import { calculateSunData } from "../astronomy/sun-service.js";
-import { calculateMoonData } from "../astronomy/moon-service.js?v=5";
-import { calculateMilkyWay } from "../astronomy/milky-way-service.js?v=40";
+import { calculateTargetData } from "../astronomy/target-service.js?v=1";
+import { getTarget } from "../astronomy/target-catalog.js?v=1";
 import { createShootingCandidates } from "./shooting-candidates.js?v=40";
 
-const BODY_LABELS = Object.freeze({ sun: "太陽", moon: "月", milkyway: "天の川" });
-
 function bodyData(body, date, location) {
-  if (body === "sun") return calculateSunData(date, location);
-  if (body === "moon") return calculateMoonData(date, location);
-  return calculateMilkyWay(date, location);
+  return calculateTargetData(body, date, location);
 }
 
 const distanceLabel = (meters) => meters >= 1000 ? `${meters / 1000} km` : `${meters} m`;
@@ -21,6 +16,18 @@ export function bindShootingPlanner(store, getMapController, showToast) {
   const summary = document.querySelector("#candidate-summary");
   let active = false;
   let currentCandidates = [];
+
+  function syncBodyOptions(state) {
+    const current = bodySelect.value;
+    bodySelect.replaceChildren(...state.selectedTargets.map((targetId) => {
+      const target = getTarget(targetId);
+      const option = document.createElement("option");
+      option.value = targetId;
+      option.textContent = target.label;
+      return option;
+    }));
+    bodySelect.value = state.selectedTargets.includes(current) ? current : state.selectedTargets[0];
+  }
 
   function clear() {
     active = false;
@@ -39,16 +46,17 @@ export function bindShootingPlanner(store, getMapController, showToast) {
     try {
       const body = bodySelect.value;
       const data = bodyData(body, new Date(state.selectedDateTime), state.subjectLocation);
+      const target = getTarget(body);
       currentCandidates = createShootingCandidates({
         subjectLocation: state.subjectLocation,
         celestialAzimuth: data.azimuth,
         body,
       }).map((candidate) => ({
         ...candidate,
-        label: BODY_LABELS[body],
+        label: target.label,
         distanceLabel: distanceLabel(candidate.distanceMeters),
       }));
-      summary.textContent = `${BODY_LABELS[body]} 方位${data.azimuth.toFixed(1)}°の反対側に4地点`;
+      summary.textContent = `${target.label} 方位${data.azimuth.toFixed(1)}°の反対側に4地点`;
       toggle.textContent = "候補を消す";
       list.replaceChildren();
       currentCandidates.forEach((candidate) => {
@@ -72,9 +80,6 @@ export function bindShootingPlanner(store, getMapController, showToast) {
 
   toggle.addEventListener("click", () => {
     active = !active;
-    if (active && ["sun", "moon", "milkyway"].includes(store.getState().selectedBody)) {
-      bodySelect.value = store.getState().selectedBody;
-    }
     if (active) render(); else clear();
   });
   bodySelect.addEventListener("change", render);
@@ -86,6 +91,9 @@ export function bindShootingPlanner(store, getMapController, showToast) {
     getMapController()?.setLocation(candidate.location);
     showToast(`${candidate.label}・${candidate.distanceLabel}候補を撮影地点に設定しました`);
   });
-  store.subscribe(render);
+  store.subscribe((state) => {
+    syncBodyOptions(state);
+    render();
+  });
   return { clear, render };
 }

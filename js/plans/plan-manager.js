@@ -1,11 +1,12 @@
-import { MAX_PLAN_IMPORT_BYTES, buildShareUrl, createPlan, defaultPlanName, normalizePlan, parsePlansFile, serializePlans } from "./plan-data.js?v=40";
-import { createPlanRepository } from "./plan-repository.js?v=15";
+import { MAX_PLAN_IMPORT_BYTES, buildShareUrl, createPlan, defaultPlanName, normalizePlan, parsePlansFile, serializePlans } from "./plan-data.js?v=41";
+import { createPlanRepository } from "./plan-repository.js?v=16";
 import { buildGoogleMapsDirectionsUrl, buildGoogleMapsSearchUrl } from "../map/google-maps-url.js?v=1";
+import { targetLabelList } from "../astronomy/target-catalog.js?v=1";
 
 const formatDateTime = (value) => new Intl.DateTimeFormat("ja-JP", {
   year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false,
 }).format(new Date(value));
-const bodyLabel = (body) => body === "sun" ? "太陽" : body === "moon" ? "月" : body === "milkyway" ? "天の川" : "太陽＋月＋天の川";
+const bodyLabel = (state) => targetLabelList(state.selectedTargets, { short: true }).join("＋");
 
 function downloadText(filename, text) {
   const anchor = document.createElement("a");
@@ -35,8 +36,8 @@ async function copyText(value) {
 
 export function createPlanSharePayload(plan, baseUrl = location.href) {
   const subjectLabel = plan.state.subjectLocation
-    ? `${plan.state.subject.name || "被写体"}・${bodyLabel(plan.state.selectedBody)}`
-    : `撮影地点のみ・${bodyLabel(plan.state.selectedBody)}`;
+    ? `${plan.state.subject.name || "被写体"}・${bodyLabel(plan.state)}`
+    : `撮影地点のみ・${bodyLabel(plan.state)}`;
   const lines = [
     `撮影計画「${plan.name}」`,
     `撮影日時: ${formatDateTime(plan.state.selectedDateTime)}`,
@@ -123,8 +124,8 @@ export function bindPlanManager(store, { applyState, showToast, repository = cre
     date.textContent = formatDateTime(plan.state.selectedDateTime);
     const route = document.createElement("small");
     route.textContent = plan.state.subjectLocation
-      ? `${plan.state.subject.name} ・ ${bodyLabel(plan.state.selectedBody)}`
-      : `撮影地点のみ ・ ${bodyLabel(plan.state.selectedBody)}`;
+      ? `${plan.state.subject.name} ・ ${bodyLabel(plan.state)}`
+      : `撮影地点のみ ・ ${bodyLabel(plan.state)}`;
     main.append(name, date, route);
     if (plan.notes) {
       const note = document.createElement("small");

@@ -7,7 +7,7 @@ const plan = {
   notes: "望遠レンズを持参",
   state: {
     selectedDateTime: "2026-08-13T15:30:00.000Z",
-    selectedBody: "moon",
+    selectedTargets: ["moon"],
     cameraLocation: { latitude: 35.681236, longitude: 139.767125 },
     subjectLocation: { latitude: 35.710063, longitude: 139.8107 },
     subject: { name: "東京スカイツリー", heightMeters: 634 },

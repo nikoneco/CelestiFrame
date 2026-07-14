@@ -1,28 +1,31 @@
-import { createStore } from "./state.js?v=41";
-import { createMapController, focusCurrentLocation } from "./map/map-controller.js?v=48";
+import { createStore } from "./state.js?v=42";
+import { createMapController, focusCurrentLocation } from "./map/map-controller.js?v=49";
 import { bindPlaceSearch } from "./map/place-search.js?v=34";
 import { loadRuntimeConfig } from "./config/runtime-config.js?v=33";
 import { bindDateTimeControls } from "./ui/datetime-controls.js?v=12";
 import { normalizeThemePreference, resolveThemePreference, themeColor } from "./ui/theme.js?v=6";
 import { calculateSunData } from "./astronomy/sun-service.js";
 import { calculateMoonData } from "./astronomy/moon-service.js?v=5";
-import { calculateMilkyWay } from "./astronomy/milky-way-service.js?v=40";
+import { calculateMilkyWay } from "./astronomy/milky-way-service.js?v=41";
+import { calculateSelectedTargets } from "./astronomy/target-service.js?v=1";
+import { targetLabelList } from "./astronomy/target-catalog.js?v=1";
 import { subjectGeometry } from "./geometry/bearing.js?v=7";
 import { signedAngleDifference } from "./geometry/angle.js";
-import { bindSearchControls } from "./search/search-controller.js?v=44";
-import { bindPlanManager } from "./plans/plan-manager.js?v=43";
-import { createPlanRepository } from "./plans/plan-repository.js?v=15";
+import { bindSearchControls } from "./search/search-controller.js?v=45";
+import { bindPlanManager } from "./plans/plan-manager.js?v=44";
+import { createPlanRepository } from "./plans/plan-repository.js?v=16";
 import { createPlanSyncCoordinator } from "./cloud/plan-sync.js?v=1";
 import { bindCloudAccount } from "./cloud/account-controller.js?v=2";
-import { parseSharedState } from "./plans/plan-data.js?v=40";
+import { parseSharedState } from "./plans/plan-data.js?v=41";
 import { calculateComposition, focalLengthForFill, SENSOR_PRESETS } from "./composition/composition.js?v=19";
 import { bindCompositionControls } from "./ui/composition-controls.js?v=24";
 import { bindElevationControls } from "./elevation/elevation-controller.js?v=25";
 import { apparentSolarAltitude, calculateTargetAltitude } from "./geometry/target-altitude.js?v=24";
-import { bindShootingPlanner } from "./planning/shooting-planner.js?v=40";
+import { bindShootingPlanner } from "./planning/shooting-planner.js?v=41";
 import { bindTerrainProfile } from "./terrain/terrain-profile-controller.js?v=40";
 import { bindFieldMode } from "./field/field-mode.js?v=48";
 import { bindWeatherOverlay } from "./weather/weather-controller.js?v=9";
+import { bindTargetSelector } from "./ui/target-selector.js?v=1";
 
 let toastTimer;
 registerServiceWorker();
@@ -94,7 +97,6 @@ const formatAngle = (value) => value.toFixed(1);
 const formatTime = (date) => date
   ? new Intl.DateTimeFormat("ja-JP", { hour: "2-digit", minute: "2-digit", hour12: false }).format(date)
   : "なし";
-const bodyIsVisible = (selectedBody, body) => selectedBody === body || selectedBody === "all" || selectedBody === "both";
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 function formatMoonEvent(date, selectedDate) {
@@ -107,10 +109,11 @@ function formatMoonEvent(date, selectedDate) {
   return `${prefix}${formatTime(date)}`;
 }
 
-function renderMoon(state) {
+function renderMoon(state, calculatedData = null) {
+  if (!state.selectedTargets.includes("moon")) return;
   try {
     const selectedDate = new Date(state.selectedDateTime);
-    const moonData = calculateMoonData(selectedDate, state.cameraLocation);
+    const moonData = calculatedData || calculateMoonData(selectedDate, state.cameraLocation);
     document.querySelector('[data-moon-field="azimuth"]').textContent = formatAngle(moonData.azimuth);
     document.querySelector('[data-moon-field="altitude"]').textContent = formatAngle(moonData.altitude);
     document.querySelector('[data-moon-field="direction"]').textContent = moonData.direction;
@@ -124,31 +127,16 @@ function renderMoon(state) {
       : `${moonData.phaseName}・地平線の下（計算値）`;
     horizonState.classList.toggle("is-above", moonData.isAboveHorizon);
     horizonState.classList.toggle("is-below", !moonData.isAboveHorizon);
-    if (bodyIsVisible(state.selectedBody, "moon")) {
-      const directions = [];
-      if (state.settings.directionLineOrigin !== "subject") {
-        directions.push({ location: state.cameraLocation, data: moonData, origin: "camera" });
-      }
-      if (state.subjectLocation && state.settings.directionLineOrigin !== "camera") {
-        directions.push({
-          location: state.subjectLocation,
-          data: calculateMoonData(selectedDate, state.subjectLocation),
-          origin: "subject",
-        });
-      }
-      mapController?.setMoonDirections(directions);
-    } else {
-      mapController?.clearMoonDirection();
-    }
   } catch (error) {
     console.error("Lunar calculation failed", error);
     document.querySelector('[data-moon-field="state"]').textContent = "計算できません";
   }
 }
 
-function renderSun(state) {
+function renderSun(state, calculatedData = null) {
+  if (!state.selectedTargets.includes("sun")) return;
   try {
-    const sunData = calculateSunData(new Date(state.selectedDateTime), state.cameraLocation);
+    const sunData = calculatedData || calculateSunData(new Date(state.selectedDateTime), state.cameraLocation);
     document.querySelector('[data-sun-field="azimuth"]').textContent = formatAngle(sunData.azimuth);
     document.querySelector('[data-sun-field="altitude"]').textContent = formatAngle(sunData.altitude);
     document.querySelector('[data-sun-field="direction"]').textContent = sunData.direction;
@@ -158,22 +146,6 @@ function renderSun(state) {
     horizonState.textContent = sunData.isAboveHorizon ? "地平線の上" : "地平線の下（計算値）";
     horizonState.classList.toggle("is-above", sunData.isAboveHorizon);
     horizonState.classList.toggle("is-below", !sunData.isAboveHorizon);
-    if (bodyIsVisible(state.selectedBody, "sun")) {
-      const directions = [];
-      if (state.settings.directionLineOrigin !== "subject") {
-        directions.push({ location: state.cameraLocation, data: sunData, origin: "camera" });
-      }
-      if (state.subjectLocation && state.settings.directionLineOrigin !== "camera") {
-        directions.push({
-          location: state.subjectLocation,
-          data: calculateSunData(new Date(state.selectedDateTime), state.subjectLocation),
-          origin: "subject",
-        });
-      }
-      mapController?.setSunDirections(directions);
-    } else {
-      mapController?.clearSunDirection();
-    }
   } catch (error) {
     console.error("Solar calculation failed", error);
     document.querySelector('[data-sun-field="state"]').textContent = "計算できません";
@@ -221,10 +193,11 @@ function renderMilkyWayArc(data) {
   }
 }
 
-function renderMilkyWay(state) {
+function renderMilkyWay(state, calculatedData = null) {
+  if (!state.selectedTargets.includes("milkyway")) return;
   try {
     const date = new Date(state.selectedDateTime);
-    const data = calculateMilkyWay(date, state.cameraLocation);
+    const data = calculatedData || calculateMilkyWay(date, state.cameraLocation);
     const sun = calculateSunData(date, state.cameraLocation);
     document.querySelector('[data-milkyway-field="azimuth"]').textContent = formatAngle(data.azimuth);
     document.querySelector('[data-milkyway-field="altitude"]').textContent = formatAngle(data.altitude);
@@ -236,20 +209,60 @@ function renderMilkyWay(state) {
     stateLabel.textContent = data.core.isAboveHorizon ? "銀河中心も地平線上" : "アーチのみ・中心は地平線下";
     stateLabel.classList.toggle("is-above", data.isAboveHorizon);
     renderMilkyWayArc(data);
-    if (bodyIsVisible(state.selectedBody, "milkyway")) {
-      const directions = [];
-      if (state.settings.directionLineOrigin !== "subject") directions.push({ location: state.cameraLocation, data, origin: "camera" });
-      if (state.subjectLocation && state.settings.directionLineOrigin !== "camera") {
-        directions.push({ location: state.subjectLocation, data: calculateMilkyWay(date, state.subjectLocation), origin: "subject" });
-      }
-      mapController?.setMilkyWayDirections(directions);
-    } else {
-      mapController?.clearMilkyWayDirection();
-    }
   } catch (error) {
     console.error("Milky Way calculation failed", error);
     document.querySelector('[data-milkyway-field="state"]').textContent = "計算できません";
   }
+}
+
+function renderStellarTargets(targetData) {
+  const container = document.querySelector("#stellar-target-grid");
+  container.replaceChildren();
+  targetData.filter((data) => !["sun", "moon", "milkyway"].includes(data.target.id)).forEach((data) => {
+    const card = document.createElement("article");
+    card.className = "celestial-card celestial-card-target";
+    card.style.setProperty("--target-color", data.target.color);
+    const header = document.createElement("header");
+    const symbol = document.createElement("span");
+    symbol.className = "celestial-symbol";
+    symbol.textContent = data.target.symbol;
+    symbol.setAttribute("aria-hidden", "true");
+    const title = document.createElement("div");
+    const eyebrow = document.createElement("span");
+    eyebrow.className = "eyebrow";
+    eyebrow.textContent = data.target.kind === "planet" ? "PLANET VECTOR" : "DEEP SKY VECTOR";
+    const heading = document.createElement("h2");
+    heading.textContent = data.target.label;
+    title.append(eyebrow, heading);
+    const stateLabel = document.createElement("span");
+    stateLabel.className = `horizon-state ${data.isAboveHorizon ? "is-above" : "is-below"}`;
+    stateLabel.textContent = data.isAboveHorizon ? "地平線の上" : "地平線の下（計算値）";
+    header.append(symbol, title, stateLabel);
+    const metrics = document.createElement("div");
+    metrics.className = "metric-pair";
+    const azimuth = document.createElement("div");
+    azimuth.innerHTML = `<span>方位角 <em>${data.direction}</em></span><strong><b>${data.azimuth.toFixed(1)}</b><small>°</small></strong>`;
+    const altitude = document.createElement("div");
+    altitude.innerHTML = `<span>高度角</span><strong><b>${data.altitude.toFixed(1)}</b><small>°</small></strong>`;
+    metrics.append(azimuth, altitude);
+    const footer = document.createElement("footer");
+    footer.textContent = data.target.kind === "planet" ? "現在の観測地点から見た計算位置" : "代表点の方位・高度";
+    card.append(header, metrics, footer);
+    container.append(card);
+  });
+}
+
+function renderCelestialDirections(state, cameraTargetData) {
+  if (!mapController) return;
+  const directions = [];
+  if (state.settings.directionLineOrigin !== "subject") {
+    cameraTargetData.forEach((data) => directions.push({ targetId: data.target.id, location: state.cameraLocation, data, origin: "camera" }));
+  }
+  if (state.subjectLocation && state.settings.directionLineOrigin !== "camera") {
+    const subjectData = calculateSelectedTargets(state.selectedTargets, new Date(state.selectedDateTime), state.subjectLocation);
+    subjectData.forEach((data) => directions.push({ targetId: data.target.id, location: state.subjectLocation, data, origin: "subject" }));
+  }
+  mapController.setCelestialDirections(directions);
 }
 
 function formatDistance(value) {
@@ -261,28 +274,24 @@ function formatAlignmentDifference(value) {
   return `${Math.abs(value).toFixed(1)}°${value > 0 ? "右" : "左"}`;
 }
 
-function renderAlignment(state) {
+function renderAlignment(state, targetData = []) {
   const card = document.querySelector("#alignment-card");
   if (!state.subjectLocation) {
     card.hidden = true;
     return;
   }
 
-  const selectedDate = new Date(state.selectedDateTime);
   const geometry = subjectGeometry(state.cameraLocation, state.subjectLocation);
-  const sunData = calculateSunData(selectedDate, state.cameraLocation);
-  const moonData = calculateMoonData(selectedDate, state.cameraLocation);
-  const milkyWayData = calculateMilkyWay(selectedDate, state.cameraLocation);
-  const sunDifference = signedAngleDifference(geometry.bearingDegrees, sunData.azimuth);
-  const moonDifference = signedAngleDifference(geometry.bearingDegrees, moonData.azimuth);
-  const milkyWayDifference = signedAngleDifference(geometry.bearingDegrees, milkyWayData.azimuth);
-  const candidates = state.selectedBody === "sun"
-    ? [{ name: "太陽", difference: sunDifference }]
-    : state.selectedBody === "moon"
-      ? [{ name: "月", difference: moonDifference }]
-      : state.selectedBody === "milkyway"
-        ? [{ name: "天の川アーチ", difference: milkyWayDifference }]
-        : [{ name: "太陽", difference: sunDifference }, { name: "月", difference: moonDifference }, { name: "天の川アーチ", difference: milkyWayDifference }];
+  const candidates = targetData.map((data) => ({
+    name: data.target.label,
+    shortName: data.target.shortLabel,
+    color: data.target.color,
+    difference: signedAngleDifference(geometry.bearingDegrees, data.azimuth),
+  }));
+  if (!candidates.length) {
+    card.hidden = true;
+    return;
+  }
   const closest = candidates.reduce((best, candidate) => (
     Math.abs(candidate.difference) < Math.abs(best.difference) ? candidate : best
   ));
@@ -292,9 +301,17 @@ function renderAlignment(state) {
   document.querySelector("#alignment-title").textContent = `${state.subject?.name || "被写体"}との重なり`;
   document.querySelector('[data-alignment-field="distance"]').textContent = formatDistance(geometry.distanceMeters);
   document.querySelector('[data-alignment-field="bearing"]').textContent = geometry.bearingDegrees.toFixed(1);
-  document.querySelector('[data-alignment-field="sun-difference"]').textContent = formatAlignmentDifference(sunDifference);
-  document.querySelector('[data-alignment-field="moon-difference"]').textContent = formatAlignmentDifference(moonDifference);
-  document.querySelector('[data-alignment-field="milkyway-difference"]').textContent = formatAlignmentDifference(milkyWayDifference);
+  const metrics = document.querySelector("#alignment-target-metrics");
+  metrics.replaceChildren(...candidates.map((candidate) => {
+    const item = document.createElement("div");
+    const label = document.createElement("span");
+    label.textContent = `${candidate.shortName}との差`;
+    label.style.color = candidate.color;
+    const value = document.createElement("strong");
+    value.textContent = formatAlignmentDifference(candidate.difference);
+    item.append(label, value);
+    return item;
+  }));
   document.querySelector("#alignment-search-button").hidden = false;
   document.querySelector('[data-alignment-field="status"]').textContent = absoluteDifference <= 1
     ? "重なり候補"
@@ -307,7 +324,7 @@ function renderAlignment(state) {
 
 const clampPercent = (value) => Math.min(100, Math.max(0, value));
 
-function renderComposition(state) {
+function renderComposition(state, targetData = []) {
   const card = document.querySelector("#composition-card");
   if (!state.subjectLocation) {
     card.hidden = true;
@@ -319,8 +336,6 @@ function renderComposition(state) {
     const selectedDate = new Date(state.selectedDateTime);
     const geometry = subjectGeometry(state.cameraLocation, state.subjectLocation);
     const sunData = calculateSunData(selectedDate, state.cameraLocation);
-    const moonData = calculateMoonData(selectedDate, state.cameraLocation);
-    const milkyWayData = calculateMilkyWay(selectedDate, state.cameraLocation);
     const sensor = SENSOR_PRESETS[state.composition.sensorPreset] || SENSOR_PRESETS["full-frame"];
     const targetAltitude = calculateTargetAltitude({
       distanceMeters: geometry.distanceMeters,
@@ -340,11 +355,14 @@ function renderComposition(state) {
       sensorWidthMm: sensor.widthMm,
       sensorHeightMm: sensor.heightMm,
       orientation: state.composition.orientation,
-      celestialBodies: [
-        { id: "sun", label: "太陽", azimuthDifferenceDegrees: signedAngleDifference(geometry.bearingDegrees, sunData.azimuth), altitudeDegrees: sunData.altitude },
-        { id: "moon", label: "月", azimuthDifferenceDegrees: signedAngleDifference(geometry.bearingDegrees, moonData.azimuth), altitudeDegrees: moonData.altitude },
-        { id: "milkyway", label: "天の川", azimuthDifferenceDegrees: signedAngleDifference(geometry.bearingDegrees, milkyWayData.azimuth), altitudeDegrees: milkyWayData.altitude },
-      ],
+      celestialBodies: targetData.map((data) => ({
+        id: data.target.id,
+        label: data.target.shortLabel,
+        symbol: data.target.symbol,
+        color: data.target.color,
+        azimuthDifferenceDegrees: signedAngleDifference(geometry.bearingDegrees, data.azimuth),
+        altitudeDegrees: data.altitude,
+      })),
     });
 
     card.classList.remove("has-composition-error");
@@ -381,14 +399,23 @@ function renderComposition(state) {
     horizon.style.top = `${clampPercent(composition.horizonPercent)}%`;
     horizon.classList.toggle("is-outside", composition.horizonPercent < 0 || composition.horizonPercent > 100);
 
-    composition.bodyPositions.forEach((body) => {
-      const element = document.querySelector(`[data-composition-body="${body.id}"]`);
+    const bodyContainer = document.querySelector("#composition-celestial-bodies");
+    bodyContainer.replaceChildren(...composition.bodyPositions.map((body) => {
+      const element = document.createElement("span");
+      element.className = `composition-body composition-body-${body.id}`;
+      element.dataset.compositionBody = body.id;
+      element.style.setProperty("--target-color", body.color);
+      const symbol = document.createElement("i");
+      symbol.textContent = body.symbol;
+      const label = document.createElement("b");
+      label.textContent = body.label;
+      element.append(symbol, label);
       element.style.left = `${body.xPercent}%`;
       element.style.top = `${body.yPercent}%`;
-      element.hidden = !bodyIsVisible(state.selectedBody, body.id);
       element.classList.toggle("is-outside", !body.isInsideFrame);
       element.title = body.isInsideFrame ? `${body.label}はフレーム内` : `${body.label}はフレーム外`;
-    });
+      return element;
+    }));
   } catch (error) {
     card.classList.add("has-composition-error");
     document.querySelector('[data-composition-field="status"]').textContent = "入力を確認";
@@ -584,17 +611,11 @@ systemThemeQuery.addEventListener("change", () => {
   if (store.getState().settings.theme === "system") applyTheme("system");
 });
 
-document.querySelectorAll("[data-body]").forEach((button) => {
-  button.addEventListener("click", () => {
-    const selectedBody = button.dataset.body;
-    store.setState((state) => ({ ...state, selectedBody }));
-  });
-});
-
 const compositionControls = bindCompositionControls(store);
 bindElevationControls(store, showToast);
+bindTargetSelector(store, showToast);
 
-store.subscribe((state) => {
+function renderState(state) {
   applyTheme(state.settings.theme);
   const directionLineOrigin = ["camera", "subject", "both"].includes(state.settings.directionLineOrigin)
     ? state.settings.directionLineOrigin
@@ -603,29 +624,32 @@ store.subscribe((state) => {
     input.checked = input.value === directionLineOrigin;
   });
   document.querySelector("#coordinates").value = `${state.cameraLocation.latitude.toFixed(5)}, ${state.cameraLocation.longitude.toFixed(5)}`;
-  document.querySelectorAll("[data-body]").forEach((button) => {
-    const isActive = button.dataset.body === state.selectedBody;
-    button.classList.toggle("is-active", isActive);
-    button.setAttribute("aria-pressed", String(isActive));
-  });
   document.querySelectorAll("[data-requires-subject]").forEach((button) => {
     button.hidden = !state.subjectLocation;
   });
   document.querySelectorAll("[data-card]").forEach((card) => {
-    card.hidden = !bodyIsVisible(state.selectedBody, card.dataset.card);
+    card.hidden = !state.selectedTargets.includes(card.dataset.card);
   });
-  renderSun(state);
-  renderMoon(state);
-  renderMilkyWay(state);
-  renderAlignment(state);
-  renderComposition(state);
+  let targetData = [];
+  try {
+    targetData = calculateSelectedTargets(state.selectedTargets, new Date(state.selectedDateTime), state.cameraLocation);
+  } catch (error) {
+    console.error("Selected target calculation failed", error);
+  }
+  renderSun(state, targetData.find((data) => data.target.id === "sun"));
+  renderMoon(state, targetData.find((data) => data.target.id === "moon"));
+  renderMilkyWay(state, targetData.find((data) => data.target.id === "milkyway"));
+  renderStellarTargets(targetData);
+  renderCelestialDirections(state, targetData);
+  renderAlignment(state, targetData);
+  renderComposition(state, targetData);
   compositionControls.sync(state);
   const compactDate = new Intl.DateTimeFormat("ja-JP", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(state.selectedDateTime));
-  const compactBody = state.selectedBody === "sun" ? "太陽"
-    : state.selectedBody === "moon" ? "月"
-      : state.selectedBody === "milkyway" ? "天の川" : "全て";
-  document.querySelector("#deck-compact-summary").textContent = `${compactDate} ・ ${compactBody}`;
-});
+  const compactTargets = targetLabelList(state.selectedTargets, { short: true }).join("・");
+  document.querySelector("#deck-compact-summary").textContent = `${compactDate} ・ ${compactTargets}`;
+}
+
+store.subscribe(renderState);
 
 document.querySelector("#timezone-label").textContent = Intl.DateTimeFormat().resolvedOptions().timeZone || "LOCAL";
 bindDateTimeControls(store);
@@ -649,11 +673,7 @@ bindCloudAccount({
 bindShootingPlanner(store, () => mapController, showToast);
 bindTerrainProfile(store, () => mapController, showToast);
 bindFieldMode(store, showToast);
-renderSun(store.getState());
-renderMoon(store.getState());
-renderMilkyWay(store.getState());
-renderAlignment(store.getState());
-renderComposition(store.getState());
+renderState(store.getState());
 if (sharedState) showToast("共有された撮影計画を開きました");
 
 async function registerServiceWorker() {

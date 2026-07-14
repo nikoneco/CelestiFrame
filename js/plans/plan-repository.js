@@ -72,7 +72,7 @@ async function runTransaction(storeNames, mode, operation) {
   }
 }
 
-const unwrapPlan = (record) => structuredClone(record.plan);
+const unwrapPlan = (record) => normalizePlan(structuredClone(record.plan));
 
 export function createPlanRepository(initialOwner = GUEST_PLAN_OWNER) {
   let ownerId = normalizeOwner(initialOwner);
@@ -131,3 +131,4 @@ export function createPlanRepository(initialOwner = GUEST_PLAN_OWNER) {
     },
   };
 }
+import { normalizePlan } from "./plan-data.js?v=41";

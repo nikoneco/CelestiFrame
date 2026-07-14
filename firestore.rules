@@ -64,6 +64,18 @@ service cloud.firestore {
         && value.orientation in ['landscape', 'portrait'];
     }
 
+    function validSelectedTargets(value) {
+      return value is list
+        && value.size() >= 1
+        && value.size() <= 5
+        && value.toSet().size() == value.size()
+        && value.toSet().hasOnly([
+          'sun', 'moon', 'milkyway', 'andromeda', 'orion-nebula', 'pleiades',
+          'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'polaris', 'sirius',
+          'orion', 'scorpius', 'cassiopeia', 'summer-triangle'
+        ]);
+    }
+
     function validPlan(planId) {
       let data = request.resource.data;
       return data.keys().hasOnly([
@@ -74,7 +86,7 @@ service cloud.firestore {
         && data.id.size() <= 128
         && data.version is int
         && data.version >= 1
-        && data.version <= 4
+        && data.version <= 5
         && data.name is string
         && data.name.size() > 0
         && data.name.size() <= 120
@@ -86,10 +98,10 @@ service cloud.firestore {
         && data.updatedAt is string
         && data.updatedAt.size() <= 40
         && data.state is map
-        && data.state.keys().hasOnly(['selectedDateTime', 'selectedBody', 'cameraLocation', 'subjectLocation', 'subject', 'composition', 'map'])
+        && data.state.keys().hasOnly(['selectedDateTime', 'selectedTargets', 'cameraLocation', 'subjectLocation', 'subject', 'composition', 'map'])
         && data.state.selectedDateTime is string
         && data.state.selectedDateTime.size() <= 40
-        && data.state.selectedBody in ['sun', 'moon', 'milkyway', 'all']
+        && validSelectedTargets(data.state.selectedTargets)
         && validLocation(data.state.cameraLocation)
         && (data.state.subjectLocation == null || validLocation(data.state.subjectLocation))
         && validSubject(data.state.subject)

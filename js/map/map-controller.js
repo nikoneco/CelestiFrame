@@ -1,4 +1,5 @@
 import { destinationPoint } from "../geometry/destination.js";
+import { getTarget } from "../astronomy/target-catalog.js?v=1";
 
 export function focusCurrentLocation(mapController, coords, minimumZoom = 14) {
   if (!mapController) return false;
@@ -58,9 +59,7 @@ export function createMapController({
     icon: markerIcon,
     title: "撮影地点",
   }).addTo(map);
-  let directionLines = [];
-  let moonDirectionLines = [];
-  let milkyWayDirectionLines = [];
+  let celestialDirectionLayers = [];
   let shootingCandidateLayers = [];
   let cloudOverlayLayers = [];
   let terrainObstructionMarker = null;
@@ -173,73 +172,35 @@ export function createMapController({
       subjectMarker = null;
       subjectLine = null;
     },
-    setSunDirections(directions) {
-      directionLines.forEach((line) => line.remove());
-      directionLines = directions.map(({ location, data, origin }) => {
+    setCelestialDirections(directions) {
+      celestialDirectionLayers.forEach((layer) => layer.remove());
+      celestialDirectionLayers = directions.map(({ targetId, location, data, origin }) => {
+        const target = getTarget(targetId);
+        const color = target?.color || "#dceaff";
         const points = directionLineLocations(location, data.azimuth, origin);
         return L.polyline(
           points.map((point) => [point.latitude, point.longitude]),
           {
-            color: origin === "subject" ? "#ffd08a" : "#ffb44a",
-            weight: origin === "subject" ? 2.25 : 3,
-            opacity: data.isAboveHorizon ? (origin === "subject" ? 0.82 : 0.9) : 0.38,
-            dashArray: origin === "subject" ? "12 7 2 7" : data.isAboveHorizon ? null : "7 8",
+            color,
+            weight: origin === "subject" ? 2.15 : 3,
+            opacity: data.isAboveHorizon ? (origin === "subject" ? 0.78 : 0.9) : 0.3,
+            dashArray: origin === "subject"
+              ? "12 7 2 7"
+              : targetId === "milkyway" ? "4 5" : data.isAboveHorizon ? null : "7 8",
             interactive: false,
-            className: `sun-direction-line ${origin}-origin-line`,
+            className: `celestial-direction-line celestial-direction-${targetId} ${origin}-origin-line`,
           },
         ).addTo(map);
       });
     },
-    clearSunDirection() {
-      directionLines.forEach((line) => line.remove());
-      directionLines = [];
-    },
-    setMoonDirections(directions) {
-      moonDirectionLines.forEach((line) => line.remove());
-      moonDirectionLines = directions.map(({ location, data, origin }) => {
-        const points = directionLineLocations(location, data.azimuth, origin);
-        return L.polyline(
-          points.map((point) => [point.latitude, point.longitude]),
-          {
-            color: origin === "subject" ? "#c7ddfa" : "#91b8ec",
-            weight: origin === "subject" ? 2.25 : 3,
-            opacity: data.isAboveHorizon ? (origin === "subject" ? 0.82 : 0.9) : 0.38,
-            dashArray: origin === "subject" ? "12 7 2 7" : data.isAboveHorizon ? null : "7 8",
-            interactive: false,
-            className: `moon-direction-line ${origin}-origin-line`,
-          },
-        ).addTo(map);
-      });
-    },
-    clearMoonDirection() {
-      moonDirectionLines.forEach((line) => line.remove());
-      moonDirectionLines = [];
-    },
-    setMilkyWayDirections(directions) {
-      milkyWayDirectionLines.forEach((line) => line.remove());
-      milkyWayDirectionLines = directions.map(({ location, data, origin }) => {
-        const points = directionLineLocations(location, data.azimuth, origin);
-        return L.polyline(
-          points.map((point) => [point.latitude, point.longitude]),
-          {
-            color: origin === "subject" ? "#d9c2ff" : "#a779e9",
-            weight: origin === "subject" ? 2.25 : 3,
-            opacity: data.isAboveHorizon ? 0.86 : 0.34,
-            dashArray: origin === "subject" ? "10 6 2 6" : data.isAboveHorizon ? "4 5" : "4 9",
-            interactive: false,
-            className: `milkyway-direction-line ${origin}-origin-line`,
-          },
-        ).addTo(map);
-      });
-    },
-    clearMilkyWayDirection() {
-      milkyWayDirectionLines.forEach((line) => line.remove());
-      milkyWayDirectionLines = [];
+    clearCelestialDirections() {
+      celestialDirectionLayers.forEach((layer) => layer.remove());
+      celestialDirectionLayers = [];
     },
     setShootingCandidates(candidates) {
       shootingCandidateLayers.forEach((layer) => layer.remove());
       shootingCandidateLayers = candidates.map((candidate) => {
-        const color = candidate.body === "sun" ? "#ffb44a" : candidate.body === "moon" ? "#91b8ec" : "#b58af2";
+        const color = getTarget(candidate.body)?.color || "#b58af2";
         const layer = L.circleMarker([candidate.location.latitude, candidate.location.longitude], {
           radius: 8,
           color,

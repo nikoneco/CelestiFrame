@@ -1,5 +1,6 @@
 import { subjectGeometry } from "../geometry/bearing.js?v=7";
 import { calculateTargetAltitude } from "../geometry/target-altitude.js?v=24";
+import { getTarget } from "../astronomy/target-catalog.js?v=1";
 
 const pad = (value) => String(value).padStart(2, "0");
 
@@ -28,6 +29,7 @@ export function normalizeOvernightEndMinute(startMinute, endMinute) {
 
 export function validateSearchInput(input) {
   const errors = [];
+  if (!getTarget(input.target)) errors.push("検索する撮影対象を選んでください");
   const start = new Date(`${input.startDate}T00:00:00`);
   const end = new Date(`${input.endDate}T00:00:00`);
   if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) errors.push("検索期間を入力してください");
@@ -36,7 +38,7 @@ export function validateSearchInput(input) {
   if (input.toleranceDegrees < 0.1 || input.toleranceDegrees > 180) errors.push("許容方位差は0.1〜180°にしてください");
   if (input.minAltitude < -90 || input.maxAltitude > 90 || input.minAltitude > input.maxAltitude) errors.push("仰角範囲を確認してください");
   if (input.minIllumination < 0 || input.minIllumination > 100) errors.push("月照度は0〜100%にしてください");
-  if (input.target === "milkyway" && (input.maxSunAltitude < -90 || input.maxSunAltitude > 90)) errors.push("太陽仰角の上限を確認してください");
+  if (!["sun", "moon"].includes(input.target) && (input.maxSunAltitude < -90 || input.maxSunAltitude > 90)) errors.push("太陽仰角の上限を確認してください");
   if (input.matchTargetAltitude && (!Number.isFinite(input.targetAltitude) || input.verticalToleranceDegrees < 0 || input.verticalToleranceDegrees > 5)) errors.push("照準点の仰角条件を確認してください");
   return errors;
 }
@@ -69,7 +71,7 @@ function renderResults(results, container, onSelect) {
     const secondaryText = result.diamondState
       ? `${diamondLabels[result.diamondState]}・仰角差 ${Math.abs(result.verticalDifference).toFixed(2)}°`
       : result.sunAltitude !== null
-        ? `アーチ仰角 ${result.altitude.toFixed(1)}°・太陽仰角 ${result.sunAltitude.toFixed(1)}°`
+        ? `仰角 ${result.altitude.toFixed(1)}°・太陽仰角 ${result.sunAltitude.toFixed(1)}°`
       : `仰角 ${result.altitude.toFixed(1)}° ${illuminationText}`;
     const dateBlock = document.createElement("span");
     dateBlock.className = "result-date";
@@ -119,6 +121,34 @@ export function bindSearchControls(store, showToast) {
   const oneYearButton = document.querySelector("#search-end-one-year");
   const feedback = document.querySelector("#search-feedback");
   let worker = null;
+
+  function syncTargetOptions(state, preferredTarget = form.elements.target.value) {
+    form.elements.target.replaceChildren(...state.selectedTargets.map((targetId) => {
+      const target = getTarget(targetId);
+      const option = document.createElement("option");
+      option.value = targetId;
+      option.textContent = target.label;
+      return option;
+    }));
+    form.elements.target.value = state.selectedTargets.includes(preferredTarget)
+      ? preferredTarget
+      : state.selectedTargets[0];
+  }
+
+  function applyTargetDefaults(targetId) {
+    const target = getTarget(targetId);
+    const isSun = targetId === "sun";
+    const isMoon = targetId === "moon";
+    form.elements.minIllumination.disabled = !isMoon;
+    form.elements.startTime.value = isSun ? "04:00" : "18:00";
+    form.elements.endTime.value = isSun ? "20:00" : "06:00";
+    form.elements.maxAltitude.value = targetId === "milkyway" || target?.kind === "fixed" ? "90" : "45";
+    form.elements.matchTargetAltitude.checked = isSun;
+    if (targetId === "milkyway" || target?.kind === "fixed") form.elements.maxSunAltitude.value = "-12";
+    else if (!isSun && !isMoon) form.elements.maxSunAltitude.value = "90";
+    updateOvernightBadge();
+    updateDiamondControls();
+  }
 
   function scrollStatusIntoView(element, block = "center") {
     requestAnimationFrame(() => element.scrollIntoView({ block, behavior: "smooth" }));
@@ -213,10 +243,12 @@ export function bindSearchControls(store, showToast) {
     updateTargetAltitudeReference();
     const target = form.elements.target.value;
     const isSun = target === "sun";
+    const isDarkSkyTarget = !["sun", "moon"].includes(target);
     diamondToggle.hidden = !isSun;
     diamondTolerance.hidden = !isSun || !form.elements.matchTargetAltitude.checked;
     moonIlluminationCondition.hidden = target !== "moon";
-    milkyWayDarknessCondition.hidden = target !== "milkyway";
+    milkyWayDarknessCondition.hidden = !isDarkSkyTarget;
+    milkyWayDarknessCondition.querySelector(":scope > span:first-child").textContent = target === "milkyway" ? "太陽仰角の上限" : "空の暗さ";
     if (!isSun) return;
     try {
       const target = targetAltitudeForState(store.getState());
@@ -270,14 +302,8 @@ export function bindSearchControls(store, showToast) {
     end.setDate(end.getDate() + 30);
     form.elements.startDate.value = localDateValue(selected);
     form.elements.endDate.value = localDateValue(end);
-    const target = ["sun", "moon", "milkyway"].includes(state.selectedBody) ? state.selectedBody : "moon";
-    form.elements.target.value = target;
-    form.elements.minIllumination.disabled = target !== "moon";
-    form.elements.startTime.value = target === "sun" ? "04:00" : "18:00";
-    form.elements.endTime.value = target === "sun" ? "20:00" : "06:00";
-    form.elements.maxAltitude.value = target === "milkyway" ? "90" : "45";
-    form.elements.matchTargetAltitude.checked = target === "sun";
-    updateOvernightBadge();
+    syncTargetOptions(state, state.selectedTargets[0]);
+    applyTargetDefaults(form.elements.target.value);
     updateDateLimits();
     updateDiamondControls();
     stopWorker();
@@ -287,18 +313,7 @@ export function bindSearchControls(store, showToast) {
     dialog.showModal();
   });
 
-  Array.from(form.elements.target).forEach((input) => {
-    input.addEventListener("change", () => {
-      if (!input.checked) return;
-      form.elements.minIllumination.disabled = input.value !== "moon";
-      form.elements.startTime.value = input.value === "sun" ? "04:00" : "18:00";
-      form.elements.endTime.value = input.value === "sun" ? "20:00" : "06:00";
-      form.elements.maxAltitude.value = input.value === "milkyway" ? "90" : "45";
-      form.elements.matchTargetAltitude.checked = input.value === "sun";
-      updateOvernightBadge();
-      updateDiamondControls();
-    });
-  });
+  form.elements.target.addEventListener("change", () => applyTargetDefaults(form.elements.target.value));
 
   form.elements.matchTargetAltitude.addEventListener("change", updateDiamondControls);
 
@@ -332,8 +347,12 @@ export function bindSearchControls(store, showToast) {
     setSearchBusy(false);
   });
 
-  store.subscribe(() => {
-    if (dialog.open) updateTargetAltitudeReference();
+  store.subscribe((state) => {
+    if (dialog.open) {
+      syncTargetOptions(state);
+      updateTargetAltitudeReference();
+      updateDiamondControls();
+    }
   });
 
   cancelButton.addEventListener("click", () => {
@@ -385,7 +404,7 @@ export function bindSearchControls(store, showToast) {
     stopWorker();
     clearFeedback();
     if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
-    const searchWorker = new Worker(new URL("./search-worker.js?v=42", import.meta.url));
+    const searchWorker = new Worker(new URL("./search-worker.js?v=45", import.meta.url));
     worker = searchWorker;
     setSearchBusy(true);
     progressPanel.hidden = false;

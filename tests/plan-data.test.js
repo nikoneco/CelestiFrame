@@ -4,7 +4,7 @@ import { MAX_PLAN_IMPORT_COUNT, buildShareUrl, createPlan, parsePlansFile, parse
 
 const state = {
   selectedDateTime: "2026-08-13T15:30:00.000Z",
-  selectedBody: "moon",
+  selectedTargets: ["moon"],
   cameraLocation: { latitude: 35.681236, longitude: 139.767125 },
   subjectLocation: { latitude: 35.710063, longitude: 139.8107 },
   subject: { name: "東京スカイツリー", heightMeters: null },
@@ -37,10 +37,10 @@ test("legacy plans receive Phase 9 elevation defaults", () => {
   assert.equal(parsed[0].state.subject.targetMode, "structure");
 });
 
-test("share URL restores locations, date, body and subject name", () => {
+test("share URL restores locations, date, targets and subject name", () => {
   const url = buildShareUrl(state, "https://nikoneco.github.io/CelestiFrame/?old=1#map");
   const restored = parseSharedState(url);
-  assert.equal(restored.selectedBody, "moon");
+  assert.deepEqual(restored.selectedTargets, ["moon"]);
   assert.equal(restored.subject.name, "東京スカイツリー");
   assert.deepEqual(restored.cameraLocation, state.cameraLocation);
   assert.deepEqual(restored.subjectLocation, state.subjectLocation);
@@ -52,13 +52,13 @@ test("invalid share coordinates are rejected", () => {
 });
 
 test("Milky Way selection survives plan sharing", () => {
-  const url = buildShareUrl({ ...state, selectedBody: "milkyway" }, "https://example.com/");
-  assert.equal(parseSharedState(url).selectedBody, "milkyway");
+  const url = buildShareUrl({ ...state, selectedTargets: ["milkyway", "andromeda", "mars"] }, "https://example.com/");
+  assert.deepEqual(parseSharedState(url).selectedTargets, ["milkyway", "andromeda", "mars"]);
 });
 
-test("legacy both selection migrates to all celestial bodies", () => {
-  const url = buildShareUrl({ ...state, selectedBody: "both" }, "https://example.com/");
-  assert.equal(parseSharedState(url).selectedBody, "all");
+test("legacy both share URL migrates to the original three celestial bodies", () => {
+  const url = "https://example.com/?plan=1&lat=35.681236&lng=139.767125&at=2026-08-13T15%3A30%3A00.000Z&body=both";
+  assert.deepEqual(parseSharedState(url).selectedTargets, ["sun", "moon", "milkyway"]);
 });
 
 test("plan import rejects excessive item counts", () => {

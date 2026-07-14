@@ -1,9 +1,8 @@
-export const PLAN_FILE_VERSION = 4;
+import { normalizeSelectedTargets } from "../astronomy/target-catalog.js?v=1";
+
+export const PLAN_FILE_VERSION = 5;
 export const MAX_PLAN_IMPORT_BYTES = 5 * 1024 * 1024;
 export const MAX_PLAN_IMPORT_COUNT = 1000;
-
-const BODIES = new Set(["sun", "moon", "milkyway", "all"]);
-const normalizeBody = (value) => value === "both" ? "all" : BODIES.has(value) ? value : "moon";
 
 function cloneLocation(location) {
   if (!location) return null;
@@ -29,7 +28,7 @@ export function snapshotPlanState(state) {
   if (Number.isNaN(selectedDateTime.getTime())) throw new Error("撮影日時が正しくありません");
   return {
     selectedDateTime: selectedDateTime.toISOString(),
-    selectedBody: normalizeBody(state.selectedBody),
+    selectedTargets: normalizeSelectedTargets(state.selectedTargets, state.selectedBody),
     cameraLocation: cloneLocation(state.cameraLocation),
     subjectLocation: cloneLocation(state.subjectLocation),
     subject: {
@@ -120,7 +119,7 @@ export function buildShareUrl(state, baseUrl = location.href) {
   url.searchParams.set("lat", snapshot.cameraLocation.latitude.toFixed(6));
   url.searchParams.set("lng", snapshot.cameraLocation.longitude.toFixed(6));
   url.searchParams.set("at", snapshot.selectedDateTime);
-  url.searchParams.set("body", snapshot.selectedBody);
+  url.searchParams.set("targets", snapshot.selectedTargets.join(","));
   url.searchParams.set("z", String(snapshot.map.zoom));
   url.searchParams.set("f", String(snapshot.composition.focalLengthMm));
   url.searchParams.set("sensor", snapshot.composition.sensorPreset);
@@ -150,7 +149,10 @@ export function parseSharedState(urlValue) {
     : null;
   return {
     selectedDateTime: selectedDateTime.toISOString(),
-    selectedBody: normalizeBody(url.searchParams.get("body")),
+    selectedTargets: normalizeSelectedTargets(
+      url.searchParams.get("targets")?.split(",").filter(Boolean),
+      url.searchParams.get("body"),
+    ),
     cameraLocation,
     subjectLocation,
     subject: {

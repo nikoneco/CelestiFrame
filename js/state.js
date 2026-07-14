@@ -1,8 +1,10 @@
+import { normalizeSelectedTargets } from "./astronomy/target-catalog.js?v=1";
+
 const STORAGE_KEY = "celestiframe:state:v1";
 
 const defaultState = {
   selectedDateTime: new Date().toISOString(),
-  selectedBody: "moon",
+  selectedTargets: ["moon"],
   cameraLocation: {
     latitude: 35.681236,
     longitude: 139.767125,
@@ -78,11 +80,10 @@ export function normalizeState(value) {
   const mapValue = value.map && typeof value.map === "object" ? value.map : {};
   const cameraLocation = normalizeLocation(value.cameraLocation, fallback.cameraLocation);
   const selectedDate = new Date(value.selectedDateTime);
-  const migratedBody = value.selectedBody === "both" ? "all" : value.selectedBody;
 
   return {
     selectedDateTime: Number.isNaN(selectedDate.getTime()) ? fallback.selectedDateTime : selectedDate.toISOString(),
-    selectedBody: oneOf(migratedBody, ["sun", "moon", "milkyway", "all"], fallback.selectedBody),
+    selectedTargets: normalizeSelectedTargets(value.selectedTargets, value.selectedBody),
     cameraLocation,
     subjectLocation: normalizeLocation(value.subjectLocation),
     subject: {

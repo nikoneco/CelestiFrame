@@ -1,16 +1,16 @@
 self.window = self;
-importScripts("../vendor/suncalc.js", "./search-core.js?v=42");
+importScripts("../vendor/suncalc.js", "../vendor/astronomy-engine.min.js", "./search-core.js?v=45");
 
 self.addEventListener("message", async (event) => {
   try {
-    const milkyWayCalculator = event.data.target === "milkyway"
-      ? (await import("../astronomy/milky-way-service.js?v=41")).calculateMilkyWay
+    const targetCalculator = !["sun", "moon"].includes(event.data.target)
+      ? (await import("../astronomy/target-service.js?v=1")).calculateTargetData
       : null;
     const results = self.CelestiSearchCore.searchCandidates(
       event.data,
       self.SunCalc,
       (progress) => self.postMessage({ type: "progress", progress }),
-      milkyWayCalculator,
+      targetCalculator ? (date, location, targetId) => targetCalculator(targetId, date, location, self.Astronomy) : null,
     );
     self.postMessage({ type: "done", results });
   } catch (error) {

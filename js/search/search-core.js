@@ -38,7 +38,7 @@
     return count;
   }
 
-  function searchCandidates(input, calculator, onProgress = () => {}, milkyWayCalculator = null) {
+  function searchCandidates(input, calculator, onProgress = () => {}, targetCalculator = null) {
     const startDate = parseLocalDate(input.startDate);
     const endDate = parseLocalDate(input.endDate);
     const samplesPerDay = Math.floor((input.endMinute - input.startMinute) / input.stepMinutes) + 1;
@@ -49,15 +49,15 @@
     let completed = 0;
 
     function evaluate(date, { refinement = false } = {}) {
-      const milkyWay = input.target === "milkyway"
-        ? milkyWayCalculator?.(date, input.cameraLocation)
+      const calculatedTarget = !["sun", "moon"].includes(input.target)
+        ? targetCalculator?.(date, input.cameraLocation, input.target)
         : null;
-      if (input.target === "milkyway" && !milkyWay) throw new Error("天の川の計算を読み込めませんでした");
-      const position = milkyWay ? null : input.target === "moon"
+      if (!["sun", "moon"].includes(input.target) && !calculatedTarget) throw new Error("撮影対象の計算を読み込めませんでした");
+      const position = calculatedTarget ? null : input.target === "moon"
         ? calculator.getMoonPosition(date, input.cameraLocation.latitude, input.cameraLocation.longitude)
         : calculator.getPosition(date, input.cameraLocation.latitude, input.cameraLocation.longitude);
-      const azimuth = milkyWay ? milkyWay.azimuth : normalizeDegrees(toDegrees(position.azimuth) + 180);
-      const geometricAltitude = milkyWay ? milkyWay.altitude : toDegrees(position.altitude);
+      const azimuth = calculatedTarget ? calculatedTarget.azimuth : normalizeDegrees(toDegrees(position.azimuth) + 180);
+      const geometricAltitude = calculatedTarget ? calculatedTarget.altitude : toDegrees(position.altitude);
       const altitude = input.matchTargetAltitude && input.target === "sun"
         ? apparentSolarAltitude(geometricAltitude)
         : geometricAltitude;
@@ -65,7 +65,7 @@
       const illumination = input.target === "moon"
         ? calculator.getMoonIllumination(date).fraction * 100
         : null;
-      const sunAltitude = input.target === "milkyway"
+      const sunAltitude = !["sun", "moon"].includes(input.target)
         ? toDegrees(calculator.getPosition(date, input.cameraLocation.latitude, input.cameraLocation.longitude).altitude)
         : null;
       const diamond = input.matchTargetAltitude && input.target === "sun"
