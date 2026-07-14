@@ -1,4 +1,4 @@
-const CACHE_VERSION = "celestiframe-shell-v80";
+const CACHE_VERSION = "celestiframe-shell-v81";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -6,7 +6,7 @@ const APP_SHELL = [
   "./manifest.webmanifest",
   "./assets/icon.svg?v=43",
   "./css/app.css?v=69",
-  "./js/app.js?v=72",
+  "./js/app.js?v=73",
   "./js/config/runtime-config.js?v=33",
   "./js/config/firebase-config.js?v=1",
   "./js/state.js?v=40",
@@ -20,7 +20,7 @@ const APP_SHELL = [
   "./js/elevation/elevation-service.js?v=24",
   "./js/elevation/elevation-controller.js?v=24",
   "./js/map/geocoder.js?v=32",
-  "./js/map/map-controller.js?v=46",
+  "./js/map/map-controller.js?v=47",
   "./js/map/place-search.js?v=34",
   "./js/plans/plan-data.js?v=40",
   "./js/plans/plan-manager.js?v=43",

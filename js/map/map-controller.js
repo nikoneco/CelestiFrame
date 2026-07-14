@@ -1,14 +1,5 @@
 import { destinationPoint } from "../geometry/destination.js";
 
-function cloudShade(color, coverage) {
-  const match = /^#([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i.exec(color);
-  if (!match) return color;
-  const base = match.slice(1).map((part) => Number.parseInt(part, 16));
-  const shadow = [42, 62, 87];
-  const blend = Math.pow(coverage, 0.8) * 0.62;
-  return `#${base.map((channel, index) => Math.round(channel + (shadow[index] - channel) * blend).toString(16).padStart(2, "0")).join("")}`;
-}
-
 export function focusCurrentLocation(mapController, coords, minimumZoom = 14) {
   if (!mapController) return false;
   const latitude = Number(coords?.latitude);
@@ -113,18 +104,17 @@ export function createMapController({
       cloudOverlayLayers = cells.map((cell) => {
         const density = Math.max(0, Math.min(100, Number(cell?.value) || 0));
         const coverage = density / 100;
-        const fillColor = cloudShade(color, coverage);
-        const fillOpacity = coverage === 0 ? 0 : 0.12 + Math.pow(coverage, 0.58) * 0.62;
+        const fillOpacity = coverage === 0 ? 0 : 0.08 + coverage * 0.62;
         return L.rectangle(
           [[cell.bounds.south, cell.bounds.west], [cell.bounds.north, cell.bounds.east]],
           {
             pane: "weather-pane",
             stroke: coverage > 0,
-            color: fillColor,
+            color,
             weight: 0.8,
-            opacity: coverage === 0 ? 0 : 0.12 + coverage * 0.25,
+            opacity: coverage === 0 ? 0 : 0.08 + coverage * 0.16,
             fill: true,
-            fillColor,
+            fillColor: color,
             fillOpacity,
             interactive: false,
             className: "forecast-cloud-cell",
