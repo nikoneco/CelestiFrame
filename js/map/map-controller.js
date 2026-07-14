@@ -104,7 +104,7 @@ export function createMapController({
       cloudOverlayLayers = cells.map((cell) => {
         const density = Math.max(0, Math.min(100, Number(cell?.value) || 0));
         const coverage = density / 100;
-        const fillOpacity = coverage === 0 ? 0 : 0.12 + Math.pow(coverage, 0.62) * 0.68;
+        const fillOpacity = coverage === 0 ? 0 : 0.12 + Math.pow(coverage, 0.75) * 0.43;
         return L.rectangle(
           [[cell.bounds.south, cell.bounds.west], [cell.bounds.north, cell.bounds.east]],
           {
