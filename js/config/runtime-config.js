@@ -1,6 +1,7 @@
 export const DEFAULT_RUNTIME_CONFIG = Object.freeze({
   nominatimEndpoint: "https://nominatim.openstreetmap.org/search",
   tileUrl: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+  lightPollutionTileUrl: "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_CityLights_2012/default/default/GoogleMapsCompatible_Level8/{z}/{y}/{x}.jpg",
   weatherForecastEndpoint: "https://api.open-meteo.com/v1/forecast",
 });
 
@@ -18,11 +19,17 @@ export function normalizeRuntimeConfig(value) {
   }
   const nominatimEndpoint = validateHttpsUrl(value.nominatimEndpoint, "Nominatim endpoint");
   const tileUrl = validateHttpsUrl(value.tileUrl, "Tile URL");
+  const lightPollutionTileUrl = validateHttpsUrl(value.lightPollutionTileUrl, "Light pollution tile URL");
   const weatherForecastEndpoint = validateHttpsUrl(value.weatherForecastEndpoint, "Weather forecast endpoint");
-  if (!["{z}", "{x}", "{y}"].every((token) => tileUrl.includes(token))) {
-    throw new Error("Tile URLには{z}、{x}、{y}が必要です");
-  }
-  return Object.freeze({ nominatimEndpoint, tileUrl, weatherForecastEndpoint });
+  [
+    [tileUrl, "Tile URL"],
+    [lightPollutionTileUrl, "Light pollution tile URL"],
+  ].forEach(([template, label]) => {
+    if (!["{z}", "{x}", "{y}"].every((token) => template.includes(token))) {
+      throw new Error(`${label}には{z}、{x}、{y}が必要です`);
+    }
+  });
+  return Object.freeze({ nominatimEndpoint, tileUrl, lightPollutionTileUrl, weatherForecastEndpoint });
 }
 
 export async function loadRuntimeConfig({

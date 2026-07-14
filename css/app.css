@@ -241,7 +241,7 @@ main { min-height: 100dvh; }
 .place-result-subject { border: 1px solid var(--danger); color: var(--danger); }
 .place-search-results > a { display: block; padding: 6px 10px; color: var(--muted); font-size: 8px; text-decoration: none; }
 
-.weather-overlay { position: relative; z-index: 1; width: min(220px, 100%); margin-top: 4px; transition: opacity 160ms ease, transform 240ms ease, visibility 0s linear; }
+.weather-overlay { position: relative; z-index: 1; width: min(296px, 100%); margin-top: 4px; transition: opacity 160ms ease, transform 240ms ease, visibility 0s linear; }
 .weather-quick { display: flex; align-items: stretch; gap: 4px; }
 .weather-toggle { flex: 1 1 auto; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 6px; min-height: 40px; padding: 0 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--glass); color: var(--moon); box-shadow: 0 8px 22px rgba(0, 0, 0, .28); backdrop-filter: blur(12px); font-size: 9px; cursor: pointer; }
 .weather-toggle > span { color: var(--moon-blue); font-size: 13px; line-height: 1; }
@@ -254,6 +254,13 @@ main { min-height: 100dvh; }
 .weather-layer-toggle::before { content: ""; position: absolute; top: 50%; left: 5px; width: 16px; height: 16px; border-radius: 50%; background: var(--muted); box-shadow: 0 1px 5px rgba(0, 0, 0, .4); transform: translateY(-50%); transition: left .2s ease, background .2s ease, box-shadow .2s ease; }
 .weather-layer-toggle[aria-checked="true"] { border-color: color-mix(in srgb, var(--horizon) 70%, var(--line)); background: color-mix(in srgb, var(--horizon) 25%, var(--panel)); }
 .weather-layer-toggle[aria-checked="true"]::before { left: 23px; background: var(--horizon); box-shadow: 0 0 11px color-mix(in srgb, var(--horizon) 80%, transparent); }
+.light-pollution-toggle { flex: 0 0 68px; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 5px; min-height: 40px; padding: 0 9px; border: 1px solid var(--line); border-radius: 999px; background: color-mix(in srgb, var(--panel) 82%, transparent); color: var(--muted); box-shadow: 0 8px 22px rgba(0, 0, 0, .24); cursor: pointer; }
+.light-pollution-toggle > span { color: var(--solar); font-size: 12px; }
+.light-pollution-toggle strong { font: 700 9px var(--data); }
+.light-pollution-toggle[aria-checked="true"] { border-color: color-mix(in srgb, var(--solar) 68%, var(--line)); background: color-mix(in srgb, var(--solar) 17%, var(--panel)); color: var(--text); box-shadow: 0 8px 22px rgba(0, 0, 0, .24), 0 0 16px color-mix(in srgb, var(--solar) 20%, transparent); }
+.light-pollution-toggle[aria-checked="true"] > span { text-shadow: 0 0 10px var(--solar); }
+.light-pollution-toggle.is-error { border-color: color-mix(in srgb, var(--danger) 64%, var(--line)); color: var(--danger); }
+.light-pollution-tiles { filter: sepia(1) saturate(3.4) hue-rotate(350deg) brightness(.72) contrast(1.28); }
 .weather-panel { width: min(326px, calc(100vw - 28px)); margin-top: 6px; padding: 11px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--moon-blue) 42%, var(--line)); border-radius: 12px; background: color-mix(in srgb, var(--panel) 94%, transparent); box-shadow: 0 14px 34px rgba(0, 0, 0, .44); backdrop-filter: blur(16px); }
 .weather-panel > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
 .weather-panel > header .eyebrow { display: block; color: var(--moon-blue); font: 8px var(--data); letter-spacing: .14em; }
@@ -282,6 +289,15 @@ main { min-height: 100dvh; }
 .weather-source:hover { color: var(--moon-blue); }
 @keyframes weather-pulse { from { opacity: .35; transform: scale(.8); } to { opacity: 1; transform: scale(1.15); } }
 
+.light-pollution-legend { position: absolute; z-index: 520; left: 14px; bottom: 32px; width: 154px; padding: 8px 9px 7px; border: 1px solid color-mix(in srgb, var(--solar) 42%, var(--line)); border-radius: 9px; background: color-mix(in srgb, var(--panel) 90%, transparent); box-shadow: 0 10px 26px rgba(0, 0, 0, .34); backdrop-filter: blur(12px); }
+.light-pollution-legend > div { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; }
+.light-pollution-legend strong { color: var(--text); font-size: 9px; }
+.light-pollution-legend > div span { color: var(--muted); font: 6px var(--data); }
+.light-pollution-legend > i { display: block; height: 5px; margin-top: 6px; border-radius: 999px; background: linear-gradient(90deg, #07111f, #5b4820 43%, #ffbe47 76%, #fff 100%); box-shadow: 0 0 8px color-mix(in srgb, var(--solar) 18%, transparent); }
+.light-pollution-legend p { display: flex; justify-content: space-between; margin: 3px 0 0; color: var(--muted); font-size: 6px; }
+.light-pollution-legend a { display: block; margin-top: 3px; color: var(--muted); font: 6px var(--data); text-align: right; text-decoration: none; }
+.light-pollution-legend a:hover { color: var(--moon-blue); }
+
 @media (max-width: 759px) {
   .weather-overlay.is-panel-open { z-index: 1200; }
   .weather-overlay.is-panel-open .weather-panel {
@@ -294,6 +310,7 @@ main { min-height: 100dvh; }
     overflow-y: auto;
     overscroll-behavior: contain;
   }
+  .light-pollution-legend { right: 14px; bottom: 84px; left: auto; }
 }
 
 .map-actions {

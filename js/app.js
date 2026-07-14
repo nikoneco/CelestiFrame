@@ -1,7 +1,7 @@
 import { createStore } from "./state.js?v=42";
-import { createMapController, focusCurrentLocation } from "./map/map-controller.js?v=49";
+import { createMapController, focusCurrentLocation } from "./map/map-controller.js?v=51";
 import { bindPlaceSearch } from "./map/place-search.js?v=34";
-import { loadRuntimeConfig } from "./config/runtime-config.js?v=33";
+import { loadRuntimeConfig } from "./config/runtime-config.js?v=34";
 import { bindDateTimeControls } from "./ui/datetime-controls.js?v=12";
 import { normalizeThemePreference, resolveThemePreference, themeColor } from "./ui/theme.js?v=6";
 import { calculateSunData } from "./astronomy/sun-service.js";
@@ -26,6 +26,7 @@ import { bindTerrainProfile } from "./terrain/terrain-profile-controller.js?v=40
 import { bindFieldMode } from "./field/field-mode.js?v=48";
 import { bindWeatherOverlay } from "./weather/weather-controller.js?v=9";
 import { bindTargetSelector } from "./ui/target-selector.js?v=1";
+import { bindLightPollutionOverlay } from "./light-pollution/light-pollution-controller.js?v=1";
 
 let toastTimer;
 registerServiceWorker();
@@ -669,6 +670,7 @@ bindSearchControls(store, showToast);
 initializeMap();
 bindPlaceSearch(store, () => mapController, showToast, { geocoderEndpoint: runtimeConfig.nominatimEndpoint });
 bindWeatherOverlay(store, () => mapController, { endpoint: runtimeConfig.weatherForecastEndpoint });
+bindLightPollutionOverlay(() => mapController, { tileUrl: runtimeConfig.lightPollutionTileUrl });
 const localPlanRepository = createPlanRepository();
 const planSyncCoordinator = createPlanSyncCoordinator(localPlanRepository);
 const planManager = bindPlanManager(store, {

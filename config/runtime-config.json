@@ -1,5 +1,6 @@
 {
   "nominatimEndpoint": "https://nominatim.openstreetmap.org/search",
   "tileUrl": "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+  "lightPollutionTileUrl": "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_CityLights_2012/default/default/GoogleMapsCompatible_Level8/{z}/{y}/{x}.jpg",
   "weatherForecastEndpoint": "https://api.open-meteo.com/v1/forecast"
 }

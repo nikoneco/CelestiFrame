@@ -46,6 +46,10 @@ export function createMapController({
   const weatherPane = map.createPane("weather-pane");
   weatherPane.style.zIndex = "350";
   weatherPane.style.pointerEvents = "none";
+  const lightPollutionPane = map.createPane("light-pollution-pane");
+  lightPollutionPane.style.zIndex = "330";
+  lightPollutionPane.style.pointerEvents = "none";
+  lightPollutionPane.style.mixBlendMode = "screen";
 
   const markerIcon = L.divIcon({
     className: "",
@@ -62,6 +66,7 @@ export function createMapController({
   let celestialDirectionLayers = [];
   let shootingCandidateLayers = [];
   let cloudOverlayLayers = [];
+  let lightPollutionLayer = null;
   let terrainObstructionMarker = null;
   let subjectMarker = null;
   let subjectLine = null;
@@ -125,6 +130,26 @@ export function createMapController({
     clearCloudOverlay() {
       cloudOverlayLayers.forEach((layer) => layer.remove());
       cloudOverlayLayers = [];
+    },
+    setLightPollutionOverlay(tileUrl, { onLoad = () => {}, onError = () => {} } = {}) {
+      lightPollutionLayer?.remove();
+      lightPollutionLayer = L.tileLayer(tileUrl, {
+        pane: "light-pollution-pane",
+        minZoom: 0,
+        maxZoom: 19,
+        maxNativeZoom: 8,
+        opacity: 0.55,
+        crossOrigin: true,
+        attribution: 'Nighttime lights: <a href="https://earthdata.nasa.gov/gibs" target="_blank" rel="noopener noreferrer">NASA GIBS</a> / VIIRS',
+        className: "light-pollution-tiles",
+      });
+      lightPollutionLayer.once("load", onLoad);
+      lightPollutionLayer.once("tileerror", onError);
+      lightPollutionLayer.addTo(map);
+    },
+    clearLightPollutionOverlay() {
+      lightPollutionLayer?.remove();
+      lightPollutionLayer = null;
     },
     setLocation(location, { pan = true } = {}) {
       marker.setLatLng([location.latitude, location.longitude]);
