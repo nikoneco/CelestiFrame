@@ -3,6 +3,7 @@ import { createMapController, focusCurrentLocation } from "./map/map-controller.
 import { bindPlaceSearch } from "./map/place-search.js?v=34";
 import { loadRuntimeConfig } from "./config/runtime-config.js?v=35";
 import { bindDateTimeControls } from "./ui/datetime-controls.js?v=12";
+import { bindSkyStateRail } from "./ui/sky-state-rail.js?v=1";
 import { normalizeThemePreference, resolveThemePreference, themeColor } from "./ui/theme.js?v=6";
 import { calculateSunData } from "./astronomy/sun-service.js";
 import { calculateMoonData } from "./astronomy/moon-service.js?v=5";
@@ -23,7 +24,7 @@ import { bindElevationControls } from "./elevation/elevation-controller.js?v=25"
 import { apparentSolarAltitude, calculateTargetAltitude } from "./geometry/target-altitude.js?v=24";
 import { bindShootingPlanner } from "./planning/shooting-planner.js?v=41";
 import { bindTerrainProfile } from "./terrain/terrain-profile-controller.js?v=40";
-import { bindFieldMode } from "./field/field-mode.js?v=48";
+import { bindFieldMode } from "./field/field-mode.js?v=49";
 import { bindWeatherOverlay } from "./weather/weather-controller.js?v=9";
 import { bindTargetSelector } from "./ui/target-selector.js?v=1";
 import { bindLightPollutionOverlay } from "./light-pollution/light-pollution-controller.js?v=2";
@@ -825,6 +826,7 @@ store.subscribe(renderState);
 
 document.querySelector("#timezone-label").textContent = Intl.DateTimeFormat().resolvedOptions().timeZone || "LOCAL";
 bindDateTimeControls(store);
+bindSkyStateRail(store);
 bindSearchControls(store, showToast);
 initializeMap();
 bindPlaceSearch(store, () => mapController, showToast, { geocoderEndpoint: runtimeConfig.nominatimEndpoint });

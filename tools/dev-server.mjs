@@ -13,6 +13,7 @@ const mimeTypes = {
   ".svg": "image/svg+xml",
   ".webp": "image/webp",
   ".webmanifest": "application/manifest+json; charset=utf-8",
+  ".woff2": "font/woff2",
 };
 
 createServer(async (request, response) => {

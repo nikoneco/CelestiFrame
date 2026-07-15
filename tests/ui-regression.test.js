@@ -41,3 +41,36 @@ test("time slider stays above the nudge row and away from the screen edge", () =
   assert.ok(sliderPosition >= 0);
   assert.ok(nudgePosition > sliderPosition);
 });
+
+test("P2 sky-state rail keeps the photographic timeline and bundled typography offline", () => {
+  const html = readProjectFile("index.html");
+  const css = readProjectFile("css/app.css");
+  const worker = readProjectFile("service-worker.js");
+  assert.ok(html.includes('id="sky-state-bands"'));
+  assert.ok(html.includes('id="sky-state-markers"'));
+  assert.match(css, /font-family:\s*"IBM Plex Sans JP"/);
+  assert.match(css, /font-family:\s*"IBM Plex Sans Condensed"/);
+  assert.match(css, /font-family:\s*"IBM Plex Mono"/);
+  [
+    "IBMPlexSansJP-Regular.woff2",
+    "IBMPlexSansCondensed-Regular.woff2",
+    "IBMPlexMono-Regular.woff2",
+  ].forEach((font) => assert.ok(worker.includes(font)));
+});
+
+test("P2 map preserves road colors and field mode leads with actionable guidance", () => {
+  const html = readProjectFile("index.html");
+  const css = readProjectFile("css/app.css");
+  const darkMapFilter = css.match(/\.leaflet-tile-pane \{ filter: ([^;]+); \}/)?.[1] || "";
+  assert.equal(darkMapFilter.includes("hue-rotate"), false);
+  assert.ok(html.indexOf('class="field-guidance"') < html.indexOf('class="field-compass"'));
+  assert.ok(html.includes('id="field-accuracy-guidance"'));
+  assert.equal(html.includes("ON LOCATION"), false);
+});
+
+test("P2 mobile layout keeps the full datetime workflow inside the initial viewport", () => {
+  const css = readProjectFile("css/app.css");
+  assert.ok(css.includes(".map-stage { height: 45dvh; }"));
+  assert.ok(css.includes(".control-deck { min-height: calc(52dvh + 18px); max-height: calc(55dvh + 18px); }"));
+  assert.ok(css.includes(".date-input-row { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; }"));
+});

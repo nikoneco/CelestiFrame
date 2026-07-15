@@ -1,4 +1,4 @@
-const CACHE_VERSION = "celestiframe-shell-v98";
+const CACHE_VERSION = "celestiframe-shell-v100";
 const TRUSTED_STATIC_HOSTS = new Set(["unpkg.com", "www.gstatic.com"]);
 const APP_SHELL = [
   "./",
@@ -28,8 +28,15 @@ const APP_SHELL = [
   "./assets/icons/sparkles.svg",
   "./assets/icons/trash-2.svg",
   "./assets/icons/x.svg",
-  "./css/app.css?v=81",
-  "./js/app.js?v=87",
+  "./assets/fonts/IBMPlexSansJP-Regular.woff2",
+  "./assets/fonts/IBMPlexSansJP-SemiBold.woff2",
+  "./assets/fonts/IBMPlexSansCondensed-Regular.woff2",
+  "./assets/fonts/IBMPlexSansCondensed-SemiBold.woff2",
+  "./assets/fonts/IBMPlexMono-Regular.woff2",
+  "./assets/fonts/IBMPlexMono-SemiBold.woff2",
+  "./assets/fonts/LICENSE-IBM-PLEX.txt",
+  "./css/app.css?v=83",
+  "./js/app.js?v=88",
   "./js/config/runtime-config.js?v=35",
   "./js/config/firebase-config.js?v=1",
   "./js/state.js?v=42",
@@ -63,6 +70,7 @@ const APP_SHELL = [
   "./js/search/search-core.js?v=45",
   "./js/search/search-worker.js?v=45",
   "./js/ui/datetime-controls.js?v=12",
+  "./js/ui/sky-state-rail.js?v=1",
   "./js/ui/composition-controls.js?v=24",
   "./js/ui/theme.js?v=6",
   "./js/ui/target-selector.js?v=1",
@@ -70,7 +78,7 @@ const APP_SHELL = [
   "./js/planning/shooting-planner.js?v=41",
   "./js/terrain/terrain-profile.js?v=40",
   "./js/terrain/terrain-profile-controller.js?v=40",
-  "./js/field/field-mode.js?v=48",
+  "./js/field/field-mode.js?v=49",
   "./js/vendor/suncalc.js",
   "./js/vendor/astronomy-engine.min.js",
 ];

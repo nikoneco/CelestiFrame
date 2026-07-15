@@ -3,7 +3,7 @@ import { normalizeDegrees, signedAngleDifference } from "../geometry/angle.js";
 
 const formatDistance = (meters) => meters >= 1000 ? `${(meters / 1000).toFixed(2)} km` : `${Math.round(meters)} m`;
 
-export function headingRelativeCardinalOffsets(heading, radius = 68) {
+export function headingRelativeCardinalOffsets(heading, radius = 76) {
   if (!Number.isFinite(Number(heading)) || !Number.isFinite(Number(radius))) return [];
   return [
     { label: "N", bearing: 0 },
@@ -29,6 +29,21 @@ export function headingToTargetOffset(heading, targetBearing) {
   return signedAngleDifference(Number(heading), Number(targetBearing));
 }
 
+export function formatHeadingGuidance(heading, targetBearing) {
+  const offset = headingToTargetOffset(heading, targetBearing);
+  if (offset == null) return "端末方位を取得できません";
+  if (Math.abs(offset) < 2) return "正面です";
+  return `${offset > 0 ? "右へ" : "左へ"} ${Math.abs(offset).toFixed(1)}°`;
+}
+
+export function gpsAccuracyGuidance(accuracy) {
+  const meters = Number(accuracy);
+  if (!Number.isFinite(meters) || meters < 0) return { quality: "waiting", message: "GPS精度を待っています" };
+  if (meters <= 15) return { quality: "good", message: "GPS精度は良好です" };
+  if (meters <= 40) return { quality: "fair", message: "端末を静止すると位置が安定しやすくなります" };
+  return { quality: "poor", message: "精度が上がるまで、空が開けた場所で端末を静止してください" };
+}
+
 export function bindFieldMode(store, showToast) {
   const dialog = document.querySelector("#field-dialog");
   const startButton = document.querySelector("#field-start");
@@ -37,7 +52,9 @@ export function bindFieldMode(store, showToast) {
   const targetOutput = document.querySelector("#field-target-bearing");
   const differenceOutput = document.querySelector("#field-heading-difference");
   const distanceOutput = document.querySelector("#field-distance");
+  const distanceGuidance = document.querySelector("#field-distance-guidance");
   const accuracyOutput = document.querySelector("#field-accuracy");
+  const accuracyGuidance = document.querySelector("#field-accuracy-guidance");
   const cameraTargetButton = document.querySelector("#field-target-camera");
   const subjectTargetButton = document.querySelector("#field-target-subject");
   const compassRing = document.querySelector("#field-compass-ring");
@@ -75,6 +92,7 @@ export function bindFieldMode(store, showToast) {
     const geometry = subjectGeometry(currentLocation, target);
     targetOutput.textContent = `${geometry.bearingDegrees.toFixed(1)}°`;
     distanceOutput.textContent = formatDistance(geometry.distanceMeters);
+    distanceGuidance.textContent = `目標まで ${formatDistance(geometry.distanceMeters)}`;
     if (heading == null) {
       headingOutput.textContent = "—";
       differenceOutput.textContent = "端末方位を取得できません";
@@ -86,10 +104,7 @@ export function bindFieldMode(store, showToast) {
     renderCardinalScale(heading);
     compassRing.dataset.headingReady = "true";
     headingOutput.textContent = `${heading.toFixed(1)}°`;
-    const difference = signedAngleDifference(geometry.bearingDegrees, heading);
-    differenceOutput.textContent = Math.abs(difference) < 2
-      ? "ほぼ正面です"
-      : `${Math.abs(difference).toFixed(1)}° ${difference > 0 ? "左へ" : "右へ"}`;
+    differenceOutput.textContent = formatHeadingGuidance(heading, geometry.bearingDegrees);
     compassArrow.style.transform = `rotate(${headingToTargetOffset(heading, geometry.bearingDegrees)}deg)`;
   }
 
@@ -116,12 +131,18 @@ export function bindFieldMode(store, showToast) {
     if (watchId != null) navigator.geolocation.clearWatch(watchId);
     watchId = navigator.geolocation.watchPosition((position) => {
       currentLocation = { latitude: position.coords.latitude, longitude: position.coords.longitude };
-      accuracyOutput.textContent = `±${Math.round(position.coords.accuracy)} m`;
+      const accuracy = Math.round(position.coords.accuracy);
+      const guidance = gpsAccuracyGuidance(accuracy);
+      accuracyOutput.textContent = `±${accuracy} m`;
+      accuracyGuidance.dataset.quality = guidance.quality;
+      accuracyGuidance.textContent = guidance.message;
       startButton.textContent = "現在地を更新中";
       render();
     }, (error) => {
       showToast(error.message || "現在地を取得できませんでした");
       startButton.textContent = "現在地と方位を開始";
+      accuracyGuidance.dataset.quality = "poor";
+      accuracyGuidance.textContent = "位置情報を許可し、空が開けた場所でもう一度開始してください";
     }, { enableHighAccuracy: true, maximumAge: 3000, timeout: 15000 });
   }
 

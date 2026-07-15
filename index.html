@@ -10,7 +10,7 @@
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./assets/icon.svg?v=43" type="image/svg+xml">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
-    <link rel="stylesheet" href="./css/app.css?v=81">
+    <link rel="stylesheet" href="./css/app.css?v=83">
   </head>
   <body>
     <div class="app-shell">
@@ -192,10 +192,15 @@
             </div>
 
             <label class="time-slider-label" for="time-slider">
-              <span>一日の時刻 <b class="date-shift-indicator" id="date-shift-indicator" hidden></b></span>
+              <span>一日の空 <b class="sky-state-current" id="sky-state-current">空の状態</b><b class="date-shift-indicator" id="date-shift-indicator" hidden></b></span>
               <output id="slider-output">—</output>
             </label>
-            <input id="time-slider" class="time-slider" type="range" min="0" max="1439" step="1">
+            <div class="sky-state-rail" id="sky-state-rail">
+              <div class="sky-state-bands" id="sky-state-bands" aria-hidden="true"></div>
+              <div class="sky-state-markers" id="sky-state-markers" aria-hidden="true"></div>
+              <input id="time-slider" class="time-slider" type="range" min="0" max="1439" step="1">
+            </div>
+            <div class="sky-state-scale" aria-hidden="true"><span>0</span><span>6</span><span>12</span><span>18</span><span>24時</span></div>
 
             <div class="time-nudges" aria-label="時刻を調整">
               <button type="button" data-minutes="-60">−1h</button>
@@ -604,13 +609,18 @@
 
     <dialog class="field-dialog" id="field-dialog" aria-labelledby="field-title">
       <section class="field-panel">
-        <header><div><span class="eyebrow">ON LOCATION</span><h2 id="field-title">現地撮影モード</h2></div><button id="field-close" type="button" aria-label="現地撮影モードを閉じる"><span class="ui-icon icon-x" aria-hidden="true"></span></button></header>
+        <header><h2 id="field-title">現地撮影モード</h2><button id="field-close" type="button" aria-label="現地撮影モードを閉じる"><span class="ui-icon icon-x" aria-hidden="true"></span></button></header>
         <div class="field-target">
           <span>目標</span>
           <div class="field-target-switch" role="group" aria-label="案内する目標">
             <button id="field-target-camera" type="button" aria-pressed="true">撮影地点</button>
             <button id="field-target-subject" type="button" aria-pressed="false">被写体</button>
           </div>
+        </div>
+        <div class="field-guidance" aria-live="polite">
+          <span>目標への案内</span>
+          <strong id="field-heading-difference">現在地と端末方位を開始してください</strong>
+          <b id="field-distance-guidance">目標までの距離を表示します</b>
         </div>
         <div class="field-compass" aria-label="目標方向">
           <div class="field-compass-ring" id="field-compass-ring">
@@ -621,7 +631,6 @@
             <b class="field-cardinal" data-cardinal-bearing="270" aria-hidden="true">W</b>
             <i id="field-compass-arrow" aria-hidden="true"></i>
           </div>
-          <strong id="field-heading-difference">現在地と端末方位を開始してください</strong>
         </div>
         <div class="field-metrics">
           <div><span>端末方位</span><strong id="field-heading">—</strong></div>
@@ -629,6 +638,7 @@
           <div><span>目標まで</span><strong id="field-distance">—</strong></div>
           <div><span>GPS精度</span><strong id="field-accuracy">—</strong></div>
         </div>
+        <p class="field-accuracy-guidance" id="field-accuracy-guidance" data-quality="waiting">GPS精度を待っています</p>
         <button class="field-primary" id="field-start" type="button">現在地と方位を開始</button>
         <button class="field-secondary" id="field-wake" type="button" aria-pressed="false">画面点灯を維持</button>
         <p>端末の磁気センサーは周囲の金属やケースの影響を受けます。方位は現地確認用の目安です。</p>
@@ -646,6 +656,6 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
     <script src="./js/vendor/suncalc.js"></script>
     <script src="./js/vendor/astronomy-engine.min.js"></script>
-    <script type="module" src="./js/app.js?v=87"></script>
+    <script type="module" src="./js/app.js?v=88"></script>
   </body>
 </html>
