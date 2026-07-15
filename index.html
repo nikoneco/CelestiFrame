@@ -191,6 +191,12 @@
               <button class="now-button" id="now-button" type="button">現在</button>
             </div>
 
+            <label class="time-slider-label" for="time-slider">
+              <span>一日の時刻 <b class="date-shift-indicator" id="date-shift-indicator" hidden></b></span>
+              <output id="slider-output">—</output>
+            </label>
+            <input id="time-slider" class="time-slider" type="range" min="0" max="1439" step="1">
+
             <div class="time-nudges" aria-label="時刻を調整">
               <button type="button" data-minutes="-60">−1h</button>
               <button type="button" data-minutes="-10">−10m</button>
@@ -199,12 +205,6 @@
               <button type="button" data-minutes="10">＋10m</button>
               <button type="button" data-minutes="60">＋1h</button>
             </div>
-
-            <label class="time-slider-label" for="time-slider">
-              <span>一日の時刻 <b class="date-shift-indicator" id="date-shift-indicator" hidden></b></span>
-              <output id="slider-output">—</output>
-            </label>
-            <input id="time-slider" class="time-slider" type="range" min="0" max="1439" step="1">
           </section>
 
           <section class="deck-tab-panel celestial-panel" id="celestial-panel" role="tabpanel" aria-labelledby="deck-tab-celestial" hidden>

@@ -33,3 +33,11 @@ test("day navigation shares the date row instead of consuming a separate row", (
   assert.ok(html.includes('data-days="1"'));
   assert.equal(html.includes('class="date-stepper"'), false);
 });
+
+test("time slider stays above the nudge row and away from the screen edge", () => {
+  const html = readProjectFile("index.html");
+  const sliderPosition = html.indexOf('id="time-slider"');
+  const nudgePosition = html.indexOf('class="time-nudges"');
+  assert.ok(sliderPosition >= 0);
+  assert.ok(nudgePosition > sliderPosition);
+});

@@ -1,4 +1,4 @@
-const CACHE_VERSION = "celestiframe-shell-v97";
+const CACHE_VERSION = "celestiframe-shell-v98";
 const TRUSTED_STATIC_HOSTS = new Set(["unpkg.com", "www.gstatic.com"]);
 const APP_SHELL = [
   "./",
