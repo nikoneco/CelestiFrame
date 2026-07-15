@@ -10,7 +10,7 @@
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./assets/icon.svg?v=43" type="image/svg+xml">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
-    <link rel="stylesheet" href="./css/app.css?v=79">
+    <link rel="stylesheet" href="./css/app.css?v=80">
   </head>
   <body>
     <div class="app-shell">
@@ -140,7 +140,10 @@
 
         <section class="control-deck" aria-label="撮影日時と天体情報">
           <div class="deck-rail">
-            <button class="deck-handle" type="button" aria-expanded="false" aria-label="コントロールを全画面に広げる"></button>
+            <button class="deck-handle" type="button" aria-expanded="false" aria-label="コントロールを全画面に広げる">
+              <span class="deck-handle-icon ui-icon icon-chevron-down" aria-hidden="true"></span>
+              <span class="deck-handle-label">全画面</span>
+            </button>
             <span class="deck-compact-summary" id="deck-compact-summary">撮影日時</span>
             <button class="deck-toggle" id="deck-toggle" type="button" aria-expanded="true" aria-controls="control-deck-content" aria-label="コントロールを最小化" title="コントロールを最小化">
               <span class="deck-toggle-label sr-only">最小化</span><span class="deck-toggle-icon ui-icon icon-panel-bottom-close" aria-hidden="true"></span>
@@ -644,6 +647,6 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
     <script src="./js/vendor/suncalc.js"></script>
     <script src="./js/vendor/astronomy-engine.min.js"></script>
-    <script type="module" src="./js/app.js?v=86"></script>
+    <script type="module" src="./js/app.js?v=87"></script>
   </body>
 </html>

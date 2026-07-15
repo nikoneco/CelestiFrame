@@ -442,8 +442,11 @@ main { min-height: 100dvh; }
   transition: min-height 380ms cubic-bezier(0.22, 1, 0.36, 1), max-height 380ms cubic-bezier(0.22, 1, 0.36, 1), height 380ms cubic-bezier(0.22, 1, 0.36, 1), width 380ms cubic-bezier(0.22, 1, 0.36, 1), padding 300ms ease, box-shadow 300ms ease;
 }
 .deck-rail { position: sticky; z-index: 8; top: -12px; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; min-height: 44px; margin: -12px -14px 8px; padding: 5px 14px; background: color-mix(in srgb, var(--panel) 94%, transparent); backdrop-filter: blur(14px); transition: min-height 300ms ease, margin 300ms ease, padding 300ms ease, background-color 300ms ease; }
-.deck-handle { position: absolute; top: 50%; left: 50%; width: 44px; height: 32px; padding: 0; border: 0; background: transparent; touch-action: none; cursor: ns-resize; transform: translate(-50%, -50%); transition: opacity 160ms ease, transform 300ms cubic-bezier(0.22, 1, 0.36, 1); }
-.deck-handle::before { content: ""; position: absolute; top: 50%; left: 50%; width: 38px; height: 3px; border-radius: 99px; background: rgba(220, 234, 255, 0.28); transform: translate(-50%, -50%); }
+.deck-handle { position: absolute; top: 50%; left: 50%; display: flex; min-width: 82px; height: 32px; align-items: center; justify-content: center; gap: 5px; padding: 0 10px; border: 1px solid color-mix(in srgb, var(--moon-blue) 42%, var(--line)); border-radius: var(--radius-pill); background: color-mix(in srgb, var(--panel-raised) 78%, var(--panel)); color: var(--moon); touch-action: none; box-shadow: 0 3px 10px color-mix(in srgb, var(--ink) 16%, transparent); cursor: ns-resize; transform: translate(-50%, -50%); transition: opacity 160ms ease, transform 300ms cubic-bezier(0.22, 1, 0.36, 1), background-color 160ms ease; }
+.deck-handle:hover, .deck-handle:focus-visible { border-color: var(--horizon); color: var(--horizon); outline: none; }
+.deck-handle-icon { width: 13px; height: 13px; transform: rotate(180deg); transition: transform 220ms ease; }
+.deck-handle[aria-expanded="true"] .deck-handle-icon { transform: rotate(0deg); }
+.deck-handle-label { font-size: 9px; font-weight: 750; }
 .deck-compact-summary { grid-column: 1; overflow: hidden; visibility: hidden; opacity: 0; color: var(--moon); font: 10px var(--data); text-overflow: ellipsis; white-space: nowrap; transform: translateY(5px); transition: opacity 180ms ease, transform 300ms cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 300ms; }
 .deck-toggle { grid-column: 2; justify-self: end; display: grid; width: 44px; min-width: 44px; height: 44px; place-items: center; padding: 0; border: var(--border-subtle); border-radius: var(--radius-control); background: color-mix(in srgb, var(--panel-raised) 42%, transparent); color: var(--horizon); cursor: pointer; }
 .deck-toggle:hover { border-color: color-mix(in srgb, var(--horizon) 55%, var(--line)); background: color-mix(in srgb, var(--horizon) 10%, var(--panel-raised)); }
@@ -481,6 +484,7 @@ main { min-height: 100dvh; }
 
 .time-panel { padding: 10px 2px 12px; }
 .celestial-panel { padding-top: 10px; }
+.celestial-panel .celestial-grid { margin-top: 12px; }
 .time-heading { display: flex; justify-content: space-between; align-items: end; margin-bottom: 11px; }
 .eyebrow { display: block; color: var(--moon-blue); font: 10px/1.2 var(--data); letter-spacing: 0.13em; }
 .section-label { display: block; color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: .04em; }
@@ -544,6 +548,17 @@ main { min-height: 100dvh; }
 .celestial-card.is-compact .metric-pair > div { min-width: 0; padding: 8px 7px; border-left: 1px solid var(--line); }
 .celestial-card.is-compact .metric-pair span { overflow: hidden; font-size: 7px; text-overflow: ellipsis; white-space: nowrap; }
 .celestial-card.is-compact .metric-pair strong { font-size: 16px; }
+:root[data-theme="light"] .celestial-card.is-compact {
+  --text: #102033;
+  --muted: #5c6d7d;
+  --line: rgba(25, 53, 78, 0.18);
+  --moon: #163a67;
+  --moon-blue: #386fa8;
+  --solar: #c66a12;
+  --milkyway: #7443a8;
+  background: color-mix(in srgb, var(--panel-raised) 54%, var(--panel));
+  color: var(--text);
+}
 .celestial-card header { display: flex; align-items: center; gap: 10px; padding: 12px 13px 8px; }
 .celestial-card h2 { margin: 0; font: 560 17px/1 var(--display); }
 .celestial-card-moon { --target-color: var(--moon-blue); }
@@ -607,6 +622,10 @@ main { min-height: 100dvh; }
 .celestial-card-target .celestial-symbol { display: grid; place-items: center; border: 1px solid color-mix(in srgb, var(--target-color) 72%, var(--line)); background: color-mix(in srgb, var(--target-color) 11%, var(--ink)); color: var(--target-color); font: 17px/1 var(--data); box-shadow: 0 0 16px color-mix(in srgb, var(--target-color) 18%, transparent); }
 .celestial-card-target .eyebrow, .celestial-card-target .metric-pair em, .celestial-card-target .horizon-state.is-above { color: var(--target-color); }
 .celestial-card-target footer { justify-content: flex-start; }
+:root[data-theme="light"] .celestial-card.is-compact .horizon-state.is-above,
+:root[data-theme="light"] .celestial-card.is-compact .metric-pair span em {
+  color: color-mix(in srgb, var(--target-color) 64%, var(--text));
+}
 .alignment-card { margin-top: 8px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--danger) 38%, var(--line)); border-radius: var(--radius-card); background: color-mix(in srgb, var(--panel-raised) 34%, var(--panel)); }
 .alignment-card > header { display: flex; align-items: center; justify-content: space-between; padding: 12px 13px 9px; }
 .alignment-card h2 { margin: 0; font: 560 17px/1 var(--display); }

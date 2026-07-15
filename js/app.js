@@ -81,6 +81,7 @@ function setControlsCollapsed(collapsed, { persist = true } = {}) {
     controlDeck.classList.remove("is-expanded");
     deckHandle.setAttribute("aria-expanded", "false");
     deckHandle.setAttribute("aria-label", "コントロールを全画面に広げる");
+    deckHandle.querySelector(".deck-handle-label").textContent = "全画面";
   }
   controlDeck.classList.toggle("is-collapsed", collapsed);
   appShell.classList.toggle("is-controls-collapsed", collapsed);
@@ -147,6 +148,7 @@ function setDeckExpanded(expanded) {
   controlDeck.classList.toggle("is-expanded", expanded);
   deckHandle.setAttribute("aria-expanded", String(expanded));
   deckHandle.setAttribute("aria-label", expanded ? "コントロールを半画面に戻す" : "コントロールを全画面に広げる");
+  deckHandle.querySelector(".deck-handle-label").textContent = expanded ? "半画面" : "全画面";
   controlDeck.scrollTop = 0;
   window.setTimeout(() => mapController?.map.invalidateSize(), 380);
 }
