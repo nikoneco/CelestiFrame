@@ -70,6 +70,7 @@ try {
 }
 
 function setControlsCollapsed(collapsed, { persist = true } = {}) {
+  if (collapsed) controlDeck.scrollTop = 0;
   controlDeck.classList.toggle("is-collapsed", collapsed);
   appShell.classList.toggle("is-controls-collapsed", collapsed);
   controlDeckContent.toggleAttribute("inert", collapsed);
@@ -77,7 +78,11 @@ function setControlsCollapsed(collapsed, { persist = true } = {}) {
   else controlDeckContent.removeAttribute("aria-hidden");
   deckToggle.setAttribute("aria-expanded", String(!collapsed));
   deckToggle.setAttribute("aria-label", collapsed ? "コントロールを開く" : "コントロールを最小化");
+  deckToggle.title = collapsed ? "コントロールを開く" : "コントロールを最小化";
   deckToggle.querySelector(".deck-toggle-label").textContent = collapsed ? "開く" : "最小化";
+  const toggleIcon = deckToggle.querySelector(".deck-toggle-icon");
+  toggleIcon.classList.toggle("icon-panel-bottom-open", collapsed);
+  toggleIcon.classList.toggle("icon-panel-bottom-close", !collapsed);
   if (persist) localStorage.setItem(CONTROL_DECK_KEY, JSON.stringify(collapsed));
   window.setTimeout(() => mapController?.map.invalidateSize(), 20);
   window.clearTimeout(controlDeckResizeTimer);

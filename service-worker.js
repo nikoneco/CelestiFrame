@@ -1,4 +1,4 @@
-const CACHE_VERSION = "celestiframe-shell-v93";
+const CACHE_VERSION = "celestiframe-shell-v94";
 const TRUSTED_STATIC_HOSTS = new Set(["unpkg.com", "www.gstatic.com"]);
 const APP_SHELL = [
   "./",
@@ -19,6 +19,8 @@ const APP_SHELL = [
   "./assets/icons/locate-fixed.svg",
   "./assets/icons/map-pin.svg",
   "./assets/icons/notebook-tabs.svg",
+  "./assets/icons/panel-bottom-close.svg",
+  "./assets/icons/panel-bottom-open.svg",
   "./assets/icons/panel-left-close.svg",
   "./assets/icons/plus.svg",
   "./assets/icons/search.svg",
@@ -26,8 +28,8 @@ const APP_SHELL = [
   "./assets/icons/sparkles.svg",
   "./assets/icons/trash-2.svg",
   "./assets/icons/x.svg",
-  "./css/app.css?v=77",
-  "./js/app.js?v=84",
+  "./css/app.css?v=78",
+  "./js/app.js?v=85",
   "./js/config/runtime-config.js?v=35",
   "./js/config/firebase-config.js?v=1",
   "./js/state.js?v=42",
