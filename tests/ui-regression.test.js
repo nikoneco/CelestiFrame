@@ -25,3 +25,11 @@ test("mobile deck stage control exposes both screen-size actions", () => {
   assert.ok(app.includes('textContent = expanded ? "半画面" : "全画面"'));
   assert.ok(app.includes('setAttribute("aria-label", expanded ? "コントロールを半画面に戻す" : "コントロールを全画面に広げる")'));
 });
+
+test("day navigation shares the date row instead of consuming a separate row", () => {
+  const html = readProjectFile("index.html");
+  assert.ok(html.includes('class="date-input-row"'));
+  assert.ok(html.includes('data-days="-1"'));
+  assert.ok(html.includes('data-days="1"'));
+  assert.equal(html.includes('class="date-stepper"'), false);
+});

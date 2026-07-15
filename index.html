@@ -10,7 +10,7 @@
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./assets/icon.svg?v=43" type="image/svg+xml">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
-    <link rel="stylesheet" href="./css/app.css?v=80">
+    <link rel="stylesheet" href="./css/app.css?v=81">
   </head>
   <body>
     <div class="app-shell">
@@ -175,16 +175,15 @@
               <span class="timezone" id="timezone-label">LOCAL</span>
             </div>
 
-            <div class="date-stepper" role="group" aria-label="撮影日を前後に移動">
-              <button type="button" data-days="-1" aria-label="前日に移動"><span class="ui-icon icon-chevron-left" aria-hidden="true"></span> 前日</button>
-              <button type="button" data-days="1" aria-label="翌日に移動">翌日 <span class="ui-icon icon-chevron-right" aria-hidden="true"></span></button>
-            </div>
-
             <div class="datetime-inputs">
-              <label>
-                <span>日付</span>
-                <input id="date-input" type="date">
-              </label>
+              <div class="datetime-field date-field">
+                <span id="date-input-label">日付</span>
+                <div class="date-input-row" role="group" aria-labelledby="date-input-label">
+                  <button type="button" data-days="-1" aria-label="前日に移動"><span class="ui-icon icon-chevron-left" aria-hidden="true"></span></button>
+                  <input id="date-input" type="date" aria-labelledby="date-input-label">
+                  <button type="button" data-days="1" aria-label="翌日に移動"><span class="ui-icon icon-chevron-right" aria-hidden="true"></span></button>
+                </div>
+              </div>
               <label>
                 <span>時刻</span>
                 <input id="time-input" type="time" step="60">

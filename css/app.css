@@ -490,14 +490,15 @@ main { min-height: 100dvh; }
 .section-label { display: block; color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: .04em; }
 #date-summary { display: block; margin-top: 4px; font-family: var(--display); font-size: 21px; font-weight: 570; }
 .timezone { padding: 4px 7px; border: 1px solid var(--line); border-radius: 4px; color: var(--muted); font: 9px/1 var(--data); }
-.date-stepper { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; margin-bottom: 7px; }
-.date-stepper button { min-height: 36px; border: 1px solid var(--line); border-radius: 7px; background: color-mix(in srgb, var(--panel-raised) 30%, transparent); color: var(--muted); font-size: 10px; font-weight: 700; cursor: pointer; }
-.date-stepper button:first-child { text-align: left; padding-left: 11px; }
-.date-stepper button:last-child { text-align: right; padding-right: 11px; }
-.date-stepper button:active { border-color: var(--horizon); color: var(--horizon); background: color-mix(in srgb, var(--horizon) 8%, transparent); }
-.datetime-inputs { display: grid; grid-template-columns: 1.3fr 0.9fr auto; gap: 7px; }
-.datetime-inputs label, .datetime-inputs input { min-width: 0; }
-.datetime-inputs label span { display: block; margin: 0 0 4px 2px; color: var(--muted); font-size: 9px; }
+.datetime-inputs { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(86px, .75fr) auto; gap: 6px; align-items: end; }
+.datetime-inputs label, .datetime-inputs input, .datetime-field { min-width: 0; }
+.datetime-inputs label > span, .datetime-field > span { display: block; margin: 0 0 4px 2px; color: var(--muted); font-size: 9px; }
+.date-input-row { display: grid; grid-template-columns: 38px minmax(0, 1fr) 38px; }
+.date-input-row button { display: grid; min-width: 0; height: 42px; place-items: center; padding: 0; border: 1px solid var(--line); background: color-mix(in srgb, var(--panel-raised) 30%, transparent); color: var(--muted); cursor: pointer; }
+.date-input-row button:first-child { border-right: 0; border-radius: 8px 0 0 8px; }
+.date-input-row button:last-child { border-left: 0; border-radius: 0 8px 8px 0; }
+.date-input-row button:active { border-color: var(--horizon); color: var(--horizon); background: color-mix(in srgb, var(--horizon) 8%, transparent); }
+.date-input-row .ui-icon { width: 15px; height: 15px; }
 .datetime-inputs input, .now-button {
   width: 100%;
   height: 42px;
@@ -508,6 +509,7 @@ main { min-height: 100dvh; }
   color: var(--text);
 }
 .datetime-inputs input { font: 12px var(--data); color-scheme: dark; }
+.date-input-row input { border-radius: 0; padding-right: 5px; padding-left: 5px; text-align: center; }
 .now-button { align-self: end; width: auto; color: var(--horizon); font-size: 11px; font-weight: 700; cursor: pointer; }
 .time-nudges { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-top: 8px; }
 .time-nudges button { min-height: 42px; padding: 4px 2px; border: 1px solid var(--line); border-radius: 7px; background: transparent; color: var(--muted); font: 10px var(--data); cursor: pointer; }
@@ -1041,7 +1043,7 @@ body.has-update-toast .place-search { top: max(138px, calc(env(safe-area-inset-t
   .weather-panel > header button,
   .weather-actions button,
   .deck-toggle,
-  .date-stepper button,
+  .date-input-row button,
   .time-nudges button,
   .now-button,
   .search-date-shortcut { min-height: 44px; }
@@ -1079,6 +1081,12 @@ body.has-update-toast .place-search { top: max(138px, calc(env(safe-area-inset-t
   .search-date-field { grid-template-columns: minmax(0, 1fr); }
   .search-date-shortcut { width: 100%; height: 44px; }
   .search-result { grid-template-columns: 78px 1fr 36px; gap: 7px; }
+}
+
+@media (max-width: 340px) {
+  .datetime-inputs { grid-template-columns: minmax(0, 1fr) auto; }
+  .date-field { grid-column: 1 / -1; }
+  .date-input-row { grid-template-columns: 44px minmax(0, 1fr) 44px; }
 }
 
 @media (max-width: 390px) {
