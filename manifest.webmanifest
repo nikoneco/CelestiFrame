@@ -1,20 +1,72 @@
 {
   "name": "CelestiFrame — 太陽と月の撮影計画",
   "short_name": "CelestiFrame",
-  "description": "太陽と月の位置から、写真の一瞬を計画するPWA。",
+  "description": "太陽・月・星景の位置と地図を重ね、撮影地点・日時・構図を現地まで計画するPWA。",
+  "id": "./",
   "lang": "ja",
+  "dir": "ltr",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "orientation": "portrait-primary",
+  "orientation": "any",
   "background_color": "#07111f",
   "theme_color": "#07111f",
   "icons": [
     {
+      "src": "./assets/icons/app-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/icons/app-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/icons/app-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
       "src": "./assets/icon.svg?v=43",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "./assets/screenshots/celestiframe-portrait-750x1334.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "地図と撮影日時を同時に確認する縦画面"
+    },
+    {
+      "src": "./assets/screenshots/celestiframe-landscape-1280x720.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "地図と撮影計画を並べて確認する横画面"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "撮影計画を開く",
+      "short_name": "撮影計画",
+      "description": "保存した撮影計画をすぐに確認します。",
+      "url": "./?shortcut=plans",
+      "icons": [{ "src": "./assets/icons/app-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "現地撮影モードを開く",
+      "short_name": "現地撮影",
+      "description": "現在地と端末方位を使う現地案内を開きます。",
+      "url": "./?shortcut=field",
+      "icons": [{ "src": "./assets/icons/app-192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ]
 }

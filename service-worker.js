@@ -1,11 +1,19 @@
-const CACHE_VERSION = "celestiframe-shell-v102";
+const CACHE_VERSION = "celestiframe-shell-v104";
 const TRUSTED_STATIC_HOSTS = new Set(["unpkg.com", "www.gstatic.com"]);
+const OPTIONAL_SHELL = [
+  "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
+  "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
+];
 const APP_SHELL = [
   "./",
   "./index.html",
   "./offline.html",
-  "./manifest.webmanifest",
+  "./manifest.webmanifest?v=2",
   "./assets/icon.svg?v=43",
+  "./assets/icons/app-180.png",
+  "./assets/icons/app-192.png",
+  "./assets/icons/app-512.png",
+  "./assets/icons/app-maskable-512.png",
   "./assets/icons/chevron-down.svg",
   "./assets/icons/chevron-left.svg",
   "./assets/icons/chevron-right.svg",
@@ -35,8 +43,8 @@ const APP_SHELL = [
   "./assets/fonts/IBMPlexMono-Regular.woff2",
   "./assets/fonts/IBMPlexMono-SemiBold.woff2",
   "./assets/fonts/LICENSE-IBM-PLEX.txt",
-  "./css/app.css?v=85",
-  "./js/app.js?v=88",
+  "./css/app.css?v=86",
+  "./js/app.js?v=89",
   "./js/config/runtime-config.js?v=35",
   "./js/config/firebase-config.js?v=1",
   "./js/state.js?v=42",
@@ -74,6 +82,7 @@ const APP_SHELL = [
   "./js/ui/composition-controls.js?v=24",
   "./js/ui/theme.js?v=6",
   "./js/ui/target-selector.js?v=1",
+  "./js/pwa/pwa-runtime.js?v=1",
   "./js/planning/shooting-candidates.js?v=40",
   "./js/planning/shooting-planner.js?v=41",
   "./js/terrain/terrain-profile.js?v=40",
@@ -83,8 +92,24 @@ const APP_SHELL = [
   "./js/vendor/astronomy-engine.min.js",
 ];
 
+async function fetchWithTimeout(request, timeout = 3500) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeout);
+  try {
+    return await fetch(request, { signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE_VERSION).then((cache) => cache.addAll(APP_SHELL)));
+  event.waitUntil(caches.open(CACHE_VERSION).then(async (cache) => {
+    await cache.addAll(APP_SHELL);
+    await Promise.allSettled(OPTIONAL_SHELL.map(async (url) => {
+      const response = await fetch(url, { mode: "cors" });
+      if (response.ok) await cache.put(url, response);
+    }));
+  }));
 });
 
 self.addEventListener("activate", (event) => {
@@ -103,7 +128,7 @@ self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
 
   if (event.request.mode === "navigate") {
-    event.respondWith(fetch(event.request).catch(() => caches.match("./index.html").then((response) => response || caches.match("./offline.html"))));
+    event.respondWith(fetchWithTimeout(event.request).catch(() => caches.match("./index.html").then((response) => response || caches.match("./offline.html"))));
     return;
   }
 

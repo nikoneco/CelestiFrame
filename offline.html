@@ -6,20 +6,29 @@
     <meta name="theme-color" content="#07111f">
     <title>オフライン | CelestiFrame</title>
     <style>
-      :root { color-scheme: dark; font-family: "Yu Gothic UI", system-ui, sans-serif; }
-      body { min-height: 100vh; margin: 0; display: grid; place-items: center; padding: 28px; background: radial-gradient(circle at 50% 35%, #1a314b, #07111f 65%); color: #f3f7fc; }
-      main { max-width: 420px; text-align: center; }
-      .moon { width: 72px; height: 72px; margin: 0 auto 24px; border: 5px solid #dceaff; border-left-color: transparent; border-radius: 50%; transform: rotate(-25deg); }
-      h1 { margin: 0 0 10px; font-size: 22px; } p { color: #93a4b8; line-height: 1.8; }
-      button { margin-top: 12px; padding: 12px 20px; border: 1px solid #62d5c7; border-radius: 999px; background: transparent; color: #62d5c7; font: inherit; font-weight: 700; }
+      @font-face { font-family: "IBM Plex Sans JP"; src: url("./assets/fonts/IBMPlexSansJP-Regular.woff2") format("woff2"); font-display: swap; }
+      @font-face { font-family: "IBM Plex Sans Condensed"; src: url("./assets/fonts/IBMPlexSansCondensed-SemiBold.woff2") format("woff2"); font-display: swap; }
+      :root { color-scheme: dark; font-family: "IBM Plex Sans JP", "Yu Gothic UI", system-ui, sans-serif; }
+      * { box-sizing: border-box; }
+      body { min-height: 100dvh; margin: 0; display: grid; place-items: center; padding: max(28px, env(safe-area-inset-top)) 24px max(28px, env(safe-area-inset-bottom)); background: #07111f; color: #f3f7fc; }
+      main { width: min(420px, 100%); padding-top: 22px; border-top: 2px solid #62d5c7; }
+      .status { display: flex; align-items: center; gap: 8px; color: #ffb44a; font-size: 12px; font-weight: 700; }
+      .status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+      h1 { margin: 18px 0 10px; font: 600 30px/1.15 "IBM Plex Sans Condensed", sans-serif; }
+      p { margin: 0; color: #93a4b8; line-height: 1.8; }
+      small { display: block; margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(193, 216, 241, .16); color: #93a4b8; line-height: 1.65; }
+      button { width: 100%; min-height: 48px; margin-top: 24px; border: 1px solid #62d5c7; border-radius: 8px; background: #62d5c7; color: #07111f; font: inherit; font-weight: 700; cursor: pointer; }
+      button:focus-visible { outline: 2px solid #dceaff; outline-offset: 3px; }
     </style>
   </head>
   <body>
     <main>
-      <div class="moon" aria-hidden="true"></div>
-      <h1>現在オフラインです</h1>
-      <p>通信が戻ったら、もう一度読み込んでください。保存済みの地点と日時は端末に残っています。</p>
+      <div class="status">通信なし</div>
+      <h1>撮影計画は端末に残っています</h1>
+      <p>通信が戻ったら、もう一度読み込んでください。</p>
+      <small>保存済みの地点・日時・撮影計画は削除されません。地図や予報の更新には通信が必要です。</small>
       <button type="button" onclick="location.reload()">もう一度読み込む</button>
     </main>
+    <script>window.addEventListener("online", () => location.reload());</script>
   </body>
 </html>

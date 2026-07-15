@@ -28,6 +28,7 @@ import { bindFieldMode } from "./field/field-mode.js?v=49";
 import { bindWeatherOverlay } from "./weather/weather-controller.js?v=9";
 import { bindTargetSelector } from "./ui/target-selector.js?v=1";
 import { bindLightPollutionOverlay } from "./light-pollution/light-pollution-controller.js?v=2";
+import { bindPwaRuntime } from "./pwa/pwa-runtime.js?v=1";
 
 let toastTimer;
 registerServiceWorker();
@@ -853,6 +854,11 @@ bindTerrainProfile(store, () => mapController, showToast);
 bindFieldMode(store, showToast);
 renderState(store.getState());
 if (sharedState) showToast("共有された撮影計画を開きました");
+bindPwaRuntime({
+  onLaunchShortcut(shortcut) {
+    document.querySelector(shortcut === "plans" ? "#plans-button" : "#field-button")?.click();
+  },
+});
 
 async function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
@@ -866,6 +872,7 @@ async function registerServiceWorker() {
     const registration = await navigator.serviceWorker.register("./service-worker.js");
     let lastUpdateCheck = 0;
     const checkForUpdates = () => {
+      if (navigator.onLine === false) return;
       const now = Date.now();
       if (now - lastUpdateCheck < 60_000) return;
       lastUpdateCheck = now;

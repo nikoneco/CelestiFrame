@@ -121,6 +121,7 @@
 * { box-sizing: border-box; }
 
 html, body { height: 100%; }
+html { scroll-padding-block: max(76px, env(safe-area-inset-top)) max(88px, env(safe-area-inset-bottom)); }
 
 body {
   margin: 0;
@@ -133,10 +134,11 @@ body {
 
 button, input, textarea { font: inherit; }
 button { color: inherit; }
-button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible {
   outline: 2px solid var(--horizon);
   outline-offset: 2px;
 }
+:where(button, input, select, textarea, a, [tabindex]):focus-visible { scroll-margin-block: 76px 88px; }
 
 [hidden] { display: none !important; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
@@ -317,6 +319,8 @@ main { min-height: 100dvh; }
 .status-dot { grid-row: 1 / 3; align-self: center; width: 6px; height: 6px; border-radius: 50%; background: var(--horizon); box-shadow: 0 0 8px var(--horizon); }
 #location-label { font-size: 11px; font-weight: 700; }
 #coordinates { color: var(--muted); font: 9px/1.4 var(--data); }
+.network-status { grid-column: 2; max-width: 250px; margin-top: 4px; padding-top: 5px; border-top: 1px solid var(--line); color: var(--solar); font: 600 8px/1.45 var(--body); }
+body.is-offline .map-status { border-color: color-mix(in srgb, var(--solar) 55%, var(--line)); }
 
 .place-search {
   --search-handle-width: 52px;
@@ -492,6 +496,7 @@ main { min-height: 100dvh; }
   margin-top: -18px;
   padding: 12px 14px max(28px, env(safe-area-inset-bottom));
   overflow-y: auto;
+  scroll-padding-block: 76px max(88px, env(safe-area-inset-bottom));
   max-height: 52dvh;
   border-top: 1px solid var(--line);
   border-radius: var(--radius-panel) var(--radius-panel) 0 0;
@@ -1223,6 +1228,57 @@ body.has-update-toast .place-search { top: max(138px, calc(env(safe-area-inset-t
   body.has-update-toast .place-search { top: max(142px, calc(env(safe-area-inset-top) + 126px)); }
   .deck-handle { visibility: hidden; }
   .celestial-grid { grid-template-columns: 1fr; }
+}
+
+:root[data-display-mode="standalone"],
+:root[data-display-mode="standalone"] body,
+:root[data-display-mode="standalone"] .app-shell { min-height: 100dvh; }
+:root[data-display-mode="standalone"] body { overscroll-behavior-y: none; }
+
+@media (display-mode: standalone) {
+  html, body, .app-shell { min-height: 100dvh; }
+  body { overscroll-behavior-y: none; }
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+  .topbar { min-height: 60px; padding: max(8px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 7px max(12px, env(safe-area-inset-left)); }
+  .brand small { display: none; }
+  .map-stage, .app-shell.is-controls-collapsed .map-stage { height: 100dvh; min-height: 0; }
+  .control-deck,
+  .control-deck.is-expanded {
+    position: fixed;
+    z-index: 700;
+    top: max(62px, calc(env(safe-area-inset-top) + 54px));
+    right: max(10px, env(safe-area-inset-right));
+    bottom: max(10px, env(safe-area-inset-bottom));
+    left: auto;
+    width: min(390px, 52vw);
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    margin: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-panel);
+  }
+  .control-deck.is-collapsed { top: max(62px, calc(env(safe-area-inset-top) + 54px)); bottom: auto; width: min(290px, 52vw); height: 58px; max-height: 58px; }
+  .deck-handle { visibility: hidden; }
+  .map-status { top: max(64px, calc(env(safe-area-inset-top) + 56px)); }
+  .place-search { top: max(120px, calc(env(safe-area-inset-top) + 112px)); width: min(340px, calc(48vw - 28px)); }
+  .map-actions { left: calc((100vw - min(390px, 52vw) - max(10px, env(safe-area-inset-right))) / 2); bottom: max(14px, env(safe-area-inset-bottom)); }
+  .map-locate-control { right: calc(min(390px, 52vw) + max(20px, env(safe-area-inset-right))); bottom: max(14px, env(safe-area-inset-bottom)); }
+  #map .leaflet-right { right: calc(min(390px, 52vw) + max(10px, env(safe-area-inset-right))); }
+  .toast { right: calc(min(390px, 52vw) + max(20px, env(safe-area-inset-right))); bottom: max(14px, env(safe-area-inset-bottom)); }
+  .toast.is-update { right: max(12px, env(safe-area-inset-right)); }
+  .place-search input,
+  .datetime-inputs input,
+  .plan-form input,
+  .plan-form textarea,
+  .composition-form input,
+  .composition-form select,
+  .search-grid input,
+  .search-grid select,
+  .search-step select,
+  .diamond-tolerance input { font-size: 16px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
