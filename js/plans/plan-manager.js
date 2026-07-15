@@ -137,10 +137,8 @@ export function bindPlanManager(store, { applyState, showToast, repository = cre
     const actions = document.createElement("div");
     actions.className = "plan-card-actions";
     actions.append(
-      actionButton(plan.favorite ? "★" : "☆", "favorite", plan.favorite ? "お気に入りを解除" : "お気に入りに追加"),
       actionButton("地図", "map", "Googleマップで開く"),
       actionButton("共有", "share"),
-      actionButton("編集", "edit"),
       actionButton("…", "more", "その他の操作"),
     );
     card.append(main, actions);
@@ -195,7 +193,21 @@ export function bindPlanManager(store, { applyState, showToast, repository = cre
   function openMoreDialog(plan) {
     morePlanId = plan.id;
     morePlanName.textContent = plan.name;
+    const favoriteAction = moreDialog.querySelector('[data-plan-more-action="favorite"]');
+    favoriteAction.querySelector("b").textContent = plan.favorite ? "お気に入りを解除" : "お気に入りに追加";
+    favoriteAction.querySelector("small").textContent = plan.favorite
+      ? "通常の計画として一覧に戻す"
+      : "大切な計画を一覧で目立たせる";
     moreDialog.showModal();
+  }
+
+  function editPlan(plan) {
+    editingId = plan.id;
+    nameInput.value = plan.name;
+    notesInput.value = plan.notes;
+    saveButton.textContent = "名前とメモを更新";
+    cancelEditButton.hidden = false;
+    nameInput.focus();
   }
 
   async function duplicatePlan(plan) {
@@ -249,9 +261,6 @@ export function bindPlanManager(store, { applyState, showToast, repository = cre
       applyState(plan.state);
       dialog.close();
       showToast(`「${plan.name}」を開きました`);
-    } else if (button.dataset.action === "favorite") {
-      await repository.put({ ...plan, favorite: !plan.favorite, updatedAt: new Date().toISOString() });
-      await refresh();
     } else if (button.dataset.action === "map") {
       openMapDialog(plan);
     } else if (button.dataset.action === "share") {
@@ -269,13 +278,6 @@ export function bindPlanManager(store, { applyState, showToast, repository = cre
         button.disabled = false;
         button.textContent = originalLabel;
       }
-    } else if (button.dataset.action === "edit") {
-      editingId = plan.id;
-      nameInput.value = plan.name;
-      notesInput.value = plan.notes;
-      saveButton.textContent = "名前とメモを更新";
-      cancelEditButton.hidden = false;
-      nameInput.focus();
     } else if (button.dataset.action === "more") {
       openMoreDialog(plan);
     }
@@ -299,6 +301,11 @@ export function bindPlanManager(store, { applyState, showToast, repository = cre
     const plan = visiblePlans.find((item) => item.id === morePlanId);
     if (!plan) return showToast("撮影計画が見つかりません");
     moreDialog.close();
+    if (action === "favorite") {
+      await repository.put({ ...plan, favorite: !plan.favorite, updatedAt: new Date().toISOString() });
+      await refresh();
+    }
+    if (action === "edit") editPlan(plan);
     if (action === "duplicate") await duplicatePlan(plan);
     if (action === "delete") await deletePlan(plan);
   });

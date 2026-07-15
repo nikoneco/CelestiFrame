@@ -1,4 +1,4 @@
-const CACHE_VERSION = "celestiframe-shell-v94";
+const CACHE_VERSION = "celestiframe-shell-v95";
 const TRUSTED_STATIC_HOSTS = new Set(["unpkg.com", "www.gstatic.com"]);
 const APP_SHELL = [
   "./",
@@ -28,8 +28,8 @@ const APP_SHELL = [
   "./assets/icons/sparkles.svg",
   "./assets/icons/trash-2.svg",
   "./assets/icons/x.svg",
-  "./css/app.css?v=78",
-  "./js/app.js?v=85",
+  "./css/app.css?v=79",
+  "./js/app.js?v=86",
   "./js/config/runtime-config.js?v=35",
   "./js/config/firebase-config.js?v=1",
   "./js/state.js?v=42",
@@ -48,7 +48,7 @@ const APP_SHELL = [
   "./js/map/map-controller.js?v=52",
   "./js/map/place-search.js?v=34",
   "./js/plans/plan-data.js?v=41",
-  "./js/plans/plan-manager.js?v=44",
+  "./js/plans/plan-manager.js?v=45",
   "./js/plans/plan-repository.js?v=16",
   "./js/map/google-maps-url.js?v=1",
   "./js/weather/forecast-service.js?v=2",

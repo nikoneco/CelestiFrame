@@ -12,7 +12,7 @@ import { targetLabelList } from "./astronomy/target-catalog.js?v=1";
 import { subjectGeometry } from "./geometry/bearing.js?v=7";
 import { signedAngleDifference } from "./geometry/angle.js";
 import { bindSearchControls } from "./search/search-controller.js?v=45";
-import { bindPlanManager } from "./plans/plan-manager.js?v=44";
+import { bindPlanManager } from "./plans/plan-manager.js?v=45";
 import { createPlanRepository } from "./plans/plan-repository.js?v=16";
 import { createPlanSyncCoordinator } from "./cloud/plan-sync.js?v=1";
 import { bindCloudAccount } from "./cloud/account-controller.js?v=2";
@@ -37,7 +37,11 @@ const appShell = document.querySelector(".app-shell");
 const controlDeck = document.querySelector(".control-deck");
 const controlDeckContent = document.querySelector("#control-deck-content");
 const deckToggle = document.querySelector("#deck-toggle");
+const deckHandle = document.querySelector(".deck-handle");
 const CONTROL_DECK_KEY = "celestiframe:controls-collapsed:v1";
+const DECK_TAB_KEY = "celestiframe:deck-tab:v1";
+const deckTabs = [...document.querySelectorAll("[data-deck-tab]")];
+const deckTabPanels = [...document.querySelectorAll(".deck-tab-panel")];
 const setLocationButton = document.querySelector("#set-location-button");
 const subjectLocationButton = document.querySelector("#subject-location-button");
 const moreButton = document.querySelector("#more-button");
@@ -47,6 +51,8 @@ let controlDeckResizeTimer;
 let activeLocationMode = null;
 const systemThemeQuery = window.matchMedia("(prefers-color-scheme: light)");
 let sharedState = null;
+let activeDeckTabId = localStorage.getItem(DECK_TAB_KEY) || "time-panel";
+let activeCelestialId = null;
 
 function setTopbarMenuOpen(open, { restoreFocus = false } = {}) {
   topbarMenu.hidden = !open;
@@ -71,6 +77,11 @@ try {
 
 function setControlsCollapsed(collapsed, { persist = true } = {}) {
   if (collapsed) controlDeck.scrollTop = 0;
+  if (collapsed) {
+    controlDeck.classList.remove("is-expanded");
+    deckHandle.setAttribute("aria-expanded", "false");
+    deckHandle.setAttribute("aria-label", "コントロールを全画面に広げる");
+  }
   controlDeck.classList.toggle("is-collapsed", collapsed);
   appShell.classList.toggle("is-controls-collapsed", collapsed);
   controlDeckContent.toggleAttribute("inert", collapsed);
@@ -80,6 +91,7 @@ function setControlsCollapsed(collapsed, { persist = true } = {}) {
   deckToggle.setAttribute("aria-label", collapsed ? "コントロールを開く" : "コントロールを最小化");
   deckToggle.title = collapsed ? "コントロールを開く" : "コントロールを最小化";
   deckToggle.querySelector(".deck-toggle-label").textContent = collapsed ? "開く" : "最小化";
+  deckHandle.disabled = collapsed;
   const toggleIcon = deckToggle.querySelector(".deck-toggle-icon");
   toggleIcon.classList.toggle("icon-panel-bottom-open", collapsed);
   toggleIcon.classList.toggle("icon-panel-bottom-close", !collapsed);
@@ -92,17 +104,76 @@ function setControlsCollapsed(collapsed, { persist = true } = {}) {
 deckToggle.addEventListener("click", () => setControlsCollapsed(!controlDeck.classList.contains("is-collapsed")));
 setControlsCollapsed(localStorage.getItem(CONTROL_DECK_KEY) === "true", { persist: false });
 
-document.querySelectorAll("[data-deck-target]").forEach((button) => {
-  button.addEventListener("click", () => {
-    const target = document.querySelector(`#${button.dataset.deckTarget}`);
-    if (!target) return;
-    const deckTop = controlDeck.getBoundingClientRect().top;
-    const targetTop = target.getBoundingClientRect().top;
-    controlDeck.scrollTo({
-      top: controlDeck.scrollTop + targetTop - deckTop - 58,
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
-    });
+function availableDeckTabs() {
+  return deckTabs.filter((tab) => !tab.hidden && document.querySelector(`#${tab.dataset.deckTab}`)?.dataset.available !== "false");
+}
+
+function setActiveDeckTab(panelId, { focus = false, persist = true } = {}) {
+  const tabs = availableDeckTabs();
+  const requested = tabs.find((tab) => tab.dataset.deckTab === panelId) || tabs[0];
+  if (!requested) return;
+  activeDeckTabId = requested.dataset.deckTab;
+  deckTabs.forEach((tab) => {
+    const selected = tab === requested;
+    tab.setAttribute("aria-selected", String(selected));
+    tab.tabIndex = selected ? 0 : -1;
   });
+  deckTabPanels.forEach((panel) => {
+    panel.hidden = panel.id !== activeDeckTabId || panel.dataset.available === "false";
+  });
+  if (persist) localStorage.setItem(DECK_TAB_KEY, activeDeckTabId);
+  if (focus) requested.focus();
+}
+
+deckTabs.forEach((tab) => {
+  tab.addEventListener("click", () => {
+    controlDeck.scrollTop = 0;
+    setActiveDeckTab(tab.dataset.deckTab);
+  });
+  tab.addEventListener("keydown", (event) => {
+    const tabs = availableDeckTabs();
+    const index = tabs.indexOf(tab);
+    if (index < 0 || !["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+    event.preventDefault();
+    const nextIndex = event.key === "Home" ? 0
+      : event.key === "End" ? tabs.length - 1
+        : (index + (event.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
+    setActiveDeckTab(tabs[nextIndex].dataset.deckTab, { focus: true });
+  });
+});
+
+function setDeckExpanded(expanded) {
+  if (!window.matchMedia("(max-width: 759px)").matches || controlDeck.classList.contains("is-collapsed")) return;
+  controlDeck.classList.toggle("is-expanded", expanded);
+  deckHandle.setAttribute("aria-expanded", String(expanded));
+  deckHandle.setAttribute("aria-label", expanded ? "コントロールを半画面に戻す" : "コントロールを全画面に広げる");
+  controlDeck.scrollTop = 0;
+  window.setTimeout(() => mapController?.map.invalidateSize(), 380);
+}
+
+let deckDragStartY = null;
+let deckDragHandled = false;
+deckHandle?.addEventListener("pointerdown", (event) => {
+  deckDragStartY = event.clientY;
+  deckHandle.setPointerCapture?.(event.pointerId);
+});
+deckHandle?.addEventListener("pointerup", (event) => {
+  if (deckDragStartY === null) return;
+  const delta = event.clientY - deckDragStartY;
+  deckDragStartY = null;
+  if (Math.abs(delta) > 36) {
+    deckDragHandled = true;
+    window.setTimeout(() => { deckDragHandled = false; }, 0);
+  }
+  if (delta < -36) setDeckExpanded(true);
+  if (delta > 36) {
+    if (controlDeck.classList.contains("is-expanded")) setDeckExpanded(false);
+    else setControlsCollapsed(true);
+  }
+});
+deckHandle?.addEventListener("click", () => {
+  if (deckDragHandled) return;
+  setDeckExpanded(!controlDeck.classList.contains("is-expanded"));
 });
 
 function applyTheme(preference) {
@@ -244,6 +315,7 @@ function renderStellarTargets(targetData) {
   targetData.filter((data) => !["sun", "moon", "milkyway"].includes(data.target.id)).forEach((data) => {
     const card = document.createElement("article");
     card.className = "celestial-card celestial-card-target";
+    card.dataset.card = data.target.id;
     card.style.setProperty("--target-color", data.target.color);
     const header = document.createElement("header");
     const symbol = document.createElement("span");
@@ -283,6 +355,48 @@ function renderStellarTargets(targetData) {
   });
 }
 
+function syncCelestialCardDensity(state) {
+  const cards = [...document.querySelectorAll("#celestial-grid .celestial-card[data-card]")]
+    .filter((card) => state.selectedTargets.includes(card.dataset.card));
+  if (!cards.some((card) => card.dataset.card === activeCelestialId)) {
+    activeCelestialId = cards[0]?.dataset.card || null;
+  }
+  cards.forEach((card) => {
+    const detail = card.dataset.card === activeCelestialId;
+    card.classList.toggle("is-detail", detail);
+    card.classList.toggle("is-compact", !detail);
+    card.setAttribute("aria-expanded", String(detail));
+    if (detail) {
+      card.removeAttribute("role");
+      card.removeAttribute("tabindex");
+      card.removeAttribute("aria-label");
+    } else {
+      const label = card.querySelector("h2")?.textContent || "天体";
+      card.setAttribute("role", "button");
+      card.tabIndex = 0;
+      card.setAttribute("aria-label", `${label}の詳細を表示`);
+    }
+  });
+}
+
+function activateCelestialCard(card) {
+  if (!card?.classList.contains("is-compact")) return;
+  activeCelestialId = card.dataset.card;
+  syncCelestialCardDensity(store.getState());
+  card.scrollIntoView({ block: "nearest", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+}
+
+document.querySelector("#celestial-grid").addEventListener("click", (event) => {
+  activateCelestialCard(event.target.closest(".celestial-card.is-compact"));
+});
+document.querySelector("#celestial-grid").addEventListener("keydown", (event) => {
+  if (!["Enter", " "].includes(event.key)) return;
+  const card = event.target.closest(".celestial-card.is-compact");
+  if (!card) return;
+  event.preventDefault();
+  activateCelestialCard(card);
+});
+
 function renderCelestialDirections(state, cameraTargetData) {
   if (!mapController) return;
   const directions = [];
@@ -308,7 +422,7 @@ function formatAlignmentDifference(value) {
 function renderAlignment(state, targetData = []) {
   const card = document.querySelector("#alignment-card");
   if (!state.subjectLocation) {
-    card.hidden = true;
+    card.dataset.available = "false";
     return;
   }
 
@@ -320,7 +434,7 @@ function renderAlignment(state, targetData = []) {
     difference: signedAngleDifference(geometry.bearingDegrees, data.azimuth),
   }));
   if (!candidates.length) {
-    card.hidden = true;
+    card.dataset.available = "false";
     return;
   }
   const closest = candidates.reduce((best, candidate) => (
@@ -328,7 +442,7 @@ function renderAlignment(state, targetData = []) {
   ));
   const absoluteDifference = Math.abs(closest.difference);
 
-  card.hidden = false;
+  card.dataset.available = "true";
   document.querySelector("#alignment-title").textContent = `${state.subject?.name || "被写体"}との重なり`;
   document.querySelector('[data-alignment-field="distance"]').textContent = formatDistance(geometry.distanceMeters);
   document.querySelector('[data-alignment-field="bearing"]').textContent = geometry.bearingDegrees.toFixed(1);
@@ -358,11 +472,11 @@ const clampPercent = (value) => Math.min(100, Math.max(0, value));
 function renderComposition(state, targetData = []) {
   const card = document.querySelector("#composition-card");
   if (!state.subjectLocation) {
-    card.hidden = true;
+    card.dataset.available = "false";
     return;
   }
 
-  card.hidden = false;
+  card.dataset.available = "true";
   try {
     const selectedDate = new Date(state.selectedDateTime);
     const geometry = subjectGeometry(state.cameraLocation, state.subjectLocation);
@@ -654,6 +768,16 @@ const compositionControls = bindCompositionControls(store);
 bindElevationControls(store, showToast);
 bindTargetSelector(store, showToast);
 
+function syncDeckTabs(state) {
+  deckTabs.forEach((tab) => {
+    if (tab.hasAttribute("data-requires-subject")) tab.hidden = !state.subjectLocation;
+  });
+  if (!availableDeckTabs().some((tab) => tab.dataset.deckTab === activeDeckTabId)) {
+    activeDeckTabId = state.selectedTargets.length ? "celestial-panel" : "time-panel";
+  }
+  setActiveDeckTab(activeDeckTabId, { persist: false });
+}
+
 function renderState(state) {
   applyTheme(state.settings.theme);
   const directionLineOrigin = ["camera", "subject", "both"].includes(state.settings.directionLineOrigin)
@@ -680,13 +804,19 @@ function renderState(state) {
   renderMoon(state, targetData.find((data) => data.target.id === "moon"));
   renderMilkyWay(state, targetData.find((data) => data.target.id === "milkyway"));
   renderStellarTargets(targetData);
+  syncCelestialCardDensity(state);
   renderCelestialDirections(state, targetData);
   renderAlignment(state, targetData);
   renderComposition(state, targetData);
+  syncDeckTabs(state);
   compositionControls.sync(state);
   const compactDate = new Intl.DateTimeFormat("ja-JP", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(state.selectedDateTime));
   const compactTargets = targetLabelList(state.selectedTargets, { short: true }).join("・");
-  document.querySelector("#deck-compact-summary").textContent = `${compactDate} ・ ${compactTargets}`;
+  const targetSummary = compactTargets || "未選択";
+  document.querySelector("#deck-compact-summary").textContent = `${compactDate} ・ ${targetSummary}`;
+  document.querySelector("#deck-context-datetime").textContent = compactDate;
+  document.querySelector("#deck-context-location").textContent = `${state.cameraLocation.latitude.toFixed(3)}, ${state.cameraLocation.longitude.toFixed(3)}`;
+  document.querySelector("#deck-context-targets").textContent = targetSummary;
 }
 
 store.subscribe(renderState);

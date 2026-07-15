@@ -442,7 +442,8 @@ main { min-height: 100dvh; }
   transition: min-height 380ms cubic-bezier(0.22, 1, 0.36, 1), max-height 380ms cubic-bezier(0.22, 1, 0.36, 1), height 380ms cubic-bezier(0.22, 1, 0.36, 1), width 380ms cubic-bezier(0.22, 1, 0.36, 1), padding 300ms ease, box-shadow 300ms ease;
 }
 .deck-rail { position: sticky; z-index: 8; top: -12px; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; min-height: 44px; margin: -12px -14px 8px; padding: 5px 14px; background: color-mix(in srgb, var(--panel) 94%, transparent); backdrop-filter: blur(14px); transition: min-height 300ms ease, margin 300ms ease, padding 300ms ease, background-color 300ms ease; }
-.deck-handle { position: absolute; top: 50%; left: 50%; width: 38px; height: 3px; border-radius: 99px; background: rgba(220, 234, 255, 0.28); transform: translate(-50%, -50%); transition: opacity 160ms ease, transform 300ms cubic-bezier(0.22, 1, 0.36, 1); }
+.deck-handle { position: absolute; top: 50%; left: 50%; width: 44px; height: 32px; padding: 0; border: 0; background: transparent; touch-action: none; cursor: ns-resize; transform: translate(-50%, -50%); transition: opacity 160ms ease, transform 300ms cubic-bezier(0.22, 1, 0.36, 1); }
+.deck-handle::before { content: ""; position: absolute; top: 50%; left: 50%; width: 38px; height: 3px; border-radius: 99px; background: rgba(220, 234, 255, 0.28); transform: translate(-50%, -50%); }
 .deck-compact-summary { grid-column: 1; overflow: hidden; visibility: hidden; opacity: 0; color: var(--moon); font: 10px var(--data); text-overflow: ellipsis; white-space: nowrap; transform: translateY(5px); transition: opacity 180ms ease, transform 300ms cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 300ms; }
 .deck-toggle { grid-column: 2; justify-self: end; display: grid; width: 44px; min-width: 44px; height: 44px; place-items: center; padding: 0; border: var(--border-subtle); border-radius: var(--radius-control); background: color-mix(in srgb, var(--panel-raised) 42%, transparent); color: var(--horizon); cursor: pointer; }
 .deck-toggle:hover { border-color: color-mix(in srgb, var(--horizon) 55%, var(--line)); background: color-mix(in srgb, var(--horizon) 10%, var(--panel-raised)); }
@@ -464,12 +465,22 @@ main { min-height: 100dvh; }
 .target-selector-button > i { width: 17px; height: 17px; color: var(--horizon); }
 .target-selection-summary { display: flex; min-width: 0; gap: 4px; overflow: hidden; }
 .target-selection-summary span { flex: 0 1 auto; min-width: 8px; overflow: hidden; padding: 3px 6px; border: 1px solid color-mix(in srgb, var(--target-color) 55%, var(--line)); border-radius: 999px; color: color-mix(in srgb, var(--target-color) 74%, var(--text)); font: 8px var(--data); text-overflow: ellipsis; white-space: nowrap; }
-.deck-shortcuts { display: flex; gap: 6px; margin-top: 8px; overflow-x: auto; scrollbar-width: none; }
-.deck-shortcuts::-webkit-scrollbar { display: none; }
-.deck-shortcuts button { flex: 1 0 auto; min-height: 36px; padding: 0 12px; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--muted); font-size: 10px; cursor: pointer; }
-.deck-shortcuts button:active { color: var(--text); background: var(--panel-raised); }
+.deck-navigation { position: sticky; z-index: 7; top: 32px; margin: 0 -14px 8px; padding: 0 14px; background: color-mix(in srgb, var(--panel) 94%, transparent); backdrop-filter: blur(14px); }
+.deck-context { display: grid; grid-template-columns: 1fr .9fr 1.1fr; gap: 1px; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius-card); background: var(--line); }
+.deck-context > span { min-width: 0; padding: 7px 9px; background: color-mix(in srgb, var(--panel-raised) 52%, var(--panel)); }
+.deck-context small, .deck-context b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.deck-context small { margin-bottom: 3px; color: var(--muted); font: 7px var(--data); letter-spacing: .08em; }
+.deck-context b { color: var(--moon); font: 9px var(--data); }
+.deck-tabs { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 6px; border-bottom: 1px solid var(--line); }
+.deck-tabs button { position: relative; min-height: 40px; border: 0; background: transparent; color: var(--muted); font-size: 10px; font-weight: 700; cursor: pointer; }
+.deck-tabs button::after { content: ""; position: absolute; right: 14px; bottom: -1px; left: 14px; height: 2px; border-radius: 99px 99px 0 0; background: var(--horizon); opacity: 0; transform: scaleX(.35); transition: opacity 160ms ease, transform 200ms ease; }
+.deck-tabs button[aria-selected="true"] { color: var(--text); }
+.deck-tabs button[aria-selected="true"]::after { opacity: 1; transform: scaleX(1); }
+.deck-tab-panels { min-height: 220px; }
+.deck-tab-panel[hidden], .deck-tabs button[hidden] { display: none; }
 
-.time-panel { padding: 16px 2px 12px; }
+.time-panel { padding: 10px 2px 12px; }
+.celestial-panel { padding-top: 10px; }
 .time-heading { display: flex; justify-content: space-between; align-items: end; margin-bottom: 11px; }
 .eyebrow { display: block; color: var(--moon-blue); font: 10px/1.2 var(--data); letter-spacing: 0.13em; }
 .section-label { display: block; color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: .04em; }
@@ -517,6 +528,22 @@ main { min-height: 100dvh; }
   background: linear-gradient(135deg, rgba(20, 38, 58, 0.96), rgba(7, 17, 31, 0.98));
   color: var(--text);
 }
+.celestial-card.is-detail { order: -1; }
+.celestial-card.is-compact { display: grid; grid-template-columns: minmax(0, 1fr) minmax(122px, .8fr); align-items: center; min-height: 68px; background: color-mix(in srgb, var(--panel-raised) 54%, var(--panel)); cursor: pointer; }
+.celestial-card.is-compact:hover, .celestial-card.is-compact:focus-visible { border-color: color-mix(in srgb, var(--target-color) 66%, var(--line)); background: color-mix(in srgb, var(--target-color) 8%, var(--panel-raised)); outline: none; }
+.celestial-card.is-compact header { min-width: 0; padding: 10px 11px; }
+.celestial-card.is-compact h2 { font-size: 14px; }
+.celestial-card.is-compact .celestial-symbol { flex-basis: 22px; width: 22px; height: 22px; }
+.celestial-card.is-compact .horizon-state { overflow: hidden; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+.celestial-card.is-compact .card-vector-key,
+.celestial-card.is-compact footer,
+.celestial-card.is-compact footer.moon-details,
+.celestial-card.is-compact footer.milkyway-details,
+.celestial-card.is-compact .milkyway-arc-chart { display: none; }
+.celestial-card.is-compact .metric-pair { grid-template-columns: 1fr 1fr; border: 0; }
+.celestial-card.is-compact .metric-pair > div { min-width: 0; padding: 8px 7px; border-left: 1px solid var(--line); }
+.celestial-card.is-compact .metric-pair span { overflow: hidden; font-size: 7px; text-overflow: ellipsis; white-space: nowrap; }
+.celestial-card.is-compact .metric-pair strong { font-size: 16px; }
 .celestial-card header { display: flex; align-items: center; gap: 10px; padding: 12px 13px 8px; }
 .celestial-card h2 { margin: 0; font: 560 17px/1 var(--display); }
 .celestial-card-moon { --target-color: var(--moon-blue); }
@@ -750,10 +777,10 @@ body.has-update-toast .place-search { top: max(138px, calc(env(safe-area-inset-t
 .settings-panel > header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
 .settings-panel h2 { margin: 0; font: 580 24px/1.1 var(--display); }
 .dialog-close { display: grid; width: 44px; height: 44px; place-items: center; border: var(--border-subtle); border-radius: var(--radius-control); background: transparent; color: var(--muted); cursor: pointer; }
-.theme-options { display: grid; gap: 8px; margin: 0; padding: 0; border: 0; }
+.theme-options { display: grid; gap: 2px; margin: 0; padding: 0; border: 0; }
 .theme-options legend { margin-bottom: 8px; color: var(--muted); font-size: 10px; }
-.theme-option { position: relative; display: grid; grid-template-columns: 54px 1fr; grid-template-rows: auto auto; gap: 1px 12px; align-items: center; padding: 11px; border: 1px solid var(--line); border-radius: 11px; background: color-mix(in srgb, var(--panel-raised) 28%, transparent); cursor: pointer; }
-.theme-option:has(input:checked) { border-color: var(--horizon); box-shadow: inset 3px 0 0 var(--horizon); }
+.theme-option { position: relative; display: grid; grid-template-columns: 54px 1fr; grid-template-rows: auto auto; gap: 1px 12px; align-items: center; padding: 10px 11px; border: 0; border-radius: var(--radius-control); background: transparent; cursor: pointer; }
+.theme-option:has(input:checked) { background: color-mix(in srgb, var(--horizon) 9%, var(--panel-raised)); box-shadow: inset 3px 0 0 var(--horizon); }
 .theme-option input { position: absolute; opacity: 0; pointer-events: none; }
 .theme-option strong { align-self: end; font-size: 13px; }
 .theme-option small { align-self: start; color: var(--muted); font-size: 10px; }
@@ -775,16 +802,16 @@ body.has-update-toast .place-search { top: max(138px, calc(env(safe-area-inset-t
 .direction-origin-options input:focus-visible + span { outline: 2px solid var(--horizon); outline-offset: 2px; }
 .direction-origin-options p { margin: 8px 2px 0; color: var(--muted); font-size: 9px; line-height: 1.55; }
 .settings-note { margin: 14px 2px; color: var(--muted); font-size: 10px; line-height: 1.6; }
-.settings-done { width: 100%; min-height: 44px; border: 1px solid var(--horizon); border-radius: 10px; background: var(--horizon); color: var(--ink); font-weight: 750; cursor: pointer; }
+.settings-done { display: none; width: 100%; min-height: 44px; border: 1px solid var(--horizon); border-radius: 10px; background: var(--horizon); color: var(--ink); font-weight: 750; cursor: pointer; }
 
 .plans-dialog { width: min(620px, calc(100vw - 20px)); height: min(820px, calc(100dvh - 20px)); padding: 0; overflow: hidden; border: var(--border-subtle); border-radius: var(--radius-panel); background: var(--panel); color: var(--text); box-shadow: var(--shadow-modal); }
 .plans-dialog::backdrop { background: rgba(1, 7, 14, 0.76); backdrop-filter: blur(5px); }
 .plans-panel { height: 100%; padding: 18px; overflow-y: auto; }
 .plans-header { position: sticky; z-index: 3; top: -18px; display: flex; align-items: center; justify-content: space-between; margin: -18px -18px 14px; padding: 18px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--panel) 94%, transparent); backdrop-filter: blur(14px); }
 .plans-header h2 { margin: 0; font: 580 24px/1.1 var(--display); }
-.cloud-account { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; margin-bottom: 13px; padding: 11px 12px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--moon-blue) 34%, var(--line)); border-radius: 13px; background: linear-gradient(110deg, color-mix(in srgb, var(--panel-raised) 72%, transparent), color-mix(in srgb, var(--ink) 36%, transparent)); }
-.cloud-account::after { content: ""; position: absolute; right: 74px; top: -48px; width: 116px; height: 116px; border: 1px solid color-mix(in srgb, var(--moon-blue) 11%, transparent); border-radius: 50%; pointer-events: none; }
-.cloud-orbit { position: relative; display: grid; width: 42px; height: 42px; flex: 0 0 auto; place-items: center; border: 1px solid color-mix(in srgb, var(--moon-blue) 42%, var(--line)); border-radius: 50%; color: var(--moon-blue); }
+.cloud-account { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 9px; align-items: center; margin-bottom: 12px; padding: 7px 2px 11px; border: 0; border-bottom: 1px solid var(--line); background: transparent; }
+.cloud-account::after { content: none; }
+.cloud-orbit { position: relative; display: grid; width: 34px; height: 34px; flex: 0 0 auto; place-items: center; border: 1px solid color-mix(in srgb, var(--moon-blue) 42%, var(--line)); border-radius: 50%; color: var(--moon-blue); }
 .cloud-orbit::before, .cloud-orbit::after { content: ""; position: absolute; border: 1px solid color-mix(in srgb, var(--moon-blue) 26%, transparent); border-radius: 50%; transform: rotate(-23.4deg); }
 .cloud-orbit::before { inset: 7px -4px; }
 .cloud-orbit::after { inset: -4px 7px; }
@@ -801,6 +828,7 @@ body.has-update-toast .place-search { top: max(138px, calc(env(safe-area-inset-t
 .cloud-account-copy strong, .cloud-account-copy small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cloud-account-copy strong { font: 570 13px var(--display); }
 .cloud-account-copy small { margin-top: 3px; color: var(--muted); font-size: 8px; }
+.cloud-account:not([data-state="local"]) .cloud-account-copy small { display: none; }
 .cloud-account-actions { position: relative; z-index: 1; display: flex; gap: 5px; }
 .cloud-account-actions button, .cloud-migration button { min-height: 36px; padding: 6px 9px; border: 1px solid var(--line); border-radius: 7px; background: color-mix(in srgb, var(--panel) 72%, transparent); color: var(--moon); font-size: 9px; font-weight: 700; cursor: pointer; }
 #cloud-sign-in, #cloud-migrate-merge { border-color: color-mix(in srgb, var(--horizon) 58%, var(--line)); color: var(--horizon); }
@@ -810,9 +838,9 @@ body.has-update-toast .place-search { top: max(138px, calc(env(safe-area-inset-t
 .cloud-migration strong { font-size: 11px; }
 .cloud-migration p { margin: 4px 0 8px; color: var(--muted); font-size: 9px; line-height: 1.5; }
 .cloud-migration > div { display: flex; gap: 6px; }
-.plan-form { position: relative; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 9px; padding: 13px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--moon-blue) 44%, var(--line)); border-radius: 13px; background: linear-gradient(120deg, color-mix(in srgb, var(--panel-raised) 64%, transparent), transparent); }
-.plan-form::after { content: ""; position: absolute; right: -28px; top: -42px; width: 110px; height: 110px; border: 1px solid color-mix(in srgb, var(--moon-blue) 24%, transparent); border-radius: 50%; box-shadow: inset 0 0 0 18px color-mix(in srgb, var(--moon-blue) 4%, transparent), inset 0 0 0 36px color-mix(in srgb, var(--moon-blue) 4%, transparent); pointer-events: none; }
-.plan-form-heading { grid-column: 1 / -1; display: flex; align-items: baseline; justify-content: space-between; padding-right: 72px; }
+.plan-form { position: relative; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 9px; padding: 12px 2px 14px; border: 0; border-bottom: 1px solid var(--line); background: transparent; }
+.plan-form::after { content: none; }
+.plan-form-heading { grid-column: 1 / -1; display: flex; align-items: baseline; justify-content: space-between; padding-right: 0; }
 .plan-form-heading span { font: 570 16px var(--display); }
 .plan-form-heading small { color: var(--muted); font: 8px var(--data); }
 .plan-form label { min-width: 0; }
@@ -828,8 +856,8 @@ body.has-update-toast .place-search { top: max(138px, calc(env(safe-area-inset-t
 .plans-toolbar > span { color: var(--moon-blue); font: 9px var(--data); letter-spacing: .1em; }
 .plans-toolbar > div { display: flex; gap: 5px; }
 .plans-toolbar button { min-height: 36px; padding: 6px 9px; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: var(--muted); font-size: 10px; cursor: pointer; }
-.plans-list { display: grid; gap: 7px; }
-.plan-card { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; overflow: hidden; border: 1px solid var(--line); border-radius: 11px; background: color-mix(in srgb, var(--panel-raised) 38%, transparent); }
+.plans-list { display: grid; gap: 0; }
+.plan-card { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; border: 0; border-bottom: 1px solid var(--line); background: transparent; }
 .plan-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--moon-blue); opacity: .48; }
 .plan-card.is-favorite::before { background: var(--solar); opacity: 1; box-shadow: 0 0 9px var(--solar); }
 .plan-card-main { min-width: 0; padding: 11px 12px 10px 14px; border: 0; background: transparent; text-align: left; cursor: pointer; }
@@ -838,9 +866,8 @@ body.has-update-toast .place-search { top: max(138px, calc(env(safe-area-inset-t
 .plan-card-main span { margin-top: 3px; color: var(--moon); font: 11px var(--data); }
 .plan-card-main small { margin-top: 4px; color: var(--muted); font-size: 9px; }
 .plan-card-main .plan-card-note { color: color-mix(in srgb, var(--text) 72%, var(--muted)); }
-.plan-card-actions { align-self: center; display: grid; grid-template-columns: repeat(5, auto); gap: 3px; padding: 7px; }
+.plan-card-actions { align-self: center; display: grid; grid-template-columns: repeat(3, auto); gap: 3px; padding: 7px; }
 .plan-card-actions button { min-height: 36px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: var(--muted); font-size: 9px; cursor: pointer; }
-.plan-card-actions button[data-action="favorite"] { color: var(--solar); font-size: 13px; }
 .plan-card-actions button[data-action="map"] { border-color: color-mix(in srgb, var(--horizon) 44%, var(--line)); color: var(--horizon); }
 .plan-card-actions button[data-action="more"] { font-size: 14px; letter-spacing: .08em; }
 .plans-empty { margin: 0; padding: 24px 18px; border: 1px dashed var(--line); border-radius: 11px; color: var(--muted); font-size: 11px; line-height: 1.7; text-align: center; }
@@ -1002,6 +1029,8 @@ body.has-update-toast .place-search { top: max(138px, calc(env(safe-area-inset-t
   .composition-metrics { grid-template-columns: repeat(2, 1fr); }
   .composition-metrics > div:nth-child(3) { border-left: 0; }
   .composition-metrics > div:nth-child(n + 3) { border-top: 1px solid var(--line); }
+  .settings-panel .dialog-close { display: none; }
+  .settings-done { display: grid; place-items: center; }
   .terrain-metrics { grid-template-columns: repeat(2, 1fr); }
   .terrain-metrics > div:nth-child(3) { border-left: 0; }
   .terrain-metrics > div:nth-child(n + 3) { border-top: 1px solid var(--line); }
@@ -1016,7 +1045,7 @@ body.has-update-toast .place-search { top: max(138px, calc(env(safe-area-inset-t
   .plan-form { grid-template-columns: 1fr; }
   .plan-form label, .plan-form-actions { grid-column: 1; }
   .plan-card { grid-template-columns: 1fr; }
-  .plan-card-actions { grid-template-columns: repeat(5, 1fr); padding: 0 9px 9px 13px; }
+  .plan-card-actions { grid-template-columns: repeat(3, 1fr); padding: 0 9px 9px 13px; }
   .plan-card-actions button { min-height: 44px; }
   .plan-action-dialog { width: calc(100vw - 8px); max-height: calc(100dvh - 8px); }
   .plan-action-sheet { padding-left: 12px; padding-right: 12px; }
@@ -1046,6 +1075,7 @@ body.has-update-toast .place-search { top: max(138px, calc(env(safe-area-inset-t
 
 @media (max-width: 759px) {
   .map-actions { bottom: 112px; }
+  .control-deck.is-expanded { position: fixed; top: max(72px, calc(env(safe-area-inset-top) + 62px)); right: 0; bottom: 0; left: 0; height: auto; min-height: 0; max-height: none; margin: 0; border-radius: var(--radius-panel) var(--radius-panel) 0 0; }
   .app-shell.is-controls-collapsed ~ .toast { bottom: calc(68px + env(safe-area-inset-bottom)); }
   .app-shell.is-controls-collapsed ~ .toast.is-update { bottom: auto; }
 }
