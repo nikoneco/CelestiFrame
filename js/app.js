@@ -40,11 +40,28 @@ const deckToggle = document.querySelector("#deck-toggle");
 const CONTROL_DECK_KEY = "celestiframe:controls-collapsed:v1";
 const setLocationButton = document.querySelector("#set-location-button");
 const subjectLocationButton = document.querySelector("#subject-location-button");
+const moreButton = document.querySelector("#more-button");
+const topbarMenu = document.querySelector("#topbar-menu");
 let mapController;
 let controlDeckResizeTimer;
 let activeLocationMode = null;
 const systemThemeQuery = window.matchMedia("(prefers-color-scheme: light)");
 let sharedState = null;
+
+function setTopbarMenuOpen(open, { restoreFocus = false } = {}) {
+  topbarMenu.hidden = !open;
+  moreButton.setAttribute("aria-expanded", String(open));
+  if (restoreFocus) moreButton.focus();
+}
+
+moreButton.addEventListener("click", () => setTopbarMenuOpen(topbarMenu.hidden));
+document.addEventListener("pointerdown", (event) => {
+  if (!topbarMenu.hidden && !event.target.closest(".topbar-more")) setTopbarMenuOpen(false);
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !topbarMenu.hidden) setTopbarMenuOpen(false, { restoreFocus: true });
+});
+
 try {
   sharedState = parseSharedState(window.location.href);
   if (sharedState) store.setState((state) => ({ ...state, ...sharedState, settings: state.settings }));
@@ -229,12 +246,9 @@ function renderStellarTargets(targetData) {
     symbol.textContent = data.target.symbol;
     symbol.setAttribute("aria-hidden", "true");
     const title = document.createElement("div");
-    const eyebrow = document.createElement("span");
-    eyebrow.className = "eyebrow";
-    eyebrow.textContent = data.target.kind === "planet" ? "PLANET VECTOR" : "DEEP SKY VECTOR";
     const heading = document.createElement("h2");
     heading.textContent = data.target.label;
-    title.append(eyebrow, heading);
+    title.append(heading);
     const stateLabel = document.createElement("span");
     stateLabel.className = `horizon-state ${data.isAboveHorizon ? "is-above" : "is-below"}`;
     stateLabel.textContent = data.isAboveHorizon ? "地平線の上" : "地平線の下（計算値）";
@@ -449,8 +463,10 @@ function showToast(message) {
   action.disabled = false;
   action.textContent = "更新";
   action.onclick = null;
-  dismiss.textContent = "×";
+  dismiss.innerHTML = '<span class="ui-icon icon-x" aria-hidden="true"></span>';
   dismiss.setAttribute("aria-label", "通知を閉じる");
+  toast.classList.remove("is-update");
+  document.body.classList.remove("has-update-toast");
   toast.hidden = false;
   clearToastTimer();
   toastTimer = window.setTimeout(() => {
@@ -474,13 +490,18 @@ function showServiceWorkerUpdate(worker) {
   };
   dismiss.textContent = "後で";
   dismiss.setAttribute("aria-label", "更新を後で行う");
+  toast.classList.add("is-update");
+  document.body.classList.add("has-update-toast");
   clearToastTimer();
   toast.hidden = false;
 }
 
 document.querySelector("#toast-dismiss").addEventListener("click", () => {
   clearToastTimer();
-  document.querySelector("#toast").hidden = true;
+  const toast = document.querySelector("#toast");
+  toast.hidden = true;
+  toast.classList.remove("is-update");
+  document.body.classList.remove("has-update-toast");
 });
 
 function setCameraLocation(location, options) {
@@ -505,11 +526,11 @@ function updateLocationMode(mode) {
   setLocationButton.classList.toggle("is-active", cameraActive);
   subjectLocationButton.classList.toggle("is-active", subjectActive);
   setLocationButton.innerHTML = cameraActive
-    ? '<span aria-hidden="true">◎</span> 中央を撮影地点にする'
-    : '<span aria-hidden="true">＋</span> 撮影地点';
+    ? '<span class="ui-icon icon-crosshair" aria-hidden="true"></span> 中央を撮影地点にする'
+    : '<span class="ui-icon icon-plus" aria-hidden="true"></span> 撮影地点';
   subjectLocationButton.innerHTML = subjectActive
-    ? '<span aria-hidden="true">◆</span> 中央を被写体地点にする'
-    : '<span aria-hidden="true">◇</span> 被写体地点';
+    ? '<span class="ui-icon icon-diamond" aria-hidden="true"></span> 中央を被写体地点にする'
+    : '<span class="ui-icon icon-diamond" aria-hidden="true"></span> 被写体地点';
 }
 
 function initializeMap() {
@@ -596,6 +617,7 @@ document.querySelector("#locate-button").addEventListener("click", () => {
 });
 
 document.querySelector("#settings-button").addEventListener("click", () => {
+  setTopbarMenuOpen(false);
   document.querySelector("#settings-dialog").showModal();
 });
 

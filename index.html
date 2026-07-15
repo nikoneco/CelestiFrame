@@ -10,7 +10,7 @@
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./assets/icon.svg?v=43" type="image/svg+xml">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
-    <link rel="stylesheet" href="./css/app.css?v=74">
+    <link rel="stylesheet" href="./css/app.css?v=77">
   </head>
   <body>
     <div class="app-shell">
@@ -22,20 +22,24 @@
             <small>PHOTO EPHEMERIS</small>
           </span>
         </div>
-        <div class="topbar-actions">
+        <nav class="topbar-actions" aria-label="主要操作">
           <button class="icon-button" id="field-button" type="button" aria-label="現地撮影モード" title="現地撮影モード" aria-haspopup="dialog">
-            <span aria-hidden="true">⌁</span><small>現地</small>
+            <span class="ui-icon icon-compass" aria-hidden="true"></span><small>現地</small>
           </button>
           <button class="icon-button" id="plans-button" type="button" aria-label="撮影計画" title="撮影計画" aria-haspopup="dialog">
-            <span aria-hidden="true">▤</span><small>計画</small>
+            <span class="ui-icon icon-notebook-tabs" aria-hidden="true"></span><small>計画</small>
           </button>
-          <button class="icon-button" id="locate-button" type="button" aria-label="現在地へ移動" title="現在地へ移動">
-            <span aria-hidden="true">⌖</span><small>現在地</small>
-          </button>
-          <button class="icon-button" id="settings-button" type="button" aria-label="設定" title="設定" aria-haspopup="dialog">
-            <span aria-hidden="true">◐</span><small>表示</small>
-          </button>
-        </div>
+          <div class="topbar-more">
+            <button class="icon-button" id="more-button" type="button" aria-label="その他の操作" title="その他の操作" aria-expanded="false" aria-controls="topbar-menu" aria-haspopup="menu">
+              <span class="ui-icon icon-ellipsis" aria-hidden="true"></span><small>その他</small>
+            </button>
+            <div class="topbar-menu" id="topbar-menu" role="menu" hidden>
+              <button id="settings-button" type="button" role="menuitem" aria-haspopup="dialog">
+                <span class="ui-icon icon-settings-2" aria-hidden="true"></span><span>表示設定</span>
+              </button>
+            </div>
+          </div>
+        </nav>
       </header>
 
       <main>
@@ -58,27 +62,31 @@
             <output id="coordinates">35.68124, 139.76712</output>
           </div>
 
+          <button class="map-locate-control" id="locate-button" type="button" aria-label="現在地へ移動" title="現在地へ移動">
+            <span class="ui-icon icon-locate-fixed" aria-hidden="true"></span><span>現在地</span>
+          </button>
+
           <div class="place-search">
             <form id="place-search-form" role="search">
               <label class="sr-only" for="place-search-input">地名・施設名を検索</label>
               <input id="place-search-input" type="search" placeholder="スカイツリー、富士山…" maxlength="120" autocomplete="off" enterkeyhint="search">
-              <button id="place-search-submit" type="submit" aria-label="場所を検索">⌕</button>
-              <button class="place-search-toggle" id="place-search-toggle" type="button" aria-expanded="true" aria-controls="place-search-input place-search-results" aria-label="検索バーを収納" title="検索バーを収納"><span aria-hidden="true">&lt;</span></button>
+              <button id="place-search-submit" type="submit" aria-label="場所を検索"><span class="ui-icon icon-search" aria-hidden="true"></span></button>
+              <button class="place-search-toggle" id="place-search-toggle" type="button" aria-expanded="true" aria-controls="place-search-input place-search-results" aria-label="検索バーを収納" title="検索バーを収納"><span class="ui-icon icon-panel-left-close" aria-hidden="true"></span></button>
             </form>
             <aside class="weather-overlay" id="weather-overlay" aria-label="地図レイヤー">
               <div class="weather-quick">
                 <button class="weather-toggle" id="weather-toggle" type="button" aria-expanded="false" aria-controls="weather-panel">
-                  <span aria-hidden="true">☁</span><strong>予報雲</strong><i aria-hidden="true">⌄</i>
+                  <span class="ui-icon icon-cloud" aria-hidden="true"></span><strong>予報雲</strong><i class="ui-icon icon-chevron-down" aria-hidden="true"></i>
                 </button>
                 <button class="weather-layer-toggle" id="weather-layer-toggle" type="button" role="switch" aria-checked="false" aria-label="雲レイヤーを地図に表示"><span aria-hidden="true"></span></button>
                 <button class="light-pollution-toggle" id="light-pollution-toggle" type="button" role="switch" aria-checked="false" aria-describedby="light-pollution-status" aria-label="光害の目安を地図に表示">
-                  <span aria-hidden="true">✦</span><strong>光害</strong>
+                  <span class="ui-icon icon-sparkles" aria-hidden="true"></span><strong>光害</strong>
                 </button>
               </div>
               <section class="weather-panel" id="weather-panel" hidden aria-live="polite">
                 <header>
-                  <div><span class="eyebrow">SKY VEIL</span><strong>予報雲</strong></div>
-                  <button id="weather-panel-close" type="button" aria-label="予報雲パネルを閉じる">×</button>
+                  <div><strong>予報雲</strong></div>
+                  <button id="weather-panel-close" type="button" aria-label="予報雲パネルを閉じる"><span class="ui-icon icon-x" aria-hidden="true"></span></button>
                 </header>
                 <p class="weather-time" id="weather-time">撮影日時の予報</p>
                 <div class="weather-modes" role="group" aria-label="表示する雲の高さ">
@@ -104,7 +112,7 @@
               </section>
             </aside>
             <section class="place-search-results" id="place-search-results" aria-label="場所の検索結果" hidden>
-              <header><span id="place-search-status">検索結果</span><button id="place-search-close" type="button" aria-label="検索結果を閉じる">×</button></header>
+              <header><span id="place-search-status">検索結果</span><button id="place-search-close" type="button" aria-label="検索結果を閉じる"><span class="ui-icon icon-x" aria-hidden="true"></span></button></header>
               <div id="place-search-list"></div>
               <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">検索データ © OpenStreetMap contributors</a>
             </section>
@@ -120,11 +128,11 @@
 
           <div class="map-actions">
             <button class="set-location-button" id="set-location-button" type="button">
-              <span aria-hidden="true">＋</span>
+              <span class="ui-icon icon-plus" aria-hidden="true"></span>
               撮影地点
             </button>
             <button class="set-location-button subject-location-button" id="subject-location-button" type="button">
-              <span aria-hidden="true">◇</span>
+              <span class="ui-icon icon-diamond" aria-hidden="true"></span>
               被写体地点
             </button>
           </div>
@@ -135,17 +143,17 @@
             <div class="deck-handle" aria-hidden="true"></div>
             <span class="deck-compact-summary" id="deck-compact-summary">撮影日時</span>
             <button class="deck-toggle" id="deck-toggle" type="button" aria-expanded="true" aria-controls="control-deck-content" aria-label="コントロールを最小化">
-              <span class="deck-toggle-label">最小化</span><b aria-hidden="true">⌄</b>
+              <span class="deck-toggle-label">最小化</span><b class="ui-icon icon-chevron-down" aria-hidden="true"></b>
             </button>
           </div>
 
           <div class="control-deck-content" id="control-deck-content">
 
           <button class="target-selector-button" id="target-selector-button" type="button" aria-haspopup="dialog" aria-controls="target-selector-dialog">
-            <span><small>CELESTIAL TARGETS</small><b>撮影対象を選択</b></span>
+            <span><b>撮影対象を選択</b></span>
             <span class="target-selection-summary" id="target-selection-summary" aria-hidden="true"></span>
             <strong id="target-selection-count">1/5</strong>
-            <i aria-hidden="true">›</i>
+            <i class="ui-icon icon-chevron-right" aria-hidden="true"></i>
           </button>
 
           <nav class="deck-shortcuts" aria-label="コントロール内を移動">
@@ -158,15 +166,15 @@
           <div class="time-panel" id="time-panel">
             <div class="time-heading">
               <div>
-                <span class="eyebrow">撮影日時</span>
+                <span class="section-label">撮影日時</span>
                 <strong id="date-summary">—</strong>
               </div>
               <span class="timezone" id="timezone-label">LOCAL</span>
             </div>
 
             <div class="date-stepper" role="group" aria-label="撮影日を前後に移動">
-              <button type="button" data-days="-1" aria-label="前日に移動"><span aria-hidden="true">‹</span> 前日</button>
-              <button type="button" data-days="1" aria-label="翌日に移動">翌日 <span aria-hidden="true">›</span></button>
+              <button type="button" data-days="-1" aria-label="前日に移動"><span class="ui-icon icon-chevron-left" aria-hidden="true"></span> 前日</button>
+              <button type="button" data-days="1" aria-label="翌日に移動">翌日 <span class="ui-icon icon-chevron-right" aria-hidden="true"></span></button>
             </div>
 
             <div class="datetime-inputs">
@@ -201,10 +209,7 @@
             <article class="celestial-card celestial-card-moon" data-card="moon">
               <header>
                 <span class="celestial-symbol moon-symbol" aria-hidden="true"></span>
-                <div>
-                  <span class="eyebrow">MOON VECTOR</span>
-                  <h2>月</h2>
-                </div>
+                <div><h2>月</h2></div>
                 <span class="horizon-state" data-moon-field="state">計算準備中</span>
               </header>
               <div class="card-vector-key" role="img" aria-label="月の方向線。実線は撮影地点、破線は被写体地点">
@@ -226,10 +231,7 @@
             <article class="celestial-card celestial-card-sun" data-card="sun" hidden>
               <header>
                 <span class="celestial-symbol sun-symbol" aria-hidden="true"></span>
-                <div>
-                  <span class="eyebrow">SOLAR VECTOR</span>
-                  <h2>太陽</h2>
-                </div>
+                <div><h2>太陽</h2></div>
                 <span class="horizon-state" data-sun-field="state">計算準備中</span>
               </header>
               <div class="card-vector-key" role="img" aria-label="太陽の方向線。実線は撮影地点、破線は被写体地点">
@@ -246,10 +248,7 @@
             <article class="celestial-card celestial-card-milkyway" data-card="milkyway" hidden>
               <header>
                 <span class="celestial-symbol milkyway-symbol" aria-hidden="true"></span>
-                <div>
-                  <span class="eyebrow">MILKY WAY ARC</span>
-                  <h2>天の川</h2>
-                </div>
+                <div><h2>天の川</h2></div>
                 <span class="horizon-state" data-milkyway-field="state">計算準備中</span>
               </header>
               <div class="card-vector-key" role="img" aria-label="天の川の方向線。実線は撮影地点、破線は被写体地点">
@@ -275,7 +274,7 @@
 
           <article class="alignment-card" id="alignment-card" hidden>
             <header>
-              <div><span class="eyebrow">FRAME ALIGNMENT</span><h2 id="alignment-title">被写体との重なり</h2></div>
+              <div><h2 id="alignment-title">被写体との重なり</h2></div>
               <span class="alignment-status" data-alignment-field="status">比較中</span>
             </header>
             <div class="alignment-metrics">
@@ -286,14 +285,14 @@
             <p data-alignment-field="message">被写体地点を基準に天体の左右差を表示します。</p>
             <button class="alignment-search-button" id="alignment-search-button" type="button">重なる日時を検索</button>
             <section class="shooting-planner" id="shooting-planner">
-              <div class="planning-tool-heading"><div><span class="eyebrow">REVERSE LOCATION</span><b>撮影地点候補</b></div><select id="candidate-body" aria-label="候補の基準天体"></select></div>
+              <div class="planning-tool-heading"><div><b>撮影地点候補</b></div><select id="candidate-body" aria-label="候補の基準天体"></select></div>
               <p id="candidate-summary">被写体と天体の延長線上へ候補を表示します。</p>
               <button id="candidate-toggle" type="button">候補を表示</button>
               <div class="candidate-list" id="candidate-list"></div>
               <small class="candidate-note">道路・水上・立入可否は候補地点の地図と現地情報で確認してください。</small>
             </section>
             <section class="terrain-profile-panel" id="terrain-profile-panel">
-              <div class="planning-tool-heading"><div><span class="eyebrow">TERRAIN SIGHTLINE</span><b>地形断面と見通し</b></div></div>
+              <div class="planning-tool-heading"><div><b>地形断面と見通し</b></div></div>
               <p id="terrain-profile-status">21点の標高から見通しを確認します。</p>
               <button id="terrain-profile-button" type="button">地形断面を計算</button>
               <div class="terrain-profile-result" id="terrain-profile-result" hidden>
@@ -305,7 +304,7 @@
 
           <article class="composition-card" id="composition-card" hidden>
             <header>
-              <div><span class="eyebrow">OPTICAL FRAME</span><h2>構図ファインダー</h2></div>
+              <div><h2>構図ファインダー</h2></div>
               <span class="composition-status" data-composition-field="status">計算準備中</span>
             </header>
 
@@ -378,10 +377,9 @@
       <form method="dialog" class="settings-panel">
         <header>
           <div>
-            <span class="eyebrow">FIELD DISPLAY</span>
             <h2 id="settings-title">表示設定</h2>
           </div>
-          <button class="dialog-close" type="submit" aria-label="表示設定を閉じる">×</button>
+          <button class="dialog-close" type="submit" aria-label="表示設定を閉じる"><span class="ui-icon icon-x" aria-hidden="true"></span></button>
         </header>
 
         <fieldset class="theme-options">
@@ -426,15 +424,14 @@
     <dialog class="plans-dialog" id="plans-dialog" aria-labelledby="plans-title">
       <div class="plans-panel">
         <header class="plans-header">
-          <div><span class="eyebrow">FIELD NOTEBOOK</span><h2 id="plans-title">撮影計画</h2></div>
-          <button class="dialog-close" id="plans-close" type="button" aria-label="撮影計画を閉じる">×</button>
+          <div><h2 id="plans-title">撮影計画</h2></div>
+          <button class="dialog-close" id="plans-close" type="button" aria-label="撮影計画を閉じる"><span class="ui-icon icon-x" aria-hidden="true"></span></button>
         </header>
 
         <section class="cloud-account" id="cloud-account" data-state="local" aria-live="polite">
           <div class="cloud-orbit" aria-hidden="true"><i></i><b>C</b></div>
           <img id="cloud-account-avatar" alt="" referrerpolicy="no-referrer" hidden>
           <div class="cloud-account-copy">
-            <span class="eyebrow">CELESTIFRAME CLOUD</span>
             <strong id="cloud-account-title">この端末に保存中</strong>
             <small id="cloud-account-detail">ログインすると撮影計画を端末間で同期できます</small>
           </div>
@@ -476,16 +473,16 @@
       <section class="plan-action-sheet plan-map-sheet">
         <div class="plan-sheet-grip" aria-hidden="true"></div>
         <header>
-          <div><span class="eyebrow">ROUTE OUT</span><h2 id="plan-map-title">Googleマップで開く</h2><p id="plan-map-name"></p></div>
-          <button type="button" data-plan-sheet-close aria-label="地図メニューを閉じる">×</button>
+          <div><h2 id="plan-map-title">Googleマップで開く</h2><p id="plan-map-name"></p></div>
+          <button type="button" data-plan-sheet-close aria-label="地図メニューを閉じる"><span class="ui-icon icon-x" aria-hidden="true"></span></button>
         </header>
         <div class="plan-map-route" aria-hidden="true">
           <span><i></i><b>撮影地</b></span><em></em><span id="plan-map-route-subject"><i></i><b>被写体</b></span>
         </div>
         <nav aria-label="Googleマップで開く地点">
-          <a class="is-primary" id="plan-map-directions" target="_blank" rel="noopener noreferrer"><b>撮影地までの経路</b><small>現在地からのルートを開く</small><i aria-hidden="true">↗</i></a>
-          <a id="plan-map-camera" target="_blank" rel="noopener noreferrer"><b>撮影地を地図で見る</b><small>撮影地点にピンを立てる</small><i aria-hidden="true">⌖</i></a>
-          <a id="plan-map-subject" target="_blank" rel="noopener noreferrer"><b>被写体を地図で見る</b><small>被写体地点にピンを立てる</small><i aria-hidden="true">◇</i></a>
+          <a class="is-primary" id="plan-map-directions" target="_blank" rel="noopener noreferrer"><b>撮影地までの経路</b><small>現在地からのルートを開く</small><i class="ui-icon icon-external-link" aria-hidden="true"></i></a>
+          <a id="plan-map-camera" target="_blank" rel="noopener noreferrer"><b>撮影地を地図で見る</b><small>撮影地点にピンを立てる</small><i class="ui-icon icon-map-pin" aria-hidden="true"></i></a>
+          <a id="plan-map-subject" target="_blank" rel="noopener noreferrer"><b>被写体を地図で見る</b><small>被写体地点にピンを立てる</small><i class="ui-icon icon-diamond" aria-hidden="true"></i></a>
         </nav>
         <small class="plan-sheet-note">Googleマップが別画面で開きます</small>
       </section>
@@ -495,12 +492,12 @@
       <section class="plan-action-sheet plan-more-sheet">
         <div class="plan-sheet-grip" aria-hidden="true"></div>
         <header>
-          <div><span class="eyebrow">PLAN OPTIONS</span><h2 id="plan-more-title">その他の操作</h2><p id="plan-more-name"></p></div>
-          <button type="button" data-plan-sheet-close aria-label="その他の操作を閉じる">×</button>
+          <div><h2 id="plan-more-title">その他の操作</h2><p id="plan-more-name"></p></div>
+          <button type="button" data-plan-sheet-close aria-label="その他の操作を閉じる"><span class="ui-icon icon-x" aria-hidden="true"></span></button>
         </header>
         <div class="plan-more-actions">
-          <button type="button" data-plan-more-action="duplicate"><b>複製</b><small>同じ内容で新しい計画を作る</small><i aria-hidden="true">＋</i></button>
-          <button class="is-danger" type="button" data-plan-more-action="delete"><b>削除</b><small>この撮影計画を削除する</small><i aria-hidden="true">×</i></button>
+          <button type="button" data-plan-more-action="duplicate"><b>複製</b><small>同じ内容で新しい計画を作る</small><i class="ui-icon icon-copy" aria-hidden="true"></i></button>
+          <button class="is-danger" type="button" data-plan-more-action="delete"><b>削除</b><small>この撮影計画を削除する</small><i class="ui-icon icon-trash-2" aria-hidden="true"></i></button>
         </div>
         <button class="plan-sheet-cancel" type="button" data-plan-sheet-close>閉じる</button>
       </section>
@@ -509,8 +506,8 @@
     <dialog class="target-selector-dialog" id="target-selector-dialog" aria-labelledby="target-selector-title">
       <section class="target-selector-panel">
         <header>
-          <div><span class="eyebrow">CELESTIAL CATALOG</span><h2 id="target-selector-title">撮影対象を選択</h2><p>地図・構図・重なり判定に表示する対象を、5個まで選べます。</p></div>
-          <button type="button" data-target-selector-close aria-label="撮影対象の選択を閉じる">×</button>
+          <div><h2 id="target-selector-title">撮影対象を選択</h2><p>地図・構図・重なり判定に表示する対象を、5個まで選べます。</p></div>
+          <button type="button" data-target-selector-close aria-label="撮影対象の選択を閉じる"><span class="ui-icon icon-x" aria-hidden="true"></span></button>
         </header>
         <div class="target-selector-list" id="target-selector-list"></div>
         <footer>
@@ -523,8 +520,8 @@
     <dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title">
       <div class="search-panel">
         <header>
-          <div><span class="eyebrow">AZIMUTH SCAN</span><h2 id="search-title">重なる日時を検索</h2></div>
-          <button class="dialog-close" id="search-close" type="button" aria-label="検索を閉じる">×</button>
+          <div><h2 id="search-title">重なる日時を検索</h2></div>
+          <button class="dialog-close" id="search-close" type="button" aria-label="検索を閉じる"><span class="ui-icon icon-x" aria-hidden="true"></span></button>
         </header>
 
         <form id="search-form" novalidate>
@@ -593,7 +590,7 @@
 
     <dialog class="field-dialog" id="field-dialog" aria-labelledby="field-title">
       <section class="field-panel">
-        <header><div><span class="eyebrow">ON LOCATION</span><h2 id="field-title">現地撮影モード</h2></div><button id="field-close" type="button" aria-label="現地撮影モードを閉じる">×</button></header>
+        <header><div><span class="eyebrow">ON LOCATION</span><h2 id="field-title">現地撮影モード</h2></div><button id="field-close" type="button" aria-label="現地撮影モードを閉じる"><span class="ui-icon icon-x" aria-hidden="true"></span></button></header>
         <div class="field-target">
           <span>目標</span>
           <div class="field-target-switch" role="group" aria-label="案内する目標">
@@ -628,13 +625,13 @@
       <span id="toast-message"></span>
       <div class="toast-actions">
         <button id="toast-action" type="button" hidden>更新</button>
-        <button id="toast-dismiss" type="button" aria-label="通知を閉じる">×</button>
+        <button id="toast-dismiss" type="button" aria-label="通知を閉じる"><span class="ui-icon icon-x" aria-hidden="true"></span></button>
       </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
     <script src="./js/vendor/suncalc.js"></script>
     <script src="./js/vendor/astronomy-engine.min.js"></script>
-    <script type="module" src="./js/app.js?v=81"></script>
+    <script type="module" src="./js/app.js?v=84"></script>
   </body>
 </html>
