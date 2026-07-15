@@ -1,4 +1,4 @@
-const CACHE_VERSION = "celestiframe-shell-v100";
+const CACHE_VERSION = "celestiframe-shell-v102";
 const TRUSTED_STATIC_HOSTS = new Set(["unpkg.com", "www.gstatic.com"]);
 const APP_SHELL = [
   "./",
@@ -35,7 +35,7 @@ const APP_SHELL = [
   "./assets/fonts/IBMPlexMono-Regular.woff2",
   "./assets/fonts/IBMPlexMono-SemiBold.woff2",
   "./assets/fonts/LICENSE-IBM-PLEX.txt",
-  "./css/app.css?v=83",
+  "./css/app.css?v=85",
   "./js/app.js?v=88",
   "./js/config/runtime-config.js?v=35",
   "./js/config/firebase-config.js?v=1",

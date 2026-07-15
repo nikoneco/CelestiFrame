@@ -1195,7 +1195,7 @@ body.has-update-toast .place-search { top: max(138px, calc(env(safe-area-inset-t
   .map-stage { height: 45dvh; }
   .control-deck { min-height: calc(52dvh + 18px); max-height: calc(55dvh + 18px); }
   .map-actions { bottom: 112px; }
-  .control-deck.is-expanded { position: fixed; top: max(72px, calc(env(safe-area-inset-top) + 62px)); right: 0; bottom: 0; left: 0; height: auto; min-height: 0; max-height: none; margin: 0; border-radius: var(--radius-panel) var(--radius-panel) 0 0; }
+  .control-deck.is-expanded { position: fixed; z-index: 1100; top: max(72px, calc(env(safe-area-inset-top) + 62px)); right: 0; bottom: 0; left: 0; height: auto; min-height: 0; max-height: none; margin: 0; border-radius: var(--radius-panel) var(--radius-panel) 0 0; }
   .app-shell.is-controls-collapsed ~ .toast { bottom: calc(68px + env(safe-area-inset-bottom)); }
   .app-shell.is-controls-collapsed ~ .toast.is-update { bottom: auto; }
 }

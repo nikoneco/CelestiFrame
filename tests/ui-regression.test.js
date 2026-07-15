@@ -74,3 +74,12 @@ test("P2 mobile layout keeps the full datetime workflow inside the initial viewp
   assert.ok(css.includes(".control-deck { min-height: calc(52dvh + 18px); max-height: calc(55dvh + 18px); }"));
   assert.ok(css.includes(".date-input-row { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; }"));
 });
+
+test("expanded mobile deck stays above Leaflet attribution and controls", () => {
+  const html = readProjectFile("index.html");
+  const css = readProjectFile("css/app.css");
+  const worker = readProjectFile("service-worker.js");
+  assert.match(css, /\.control-deck\.is-expanded \{[^}]*z-index:\s*1100;/);
+  assert.ok(html.includes("./css/app.css?v=85"));
+  assert.ok(worker.includes("./css/app.css?v=85"));
+});
