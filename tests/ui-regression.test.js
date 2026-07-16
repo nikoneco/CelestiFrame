@@ -80,6 +80,6 @@ test("expanded mobile deck stays above Leaflet attribution and controls", () => 
   const css = readProjectFile("css/app.css");
   const worker = readProjectFile("service-worker.js");
   assert.match(css, /\.control-deck\.is-expanded \{[^}]*z-index:\s*1100;/);
-  assert.ok(html.includes("./css/app.css?v=86"));
-  assert.ok(worker.includes("./css/app.css?v=86"));
+  assert.ok(html.includes("./css/app.css?v=87"));
+  assert.ok(worker.includes("./css/app.css?v=87"));
 });

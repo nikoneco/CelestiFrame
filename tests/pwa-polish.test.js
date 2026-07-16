@@ -22,6 +22,20 @@ function themeTokens(css, selector) {
   return Object.fromEntries([...block.matchAll(/--([a-z-]+):\s*(#[0-9a-f]{6})/gi)].map((match) => [match[1], match[2]]));
 }
 
+test("release metadata stays aligned with the visible app version", () => {
+  const packageMetadata = JSON.parse(readProjectFile("package.json"));
+  const lockMetadata = JSON.parse(readProjectFile("package-lock.json"));
+  const html = readProjectFile("index.html");
+  const readme = readProjectFile("README.md");
+  const css = readProjectFile("css/app.css");
+  assert.equal(packageMetadata.version, "1.5.0");
+  assert.equal(lockMetadata.version, packageMetadata.version);
+  assert.equal(lockMetadata.packages[""].version, packageMetadata.version);
+  assert.ok(html.includes(`Ver ${packageMetadata.version} - CelestiFrame`));
+  assert.ok(readme.includes(`Version ${packageMetadata.version}として`));
+  assert.match(css, /\.phase-note \{[^}]*color: var\(--muted\);/);
+});
+
 test("P3 manifest provides install icons, screenshots, shortcuts, and both orientations", () => {
   const manifest = JSON.parse(readProjectFile("manifest.webmanifest"));
   assert.equal(manifest.id, "./");

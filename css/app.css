@@ -830,7 +830,7 @@ body.is-offline .map-status { border-color: color-mix(in srgb, var(--solar) 55%,
 .composition-orientation button { min-height: 36px; border: 0; border-radius: 5px; background: transparent; color: var(--muted); font-size: 10px; cursor: pointer; }
 .composition-orientation button.is-active { background: var(--panel-raised); color: var(--horizon); }
 .composition-note { margin: 0; padding: 0 13px 12px; color: var(--muted); font-size: 10px; line-height: 1.55; }
-.phase-note { margin: 11px 0 0; text-align: center; color: rgba(147, 164, 184, 0.64); font: 9px var(--data); letter-spacing: 0.06em; }
+.phase-note { margin: 11px 0 0; text-align: center; color: var(--muted); font: 10px var(--data); letter-spacing: 0.06em; }
 
 .field-dialog { width: min(520px, calc(100vw - 18px)); max-height: calc(100dvh - 18px); padding: 0; overflow: hidden; border: 1px solid color-mix(in srgb, var(--horizon) 45%, var(--line)); border-radius: var(--radius-panel); background: var(--ink); color: var(--text); box-shadow: var(--shadow-modal); }
 .field-dialog::backdrop { background: rgba(1, 5, 10, .88); backdrop-filter: blur(7px); }
