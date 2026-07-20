@@ -1,4 +1,4 @@
-const CACHE_VERSION = "celestiframe-shell-v105";
+const CACHE_VERSION = "celestiframe-shell-v106";
 const TRUSTED_STATIC_HOSTS = new Set(["unpkg.com", "www.gstatic.com"]);
 const OPTIONAL_SHELL = [
   "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
@@ -43,7 +43,8 @@ const APP_SHELL = [
   "./assets/fonts/IBMPlexMono-Regular.woff2",
   "./assets/fonts/IBMPlexMono-SemiBold.woff2",
   "./assets/fonts/LICENSE-IBM-PLEX.txt",
-  "./css/app.css?v=87",
+  "./tokens.css?v=1",
+  "./css/app.css?v=88",
   "./js/app.js?v=89",
   "./js/config/runtime-config.js?v=35",
   "./js/config/firebase-config.js?v=1",

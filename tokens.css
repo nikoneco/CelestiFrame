@@ -1,0 +1,216 @@
+@font-face {
+  font-family: "IBM Plex Sans JP";
+  src: url("./assets/fonts/IBMPlexSansJP-Regular.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Sans JP";
+  src: url("./assets/fonts/IBMPlexSansJP-SemiBold.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 600 800;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Sans Condensed";
+  src: url("./assets/fonts/IBMPlexSansCondensed-Regular.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Sans Condensed";
+  src: url("./assets/fonts/IBMPlexSansCondensed-SemiBold.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 600 800;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("./assets/fonts/IBMPlexMono-Regular.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("./assets/fonts/IBMPlexMono-SemiBold.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 600 800;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+
+  /* Core palette */
+  --ink: #07111f;
+  --panel: #0d1b2d;
+  --panel-raised: #14263a;
+  --moon: #dceaff;
+  --moon-blue: #91b8ec;
+  --solar: #ffb44a;
+  --milkyway: #b58af2;
+  --horizon: #62d5c7;
+  --danger: #ff6b6b;
+  --text: #f3f7fc;
+  --muted: #93a4b8;
+  --line: rgba(193, 216, 241, 0.16);
+  --glass: rgba(7, 17, 31, 0.78);
+
+  /* Stable, theme-independent data surfaces */
+  --map-surface: #142335;
+  --detail-surface-start: #14263a;
+  --detail-surface-end: #07111f;
+  --detail-text: #f3f8ff;
+  --detail-muted: #aebfd2;
+  --detail-line: rgba(193, 216, 241, 0.16);
+  --detail-moon: #dceaff;
+  --detail-moon-blue: #91b8ec;
+  --detail-solar: #ffb44a;
+  --detail-milkyway: #b58af2;
+  --compact-text: #f3f8ff;
+  --compact-muted: #aebfd2;
+  --compact-line: rgba(193, 216, 241, 0.16);
+  --compact-moon: #dceaff;
+  --compact-moon-blue: #91b8ec;
+  --compact-solar: #ffb44a;
+  --compact-milkyway: #b58af2;
+  --compact-text: #f3f8ff;
+  --compact-muted: #aebfd2;
+  --compact-line: rgba(193, 216, 241, 0.16);
+  --compact-moon: #dceaff;
+  --compact-moon-blue: #91b8ec;
+  --compact-solar: #ffb44a;
+  --compact-milkyway: #b58af2;
+
+  /* Domain colour scales and theme previews */
+  --pollution-1: #161a3a;
+  --pollution-2: #3e2c6e;
+  --pollution-3: #973766;
+  --pollution-4: #f17630;
+  --pollution-5: #fff1a6;
+  --preview-light: #edf3f7;
+  --preview-dark: #0d1b2d;
+  --preview-light-accent: #087e75;
+  --preview-dark-accent: #91b8ec;
+  --preview-red: #1d0708;
+  --preview-red-accent: #ff655d;
+
+  /* Surface overlays */
+  --overlay-soft: rgba(1, 7, 14, 0.72);
+  --overlay-medium: rgba(1, 7, 14, 0.76);
+  --overlay-strong: rgba(1, 7, 14, 0.78);
+  --overlay-field: rgba(1, 5, 10, 0.88);
+  --marker-core: rgba(7, 17, 31, 0.8);
+
+  /* Shape */
+  --radius-control: 8px;
+  --radius-card: 10px;
+  --radius-panel: 16px;
+  --radius-pill: 999px;
+  --border-subtle: 1px solid var(--line);
+  --border-strong: 1px solid color-mix(in srgb, var(--moon-blue) 46%, var(--line));
+
+  /* Elevation: dark and compact, without coloured halos */
+  --shadow-control: 0 4px 14px rgba(0, 0, 0, 0.2);
+  --shadow-floating: 0 10px 28px rgba(0, 0, 0, 0.34);
+  --shadow-deck: 0 -12px 32px rgba(1, 7, 14, 0.34);
+  --shadow-deck-collapsed: 0 -8px 22px rgba(1, 7, 14, 0.26);
+  --shadow-modal: 0 24px 72px rgba(0, 0, 0, 0.56);
+  --shadow-sheet: 0 -20px 70px rgba(0, 0, 0, 0.48);
+  --shadow-marker: 0 3px 12px rgba(0, 0, 0, 0.44);
+  --blur-floating: 12px;
+  --blur-modal: 18px;
+
+  /* Type, spacing, and motion */
+  --display: "IBM Plex Sans Condensed", "Arial Narrow", sans-serif;
+  --body: "IBM Plex Sans JP", "Yu Gothic UI", "Hiragino Sans", system-ui, sans-serif;
+  --data: "IBM Plex Mono", "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
+  --space-2xs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms;
+  --dur-short: 220ms;
+  --dur-long: 420ms;
+
+  /* Sky-state data */
+  --sky-day: #748da0;
+  --sky-civil: #a56f58;
+  --sky-nautical: #4d5272;
+  --sky-astronomical: #293750;
+  --sky-night: #0a1422;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --ink: #eaf0f5;
+  --panel: #f7fafc;
+  --panel-raised: #dce8f1;
+  --moon: #163a67;
+  --moon-blue: #386fa8;
+  --solar: #c66a12;
+  --horizon: #087e75;
+  --danger: #bd3030;
+  --text: #102033;
+  --muted: #5c6d7d;
+  --line: rgba(25, 53, 78, 0.18);
+  --glass: rgba(244, 249, 252, 0.84);
+  --compact-text: #102033;
+  --compact-muted: #5c6d7d;
+  --compact-line: rgba(25, 53, 78, 0.18);
+  --compact-moon: #163a67;
+  --compact-moon-blue: #386fa8;
+  --compact-solar: #c66a12;
+  --compact-milkyway: #7443a8;
+  --compact-text: #102033;
+  --compact-muted: #5c6d7d;
+  --compact-line: rgba(25, 53, 78, 0.18);
+  --compact-moon: #163a67;
+  --compact-moon-blue: #386fa8;
+  --compact-solar: #c66a12;
+  --compact-milkyway: #7443a8;
+  --overlay-soft: rgba(16, 32, 51, 0.58);
+  --overlay-medium: rgba(16, 32, 51, 0.64);
+  --overlay-strong: rgba(16, 32, 51, 0.7);
+  --overlay-field: rgba(16, 32, 51, 0.78);
+  --shadow-control: 0 4px 12px rgba(16, 32, 51, 0.14);
+  --shadow-floating: 0 10px 24px rgba(16, 32, 51, 0.18);
+  --shadow-deck: 0 -10px 28px rgba(16, 32, 51, 0.16);
+  --shadow-deck-collapsed: 0 -6px 18px rgba(16, 32, 51, 0.13);
+  --shadow-modal: 0 24px 64px rgba(16, 32, 51, 0.3);
+  --shadow-sheet: 0 -18px 54px rgba(16, 32, 51, 0.24);
+  --shadow-marker: 0 3px 10px rgba(16, 32, 51, 0.32);
+  --sky-day: #a8c3d1;
+  --sky-civil: #d69a76;
+  --sky-nautical: #7c7d9f;
+  --sky-astronomical: #56657b;
+  --sky-night: #26394c;
+}
+
+:root[data-theme="red"] {
+  color-scheme: dark;
+  --ink: #100304;
+  --panel: #1d0708;
+  --panel-raised: #310c0d;
+  --moon: #ff8378;
+  --moon-blue: #e45c54;
+  --solar: #ff9b62;
+  --horizon: #ff655d;
+  --danger: #ff4038;
+  --text: #ffd7d2;
+  --muted: #bd7973;
+  --line: rgba(255, 120, 110, 0.2);
+  --glass: rgba(16, 3, 4, 0.86);
+  --sky-day: #8b3a37;
+  --sky-civil: #6f2627;
+  --sky-nautical: #4f191c;
+  --sky-astronomical: #351013;
+  --sky-night: #180608;
+}

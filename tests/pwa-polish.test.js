@@ -68,7 +68,7 @@ test("P3 landscape and standalone rules preserve map space and mobile input sizi
 });
 
 test("dark, light, and red primary and supporting text meet WCAG AA contrast", () => {
-  const css = readProjectFile("css/app.css");
+  const css = readProjectFile("tokens.css");
   for (const selector of [":root", ':root[data-theme="light"]', ':root[data-theme="red"]']) {
     const tokens = themeTokens(css, selector);
     assert.ok(contrast(tokens.text, tokens.panel) >= 4.5, `${selector} text`);
