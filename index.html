@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" href="./assets/icons/app-180.png">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
     <link rel="stylesheet" href="./tokens.css?v=1">
-    <link rel="stylesheet" href="./css/app.css?v=88">
+    <link rel="stylesheet" href="./css/app.css?v=90">
   </head>
   <body>
     <div class="app-shell">
@@ -40,6 +40,9 @@
               <span class="ui-icon icon-ellipsis" aria-hidden="true"></span><small>その他</small>
             </button>
             <div class="topbar-menu" id="topbar-menu" role="menu" hidden>
+              <button id="observation-height-button" type="button" role="menuitem" aria-haspopup="dialog">
+                <span class="ui-icon icon-crosshair" aria-hidden="true"></span><span>観測点高さ測定</span>
+              </button>
               <button id="settings-button" type="button" role="menuitem" aria-haspopup="dialog">
                 <span class="ui-icon icon-settings-2" aria-hidden="true"></span><span>表示設定</span>
               </button>
@@ -367,7 +370,7 @@
                 <label><span>センサー</span><select data-composition-field="sensorPreset"><option value="full-frame">フルサイズ</option><option value="aps-c">APS-C</option><option value="mft">マイクロフォーサーズ</option><option value="one-inch">1型</option></select></label>
                 <label><span>焦点距離</span><span class="input-unit"><input type="number" data-composition-field="focalLengthMm" min="1" max="2000" step="1"><i>mm</i></span></label>
                 <div class="composition-orientation"><span>構図方向</span><div><button type="button" data-composition-orientation="landscape" aria-pressed="true">横</button><button type="button" data-composition-orientation="portrait" aria-pressed="false">縦</button></div></div>
-                <label><span>カメラ高</span><span class="input-unit"><input type="number" data-composition-field="cameraHeightMeters" min="0" max="100" step="0.1"><i>m</i></span></label>
+                <label><span>カメラ高</span><span class="input-unit"><input type="number" data-composition-field="cameraHeightMeters" min="0" max="1000" step="0.1"><i>m</i></span></label>
               </fieldset>
               <fieldset class="composition-control-group composition-elevation-group">
                 <legend>標高 <span>ELEVATION</span></legend>
@@ -614,6 +617,84 @@
       </div>
     </dialog>
 
+    <dialog class="observation-height-dialog" id="observation-height-dialog" aria-labelledby="observation-height-title">
+      <section class="observation-height-panel">
+        <header>
+          <div>
+            <small>FIELD MEASUREMENT</small>
+            <h2 id="observation-height-title">観測点高さ測定</h2>
+          </div>
+          <button type="button" data-observation-height-close aria-label="観測点高さ測定を閉じる"><span class="ui-icon icon-x" aria-hidden="true"></span></button>
+        </header>
+
+        <section class="observation-height-guide" aria-labelledby="observation-height-guide-title">
+          <div class="observation-height-mode" role="group" aria-label="測定する高さ">
+            <button type="button" data-observation-height-mode="observer" aria-pressed="true">観測点高さ</button>
+            <button type="button" data-observation-height-mode="structure" aria-pressed="false">建造物の高さ</button>
+          </div>
+          <h3 id="observation-height-guide-title">測定姿勢</h3>
+          <ol>
+            <li>スマートフォンを横向きにし、腕をまっすぐ伸ばします。</li>
+            <li id="observation-height-guide-target">画面中央の照準を、被写体の地面との接点へ合わせます。</li>
+            <li>端末を静止すると自動で測定します。</li>
+          </ol>
+          <p>腕を伸ばすことで、画面中央の照準と被写体を合わせる際の照準誤差を減らします。</p>
+        </section>
+
+        <button class="observation-height-map-action" id="observation-height-pick-subject" type="button">被写体地点を地図で選択</button>
+
+        <div class="observation-height-viewfinder" aria-label="被写体の地面との接点に合わせる照準">
+          <span class="observation-height-horizon" aria-hidden="true"></span>
+          <span class="observation-height-crosshair" aria-hidden="true"></span>
+          <strong id="observation-height-level-warning" role="status" aria-live="assertive" hidden>端末を水平にしてください</strong>
+        </div>
+
+        <div class="observation-height-metrics" aria-label="観測点高さ測定の状態">
+          <div><span>被写体までの距離</span><strong id="observation-height-distance">—</strong></div>
+          <div><span>俯角 / 仰角</span><strong id="observation-height-angle">—</strong></div>
+          <div><span>センサー状態</span><strong id="observation-height-sensor">待機</strong></div>
+          <div><span>測定状態</span><strong id="observation-height-status">未開始</strong></div>
+        </div>
+        <progress id="observation-height-progress" max="1" value="0" aria-label="姿勢の安定判定"></progress>
+        <p class="observation-height-warning" id="observation-height-warning" role="status" hidden>距離が短いため測定精度が低下します。</p>
+        <p class="observation-height-error" id="observation-height-error" role="alert" aria-live="assertive" hidden></p>
+
+        <section class="observation-height-result" id="observation-height-result" aria-labelledby="observation-height-result-title" aria-live="polite" hidden>
+          <span id="observation-height-result-title">推定観測点高さ</span>
+          <output id="observation-height-result-value">—</output>
+          <dl>
+            <div><dt>俯角 / 仰角</dt><dd id="observation-height-result-angle">—</dd></div>
+            <div><dt>被写体までの距離</dt><dd id="observation-height-result-distance">—</dd></div>
+            <div><dt>測定状態</dt><dd>安定</dd></div>
+            <div><dt>推定精度</dt><dd>参考値</dd></div>
+          </dl>
+          <p>端末センサー、被写体位置、標高データ等の誤差を含む参考値です。</p>
+        </section>
+
+        <div class="observation-height-actions">
+          <button class="observation-height-primary" id="observation-height-start" type="button">測定開始</button>
+          <button id="observation-height-retry" type="button" hidden>再測定</button>
+          <button class="observation-height-apply" id="observation-height-apply" type="button" hidden>カメラ高へ反映</button>
+          <button type="button" data-observation-height-close>閉じる</button>
+        </div>
+      </section>
+    </dialog>
+
+    <dialog class="observation-height-confirm-dialog" id="observation-height-confirm-dialog" aria-labelledby="observation-height-confirm-title">
+      <section>
+        <h2 id="observation-height-confirm-title">カメラ高へ反映</h2>
+        <p id="observation-height-confirm-question">推定観測点高さを「カメラ高」へ反映しますか？</p>
+        <dl>
+          <div><dt>反映値</dt><dd id="observation-height-confirm-value">—</dd></div>
+          <div><dt id="observation-height-confirm-current-label">現在のカメラ高</dt><dd id="observation-height-confirm-current">—</dd></div>
+        </dl>
+        <div>
+          <button id="observation-height-confirm-cancel" type="button">キャンセル</button>
+          <button id="observation-height-confirm-apply" type="button">反映</button>
+        </div>
+      </section>
+    </dialog>
+
     <dialog class="field-dialog" id="field-dialog" aria-labelledby="field-title">
       <section class="field-panel">
         <header><h2 id="field-title">現地撮影モード</h2><button id="field-close" type="button" aria-label="現地撮影モードを閉じる"><span class="ui-icon icon-x" aria-hidden="true"></span></button></header>
@@ -663,6 +744,6 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
     <script src="./js/vendor/suncalc.js"></script>
     <script src="./js/vendor/astronomy-engine.min.js"></script>
-    <script type="module" src="./js/app.js?v=89"></script>
+    <script type="module" src="./js/app.js?v=91"></script>
   </body>
 </html>

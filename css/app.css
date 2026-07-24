@@ -710,6 +710,63 @@ body.is-offline .map-status { border-color: color-mix(in srgb, var(--solar) 55%,
 .composition-note { margin: 0; padding: 0 13px 12px; color: var(--muted); font-size: 10px; line-height: 1.55; }
 .phase-note { margin: 11px 0 0; text-align: center; color: var(--muted); font: 10px var(--data); letter-spacing: 0.06em; }
 
+.observation-height-dialog { width: min(680px, calc(100vw - 18px)); max-height: calc(100dvh - 18px); padding: 0; overflow: hidden; border: 1px solid color-mix(in srgb, var(--horizon) 45%, var(--line)); border-radius: var(--radius-panel); background: var(--ink); color: var(--text); box-shadow: var(--shadow-modal); }
+.observation-height-dialog::backdrop, .observation-height-confirm-dialog::backdrop { background: var(--overlay-field); backdrop-filter: blur(7px); }
+.observation-height-panel { max-height: calc(100dvh - 18px); padding: max(16px, env(safe-area-inset-top)) 18px max(20px, env(safe-area-inset-bottom)); overflow-y: auto; background: linear-gradient(180deg, var(--panel), var(--ink) 72%); }
+.observation-height-panel > header { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.observation-height-panel > header small { display: block; margin-bottom: 3px; color: var(--horizon); font: 8px var(--data); letter-spacing: .12em; }
+.observation-height-panel h2 { margin: 0; font: 600 23px var(--display); }
+.observation-height-panel > header button { display: grid; width: 44px; height: 44px; flex: 0 0 auto; place-items: center; border: var(--border-subtle); border-radius: var(--radius-control); background: transparent; color: var(--muted); cursor: pointer; }
+.observation-height-guide { padding: 13px 0 10px; border-bottom: 1px solid var(--line); }
+.observation-height-mode { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px; margin-bottom: 9px; padding: 3px; border: 1px solid var(--line); border-radius: 9px; }
+.observation-height-mode button { min-height: 34px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); font-size: 10px; font-weight: 700; cursor: pointer; }
+.observation-height-mode button[aria-pressed="true"] { background: var(--panel-raised); color: var(--horizon); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--horizon) 38%, var(--line)); }
+.observation-height-guide h3 { margin: 0 0 7px; color: var(--horizon); font: 600 12px var(--display); }
+.observation-height-guide ol { margin: 0; padding-left: 20px; color: var(--text); font-size: 11px; line-height: 1.7; }
+.observation-height-guide p { margin: 7px 0 0; color: var(--muted); font-size: 9px; line-height: 1.55; }
+.observation-height-map-action { width: 100%; min-height: 44px; margin-top: 10px; border: 1px solid var(--line); border-radius: 9px; background: transparent; color: var(--moon); font-weight: 700; cursor: pointer; }
+.observation-height-viewfinder { position: relative; height: 156px; margin: 12px 0; overflow: hidden; border: 1px solid color-mix(in srgb, var(--horizon) 42%, var(--line)); border-radius: 12px; background: radial-gradient(circle at center, color-mix(in srgb, var(--horizon) 9%, transparent), transparent 42%), color-mix(in srgb, var(--ink) 72%, var(--panel)); }
+.observation-height-horizon { position: absolute; left: 8%; right: 8%; top: 50%; height: 1px; background: color-mix(in srgb, var(--horizon) 72%, transparent); }
+.observation-height-horizon::before, .observation-height-horizon::after { content: ""; position: absolute; top: -3px; width: 1px; height: 7px; background: var(--horizon); }
+.observation-height-horizon::before { left: 0; }
+.observation-height-horizon::after { right: 0; }
+.observation-height-crosshair { position: absolute; left: 50%; top: 50%; width: 34px; height: 34px; border: 1px solid var(--solar); border-radius: 50%; transform: translate(-50%, -50%); }
+.observation-height-crosshair::before, .observation-height-crosshair::after { content: ""; position: absolute; left: 50%; top: 50%; background: var(--solar); transform: translate(-50%, -50%); }
+.observation-height-crosshair::before { width: 50px; height: 1px; }
+.observation-height-crosshair::after { width: 1px; height: 50px; }
+.observation-height-viewfinder strong { position: absolute; left: 50%; bottom: 11px; width: max-content; max-width: calc(100% - 20px); padding: 5px 9px; border: 1px solid color-mix(in srgb, var(--danger) 55%, var(--line)); border-radius: 99px; background: var(--panel); color: var(--danger); font-size: 10px; transform: translateX(-50%); }
+.observation-height-metrics { display: grid; grid-template-columns: repeat(2, 1fr); overflow: hidden; border: 1px solid var(--line); border-radius: 11px; }
+.observation-height-metrics > div { min-width: 0; padding: 11px; }
+.observation-height-metrics > div:nth-child(even) { border-left: 1px solid var(--line); }
+.observation-height-metrics > div:nth-child(n + 3) { border-top: 1px solid var(--line); }
+.observation-height-metrics span, .observation-height-metrics strong { display: block; }
+.observation-height-metrics span { color: var(--muted); font-size: 9px; }
+.observation-height-metrics strong { margin-top: 4px; overflow: hidden; font: 14px var(--data); text-overflow: ellipsis; white-space: nowrap; }
+#observation-height-progress { width: 100%; height: 4px; margin-top: 9px; border: 0; accent-color: var(--horizon); }
+.observation-height-warning, .observation-height-error { margin: 8px 2px 0; padding: 8px 9px; border-radius: 7px; font-size: 10px; line-height: 1.5; }
+.observation-height-warning { border: 1px solid color-mix(in srgb, var(--solar) 45%, var(--line)); color: var(--solar); }
+.observation-height-error { border: 1px solid color-mix(in srgb, var(--danger) 45%, var(--line)); color: var(--danger); }
+.observation-height-result { margin-top: 12px; padding: 14px; border: 1px solid color-mix(in srgb, var(--horizon) 48%, var(--line)); border-radius: 12px; background: color-mix(in srgb, var(--horizon) 6%, transparent); }
+.observation-height-result > span, .observation-height-result > output { display: block; text-align: center; }
+.observation-height-result > span { color: var(--muted); font-size: 9px; }
+.observation-height-result > output { margin-top: 4px; color: var(--horizon); font: 600 34px var(--data); }
+.observation-height-result dl, .observation-height-confirm-dialog dl { margin: 12px 0 0; border-top: 1px solid var(--line); }
+.observation-height-result dl > div, .observation-height-confirm-dialog dl > div { display: flex; justify-content: space-between; gap: 14px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.observation-height-result dt, .observation-height-confirm-dialog dt { color: var(--muted); font-size: 9px; }
+.observation-height-result dd, .observation-height-confirm-dialog dd { margin: 0; font: 11px var(--data); }
+.observation-height-result p { margin: 10px 0 0; color: var(--muted); font-size: 9px; line-height: 1.55; }
+.observation-height-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; margin-top: 12px; }
+.observation-height-actions button { min-height: 46px; border: 1px solid var(--line); border-radius: 9px; background: transparent; color: var(--text); font-weight: 700; cursor: pointer; }
+.observation-height-actions .observation-height-primary, .observation-height-actions .observation-height-apply { border-color: var(--horizon); background: var(--horizon); color: var(--ink); }
+.observation-height-actions button:disabled { cursor: not-allowed; opacity: .45; }
+.observation-height-confirm-dialog { width: min(400px, calc(100vw - 28px)); padding: 0; border: var(--border-strong); border-radius: var(--radius-panel); background: var(--panel); color: var(--text); box-shadow: var(--shadow-modal); }
+.observation-height-confirm-dialog > section { padding: 18px; }
+.observation-height-confirm-dialog h2 { margin: 0; font: 600 21px var(--display); }
+.observation-height-confirm-dialog p { margin: 9px 0 0; color: var(--text); font-size: 11px; line-height: 1.6; }
+.observation-height-confirm-dialog section > div { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; margin-top: 14px; }
+.observation-height-confirm-dialog button { min-height: 44px; border: 1px solid var(--line); border-radius: 9px; background: transparent; color: var(--text); font-weight: 700; cursor: pointer; }
+#observation-height-confirm-apply { border-color: var(--horizon); background: var(--horizon); color: var(--ink); }
+
 .field-dialog { width: min(520px, calc(100vw - 18px)); max-height: calc(100dvh - 18px); padding: 0; overflow: hidden; border: 1px solid color-mix(in srgb, var(--horizon) 45%, var(--line)); border-radius: var(--radius-panel); background: var(--ink); color: var(--text); box-shadow: var(--shadow-modal); }
 .field-dialog::backdrop { background: var(--overlay-field); backdrop-filter: blur(7px); }
 .field-panel { min-height: min(680px, calc(100dvh - 18px)); padding: max(18px, env(safe-area-inset-top)) 18px max(22px, env(safe-area-inset-bottom)); overflow-y: auto; background: linear-gradient(180deg, var(--panel), var(--ink) 72%); }
@@ -1067,6 +1124,9 @@ body.has-update-toast .place-search { top: max(138px, calc(env(safe-area-inset-t
 }
 
 @media (max-width: 390px) {
+  .observation-height-panel { padding-left: 13px; padding-right: 13px; }
+  .observation-height-viewfinder { height: 138px; }
+  .observation-height-actions { grid-template-columns: 1fr; }
   .target-selector-button { grid-template-columns: minmax(108px, auto) minmax(0, 1fr) auto; }
   .target-selector-button > i { display: none; }
   .topbar-actions { gap: 3px; }
@@ -1160,6 +1220,33 @@ body.has-update-toast .place-search { top: max(138px, calc(env(safe-area-inset-t
   .search-grid select,
   .search-step select,
   .diamond-tolerance input { font-size: 16px; }
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .observation-height-panel {
+    display: grid;
+    grid-template-columns: minmax(230px, .82fr) minmax(340px, 1.18fr);
+    gap: 8px 12px;
+    align-content: start;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+  .observation-height-panel > header { grid-column: 1 / -1; padding-bottom: 7px; }
+  .observation-height-panel h2 { font-size: 20px; }
+  .observation-height-guide { grid-column: 1; grid-row: 2; padding: 5px 0 6px; }
+  .observation-height-mode { margin-bottom: 4px; padding: 2px; }
+  .observation-height-mode button { min-height: 27px; font-size: 9px; }
+  .observation-height-guide h3 { margin-bottom: 3px; }
+  .observation-height-guide ol { font-size: 9px; line-height: 1.45; }
+  .observation-height-guide p { margin-top: 3px; font-size: 8px; line-height: 1.35; }
+  .observation-height-map-action { grid-column: 1; grid-row: 3; min-height: 40px; margin-top: 0; }
+  .observation-height-viewfinder { grid-column: 2; grid-row: 2; height: 132px; margin: 0; }
+  .observation-height-metrics { grid-column: 2; grid-row: 3 / span 2; }
+  #observation-height-progress { grid-column: 2; grid-row: 5; margin-top: 0; }
+  .observation-height-warning, .observation-height-error { grid-column: 2; margin-top: 0; }
+  .observation-height-result { grid-column: 1 / -1; }
+  .observation-height-actions { grid-column: 1; grid-row: 4 / span 2; grid-template-columns: 1fr; align-self: start; margin-top: 0; }
+  .observation-height-actions button { min-height: 40px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

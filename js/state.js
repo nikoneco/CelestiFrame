@@ -98,7 +98,7 @@ export function normalizeState(value) {
     },
     composition: {
       cameraElevationMeters: finiteNumber(compositionValue.cameraElevationMeters, fallback.composition.cameraElevationMeters, { min: -500, max: 9000 }),
-      cameraHeightMeters: finiteNumber(compositionValue.cameraHeightMeters, fallback.composition.cameraHeightMeters, { min: 0, max: 100 }),
+      cameraHeightMeters: finiteNumber(compositionValue.cameraHeightMeters, fallback.composition.cameraHeightMeters, { min: 0, max: 1000 }),
       cameraElevationStatus: oneOf(compositionValue.cameraElevationStatus, ["loading", "ready", "manual", "error"], fallback.composition.cameraElevationStatus),
       cameraElevationSource: safeText(compositionValue.cameraElevationSource, fallback.composition.cameraElevationSource, 120),
       cameraElevationMode: oneOf(compositionValue.cameraElevationMode, ["auto", "manual"], fallback.composition.cameraElevationMode),

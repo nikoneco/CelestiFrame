@@ -1,4 +1,4 @@
-import { createStore } from "./state.js?v=42";
+import { createStore } from "./state.js?v=43";
 import { createMapController, focusCurrentLocation } from "./map/map-controller.js?v=52";
 import { bindPlaceSearch } from "./map/place-search.js?v=34";
 import { loadRuntimeConfig } from "./config/runtime-config.js?v=35";
@@ -25,6 +25,7 @@ import { apparentSolarAltitude, calculateTargetAltitude } from "./geometry/targe
 import { bindShootingPlanner } from "./planning/shooting-planner.js?v=41";
 import { bindTerrainProfile } from "./terrain/terrain-profile-controller.js?v=40";
 import { bindFieldMode } from "./field/field-mode.js?v=49";
+import { bindObservationHeightMeasurement } from "./measurement/observation-height-controller.js?v=2";
 import { bindWeatherOverlay } from "./weather/weather-controller.js?v=9";
 import { bindTargetSelector } from "./ui/target-selector.js?v=1";
 import { bindLightPollutionOverlay } from "./light-pollution/light-pollution-controller.js?v=2";
@@ -51,6 +52,7 @@ const topbarMenu = document.querySelector("#topbar-menu");
 let mapController;
 let controlDeckResizeTimer;
 let activeLocationMode = null;
+let observationHeightController;
 const systemThemeQuery = window.matchMedia("(prefers-color-scheme: light)");
 let sharedState = null;
 let activeDeckTabId = localStorage.getItem(DECK_TAB_KEY) || "time-panel";
@@ -638,6 +640,7 @@ function setSubjectLocationFromMap(subjectLocation) {
     subjectLocation,
     subject: { ...state.subject, name: "被写体" },
   }));
+  observationHeightController?.resumeAfterSubjectSelection();
 }
 
 function updateLocationMode(mode) {
@@ -852,6 +855,14 @@ bindCloudAccount({
 bindShootingPlanner(store, () => mapController, showToast);
 bindTerrainProfile(store, () => mapController, showToast);
 bindFieldMode(store, showToast);
+observationHeightController = bindObservationHeightMeasurement(store, showToast, {
+  beginSubjectSelection() {
+    if (!mapController) return showToast("地図を読み込んでから被写体地点を設定してください");
+    updateLocationMode("subject");
+    showToast("地図を動かし、ファインダーを被写体の地面との接点へ合わせてください");
+  },
+  closeTopbarMenu: () => setTopbarMenuOpen(false),
+});
 renderState(store.getState());
 if (sharedState) showToast("共有された撮影計画を開きました");
 bindPwaRuntime({
