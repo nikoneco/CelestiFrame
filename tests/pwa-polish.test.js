@@ -28,11 +28,12 @@ test("release metadata stays aligned with the visible app version", () => {
   const html = readProjectFile("index.html");
   const readme = readProjectFile("README.md");
   const css = readProjectFile("css/app.css");
-  assert.equal(packageMetadata.version, "1.5.0");
+  assert.equal(packageMetadata.version, "1.6.0");
   assert.equal(lockMetadata.version, packageMetadata.version);
   assert.equal(lockMetadata.packages[""].version, packageMetadata.version);
   assert.ok(html.includes(`Ver ${packageMetadata.version} - CelestiFrame`));
   assert.ok(readme.includes(`Version ${packageMetadata.version}として`));
+  assert.ok(readProjectFile("service-worker.js").includes("celestiframe-shell-v112"));
   assert.match(css, /\.phase-note \{[^}]*color: var\(--muted\);/);
 });
 
