@@ -1,4 +1,4 @@
-const CACHE_VERSION = "celestiframe-shell-v109";
+const CACHE_VERSION = "celestiframe-shell-v110";
 const TRUSTED_STATIC_HOSTS = new Set(["unpkg.com", "www.gstatic.com"]);
 const OPTIONAL_SHELL = [
   "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",

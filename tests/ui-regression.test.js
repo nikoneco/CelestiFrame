@@ -133,9 +133,12 @@ test("observation height measurement is accessible from More and requires explic
   assert.ok(html.includes('data-observation-height-step="2"'));
   assert.ok(html.includes('data-observation-height-step="3"'));
   assert.ok(html.includes('id="observation-height-camera" autoplay muted playsinline'));
+  assert.ok(html.includes("スマートフォンの画面を立てたまま、水平ガイドが傾かないように構えます。"));
   assert.ok(html.includes('id="observation-height-confirm-dialog"'));
   assert.ok(html.includes('data-observation-height-mode="structure"'));
   assert.ok(measurementController.includes("建造物の高さへ反映"));
+  assert.ok(measurementController.includes("スマートフォンの画面を立てたまま、水平ガイドが傾かないように構えます。"));
+  assert.ok(!measurementController.includes("スマートフォンを横向きに"));
   assert.ok(html.includes("端末センサー、被写体位置、標高データ等の誤差を含む参考値です。"));
   assert.ok(app.includes("bindObservationHeightMeasurement"));
   assert.ok(worker.includes("./js/measurement/observation-height-service.js?v=2"));

@@ -169,14 +169,14 @@ export function bindObservationHeightMeasurement(store, showToast, {
 
     if (measurementStep === 1) {
       guideTitle.textContent = "① 水平を合わせる";
-      guideTarget.textContent = "スマートフォンを横向きにし、画面を立てたまま水平ガイドが傾かないように構えます。";
+      guideTarget.textContent = "スマートフォンの画面を立てたまま、水平ガイドが傾かないように構えます。";
       guideNote.textContent = "撮影地点と被写体地点を確認してから、背面カメラへ進みます。";
       viewfinder.setAttribute("aria-label", "端末の左右の傾きを合わせる水平ガイド");
       startButton.textContent = "次へ：カメラを起動";
     } else if (measurementStep === 2) {
       guideTitle.textContent = "② 照準を合わせる";
       guideTarget.textContent = targetInstruction();
-      guideNote.textContent = "スマートフォンを横向きにして腕をまっすぐ伸ばし、照準の中心へ合わせてください。";
+      guideNote.textContent = "腕をまっすぐ伸ばし、照準の中心へ合わせてください。";
       viewfinder.setAttribute("aria-label", structureMode ? "背面カメラ映像上で建造物の頂点に合わせる照準" : "背面カメラ映像上で被写体の地面との接点に合わせる照準");
       startButton.textContent = cameraState === "ready"
         ? "次へ：測定準備"
