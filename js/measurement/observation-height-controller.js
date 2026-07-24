@@ -5,6 +5,10 @@ import {
   OrientationStabilityTracker,
   orientationSampleFromEvent,
 } from "./observation-height-service.js?v=2";
+import {
+  cameraErrorMessage,
+  ObservationCamera,
+} from "./observation-camera-service.js?v=1";
 
 const READY_ELEVATION_STATES = new Set(["ready", "manual"]);
 const formatDistance = (meters) => meters >= 1000 ? `${(meters / 1000).toFixed(2)} km` : `${Math.round(meters)} m`;
@@ -62,14 +66,22 @@ export function validateObservationContext(state) {
 export function bindObservationHeightMeasurement(store, showToast, {
   beginSubjectSelection = () => {},
   closeTopbarMenu = () => {},
+  camera = new ObservationCamera(),
 } = {}) {
   const dialog = document.querySelector("#observation-height-dialog");
   const confirmDialog = document.querySelector("#observation-height-confirm-dialog");
   const openButton = document.querySelector("#observation-height-button");
   const modeButtons = [...document.querySelectorAll("[data-observation-height-mode]")];
+  const stepButtons = [...document.querySelectorAll("[data-observation-height-step]")];
+  const guideTitle = document.querySelector("#observation-height-guide-title");
   const guideTarget = document.querySelector("#observation-height-guide-target");
+  const guideNote = document.querySelector("#observation-height-guide-note");
   const viewfinder = document.querySelector(".observation-height-viewfinder");
+  const cameraVideo = document.querySelector("#observation-height-camera");
+  const cameraPlaceholder = document.querySelector("#observation-height-camera-placeholder");
+  const cameraStatus = document.querySelector("#observation-height-camera-status");
   const pickSubjectButton = document.querySelector("#observation-height-pick-subject");
+  const backButton = document.querySelector("#observation-height-back");
   const startButton = document.querySelector("#observation-height-start");
   const retryButton = document.querySelector("#observation-height-retry");
   const closeButtons = [...dialog.querySelectorAll("[data-observation-height-close]")];
@@ -97,6 +109,10 @@ export function bindObservationHeightMeasurement(store, showToast, {
   const committer = new MeasurementCommitter(store);
   const tracker = new OrientationStabilityTracker();
   let measurementMode = "observer";
+  let measurementStep = 1;
+  let cameraState = "idle";
+  let cameraNotice = "";
+  let cameraRequestId = 0;
   let latestResult = null;
   let awaitingSubjectSelection = false;
   let sensorTimer = null;
@@ -111,10 +127,83 @@ export function bindObservationHeightMeasurement(store, showToast, {
     errorOutput.hidden = !message;
   }
 
+  function targetInstruction() {
+    return measurementMode === "structure"
+      ? "画面中央の照準を、建造物の頂点へ合わせます。"
+      : "画面中央の照準を、被写体の地面との接点へ合わせます。";
+  }
+
+  function renderCamera() {
+    const active = cameraState === "ready";
+    cameraVideo.hidden = !active;
+    viewfinder.classList.toggle("is-camera-active", active);
+    cameraPlaceholder.hidden = active;
+    cameraPlaceholder.textContent = cameraState === "stopped"
+      ? "測定完了"
+      : cameraState === "starting"
+        ? "背面カメラを起動しています"
+        : cameraState === "fallback"
+          ? "カメラなしで照準します"
+          : "②で背面カメラを起動します";
+    cameraStatus.textContent = cameraState === "ready"
+      ? "背面カメラ"
+      : cameraState === "starting"
+        ? "起動中"
+        : cameraState === "fallback"
+          ? "カメラなし"
+          : cameraState === "stopped"
+            ? "カメラ停止"
+            : "カメラ待機";
+  }
+
+  function renderStep() {
+    const contextError = validateObservationContext(store.getState());
+    const structureMode = measurementMode === "structure";
+    dialog.querySelector(".observation-height-panel").dataset.measurementStep = String(measurementStep);
+    stepButtons.forEach((button) => {
+      const step = Number(button.dataset.observationHeightStep);
+      if (step === measurementStep) button.setAttribute("aria-current", "step");
+      else button.removeAttribute("aria-current");
+      button.disabled = step > 1 && Boolean(contextError);
+    });
+
+    if (measurementStep === 1) {
+      guideTitle.textContent = "① 水平を合わせる";
+      guideTarget.textContent = "スマートフォンを横向きにし、画面を立てたまま水平ガイドが傾かないように構えます。";
+      guideNote.textContent = "撮影地点と被写体地点を確認してから、背面カメラへ進みます。";
+      viewfinder.setAttribute("aria-label", "端末の左右の傾きを合わせる水平ガイド");
+      startButton.textContent = "次へ：カメラを起動";
+    } else if (measurementStep === 2) {
+      guideTitle.textContent = "② 照準を合わせる";
+      guideTarget.textContent = targetInstruction();
+      guideNote.textContent = "スマートフォンを横向きにして腕をまっすぐ伸ばし、照準の中心へ合わせてください。";
+      viewfinder.setAttribute("aria-label", structureMode ? "背面カメラ映像上で建造物の頂点に合わせる照準" : "背面カメラ映像上で被写体の地面との接点に合わせる照準");
+      startButton.textContent = cameraState === "ready"
+        ? "次へ：測定準備"
+        : cameraState === "fallback"
+          ? "カメラなしで次へ"
+          : cameraState === "starting"
+            ? "カメラ起動中…"
+            : "カメラを起動";
+    } else {
+      guideTitle.textContent = "③ 測定する";
+      guideTarget.textContent = `${targetInstruction()} 「測定開始」を押したら、そのまま端末を静止してください。`;
+      guideNote.textContent = "約1秒間姿勢が安定すると自動で測定し、短く振動します。";
+      viewfinder.setAttribute("aria-label", structureMode ? "建造物の頂点に合わせて測定する照準" : "被写体の地面との接点に合わせて測定する照準");
+      startButton.textContent = "測定開始";
+    }
+
+    backButton.hidden = measurementStep === 1 || Boolean(latestResult);
+    startButton.disabled = Boolean(contextError) || cameraState === "starting";
+    if (!latestResult) startButton.hidden = false;
+    pickSubjectButton.hidden = measurementStep !== 1;
+    renderCamera();
+  }
+
   function renderContext() {
     const state = store.getState();
     const error = validateObservationContext(state);
-    setError(error);
+    setError(error || cameraNotice);
     if (isLocation(state.cameraLocation) && isLocation(state.subjectLocation)) {
       const geometry = subjectGeometry(state.cameraLocation, state.subjectLocation);
       distanceOutput.textContent = formatDistance(geometry.distanceMeters);
@@ -124,15 +213,11 @@ export function bindObservationHeightMeasurement(store, showToast, {
       warningOutput.hidden = true;
     }
     pickSubjectButton.textContent = state.subjectLocation ? "被写体地点を地図で変更" : "被写体地点を地図で選択";
-    startButton.disabled = Boolean(error);
     modeButtons.forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.observationHeightMode === measurementMode)));
     const structureMode = measurementMode === "structure";
     resultTitle.textContent = structureMode ? "推定建造物高さ" : "推定観測点高さ";
     applyButton.textContent = structureMode ? "建造物の高さへ反映" : "カメラ高へ反映";
-    guideTarget.textContent = structureMode
-      ? "画面中央の照準を、建造物の頂点へ合わせます。"
-      : "画面中央の照準を、被写体の地面との接点へ合わせます。";
-    viewfinder.setAttribute("aria-label", structureMode ? "建造物の頂点に合わせる照準" : "被写体の地面との接点に合わせる照準");
+    renderStep();
   }
 
   function stopSensors() {
@@ -157,11 +242,68 @@ export function bindObservationHeightMeasurement(store, showToast, {
     measurementOutput.textContent = "未開始";
     progress.value = 0;
     levelWarning.hidden = true;
-    setError(validateObservationContext(store.getState()));
+    setError(validateObservationContext(store.getState()) || cameraNotice);
+    renderStep();
+  }
+
+  function stopCamera(nextState = "idle") {
+    cameraRequestId += 1;
+    camera.stop();
+    cameraState = nextState;
+    renderCamera();
+  }
+
+  async function startCameraPreview() {
+    if (cameraState === "ready") return true;
+    const requestId = ++cameraRequestId;
+    cameraNotice = "";
+    cameraState = "starting";
+    renderContext();
+    try {
+      await camera.start(cameraVideo);
+      if (requestId !== cameraRequestId || ![2, 3].includes(measurementStep)) {
+        camera.stop();
+        return false;
+      }
+      cameraState = "ready";
+      cameraNotice = "";
+      renderContext();
+      return true;
+    } catch (error) {
+      if (requestId !== cameraRequestId) return false;
+      camera.stop();
+      cameraState = "fallback";
+      cameraNotice = cameraErrorMessage(error);
+      renderContext();
+      return false;
+    }
+  }
+
+  async function setStep(nextStep) {
+    const targetStep = Math.min(3, Math.max(1, Number(nextStep) || 1));
+    const contextError = validateObservationContext(store.getState());
+    if (targetStep > 1 && contextError) {
+      setError(contextError);
+      return false;
+    }
+    stopSensors();
+    tracker.reset();
+    if (targetStep === 1) {
+      stopCamera();
+      cameraNotice = "";
+    }
+    measurementStep = targetStep;
+    resetMeasurement();
+    if (targetStep === 2 && cameraState !== "ready" && cameraState !== "fallback") {
+      await startCameraPreview();
+    }
+    renderContext();
+    return true;
   }
 
   function finishMeasurement(angleDegrees) {
     stopSensors();
+    stopCamera("stopped");
     const state = store.getState();
     const contextError = validateObservationContext(state);
     if (contextError) {
@@ -194,6 +336,7 @@ export function bindObservationHeightMeasurement(store, showToast, {
       applyButton.hidden = false;
       applyButton.textContent = measurementMode === "structure" ? "建造物の高さへ反映" : "カメラ高へ反映";
       startButton.hidden = true;
+      backButton.hidden = true;
       measurementOutput.textContent = "安定";
       sensorOutput.textContent = "測定完了";
       progress.value = 1;
@@ -221,6 +364,7 @@ export function bindObservationHeightMeasurement(store, showToast, {
       setError("姿勢センサーの値を継続取得できません。端末設定と権限を確認してください");
       retryButton.hidden = false;
       stopSensors();
+      stopCamera("stopped");
     }, 2500);
     sensorOutput.textContent = "受信中";
     angleOutput.textContent = `${sample.angleDegrees.toFixed(1)}°`;
@@ -245,6 +389,7 @@ export function bindObservationHeightMeasurement(store, showToast, {
     const contextError = validateObservationContext(store.getState());
     if (contextError) return setError(contextError);
     if (typeof window.DeviceOrientationEvent === "undefined") {
+      stopCamera("stopped");
       sensorOutput.textContent = "非対応";
       measurementOutput.textContent = "開始できません";
       return setError("この端末は姿勢センサーに対応していません");
@@ -254,11 +399,13 @@ export function bindObservationHeightMeasurement(store, showToast, {
       try {
         const permission = await window.DeviceOrientationEvent.requestPermission();
         if (permission !== "granted") {
+          stopCamera("stopped");
           sensorOutput.textContent = "権限拒否";
           measurementOutput.textContent = "開始できません";
           return setError("姿勢センサーの利用が許可されませんでした");
         }
       } catch (error) {
+        stopCamera("stopped");
         sensorOutput.textContent = "権限エラー";
         measurementOutput.textContent = "開始できません";
         return setError(error.message || "姿勢センサーの権限を取得できませんでした");
@@ -271,6 +418,7 @@ export function bindObservationHeightMeasurement(store, showToast, {
     retryButton.hidden = true;
     applyButton.hidden = true;
     startButton.hidden = true;
+    backButton.hidden = true;
     sensorOutput.textContent = "待機中";
     measurementOutput.textContent = "端末を静止";
     window.addEventListener("deviceorientationabsolute", handleOrientation);
@@ -282,11 +430,15 @@ export function bindObservationHeightMeasurement(store, showToast, {
       setError("姿勢センサーの値を取得できません。端末設定と権限を確認してください");
       retryButton.hidden = false;
       stopSensors();
+      stopCamera("stopped");
     }, 3500);
   }
 
   function open() {
     closeTopbarMenu();
+    measurementStep = 1;
+    cameraNotice = "";
+    stopCamera();
     resetMeasurement();
     renderContext();
     dialog.showModal();
@@ -295,18 +447,36 @@ export function bindObservationHeightMeasurement(store, showToast, {
   openButton.addEventListener("click", open);
   modeButtons.forEach((button) => button.addEventListener("click", () => {
     measurementMode = button.dataset.observationHeightMode;
+    measurementStep = 1;
+    cameraNotice = "";
+    stopCamera();
     resetMeasurement();
     renderContext();
+  }));
+  stepButtons.forEach((button) => button.addEventListener("click", async () => {
+    const requestedStep = Number(button.dataset.observationHeightStep);
+    if (requestedStep === 3 && measurementStep === 1) {
+      if (!await setStep(2)) return;
+    }
+    await setStep(requestedStep);
   }));
   pickSubjectButton.addEventListener("click", () => {
     awaitingSubjectSelection = true;
     dialog.close();
     beginSubjectSelection();
   });
-  startButton.addEventListener("click", startMeasurement);
-  retryButton.addEventListener("click", startMeasurement);
+  backButton.addEventListener("click", () => setStep(measurementStep - 1));
+  startButton.addEventListener("click", async () => {
+    if (measurementStep === 1) return setStep(2);
+    if (measurementStep === 2) return setStep(3);
+    return startMeasurement();
+  });
+  retryButton.addEventListener("click", () => setStep(2));
   closeButtons.forEach((button) => button.addEventListener("click", () => dialog.close()));
-  dialog.addEventListener("close", stopSensors);
+  dialog.addEventListener("close", () => {
+    stopSensors();
+    stopCamera();
+  });
   applyButton.addEventListener("click", () => {
     if (!latestResult) return;
     const pending = committer.stage(Number(latestResult.heightMeters.toFixed(1)), latestResult.mode);
@@ -334,12 +504,22 @@ export function bindObservationHeightMeasurement(store, showToast, {
       : "推定観測点高さをカメラ高へ反映しました");
   });
   confirmDialog.addEventListener("cancel", () => committer.cancel());
+  function handleVisibilityChange() {
+    if (!document.hidden || !dialog.open || cameraState !== "ready") return;
+    stopCamera();
+    cameraNotice = "画面を離れたためカメラを停止しました。②で再起動してください。";
+    measurementStep = 2;
+    resetMeasurement();
+    renderContext();
+  }
+  document.addEventListener("visibilitychange", handleVisibilityChange);
   const unsubscribe = store.subscribe(() => dialog.open && renderContext());
 
   return {
     resumeAfterSubjectSelection() {
       if (!awaitingSubjectSelection) return false;
       awaitingSubjectSelection = false;
+      measurementStep = 1;
       renderContext();
       dialog.showModal();
       startButton.focus();
@@ -347,6 +527,8 @@ export function bindObservationHeightMeasurement(store, showToast, {
     },
     destroy() {
       stopSensors();
+      stopCamera();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       unsubscribe();
     },
   };

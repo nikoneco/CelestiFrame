@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" href="./assets/icons/app-180.png">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
     <link rel="stylesheet" href="./tokens.css?v=1">
-    <link rel="stylesheet" href="./css/app.css?v=90">
+    <link rel="stylesheet" href="./css/app.css?v=91">
   </head>
   <body>
     <div class="app-shell">
@@ -632,21 +632,27 @@
             <button type="button" data-observation-height-mode="observer" aria-pressed="true">観測点高さ</button>
             <button type="button" data-observation-height-mode="structure" aria-pressed="false">建造物の高さ</button>
           </div>
-          <h3 id="observation-height-guide-title">測定姿勢</h3>
-          <ol>
-            <li>スマートフォンを横向きにし、腕をまっすぐ伸ばします。</li>
-            <li id="observation-height-guide-target">画面中央の照準を、被写体の地面との接点へ合わせます。</li>
-            <li>端末を静止すると自動で測定します。</li>
-          </ol>
-          <p>腕を伸ばすことで、画面中央の照準と被写体を合わせる際の照準誤差を減らします。</p>
+          <nav class="observation-height-steps" aria-label="高さ測定の手順">
+            <ol>
+              <li><button type="button" data-observation-height-step="1" aria-current="step"><b>1</b><span>水平を合わせる</span></button></li>
+              <li><button type="button" data-observation-height-step="2"><b>2</b><span>照準を合わせる</span></button></li>
+              <li><button type="button" data-observation-height-step="3"><b>3</b><span>測定する</span></button></li>
+            </ol>
+          </nav>
+          <h3 id="observation-height-guide-title">① 水平を合わせる</h3>
+          <p id="observation-height-guide-target">スマートフォンを横向きにし、画面を立てたまま水平ガイドが傾かないように構えます。</p>
+          <p id="observation-height-guide-note">腕をまっすぐ伸ばすと、照準を合わせる際の誤差を減らせます。</p>
         </section>
 
         <button class="observation-height-map-action" id="observation-height-pick-subject" type="button">被写体地点を地図で選択</button>
 
-        <div class="observation-height-viewfinder" aria-label="被写体の地面との接点に合わせる照準">
+        <div class="observation-height-viewfinder" aria-label="水平を合わせるためのガイド">
+          <video id="observation-height-camera" autoplay muted playsinline aria-label="背面カメラのプレビュー"></video>
+          <span class="observation-height-camera-placeholder" id="observation-height-camera-placeholder">②で背面カメラを起動します</span>
           <span class="observation-height-horizon" aria-hidden="true"></span>
           <span class="observation-height-crosshair" aria-hidden="true"></span>
-          <strong id="observation-height-level-warning" role="status" aria-live="assertive" hidden>端末を水平にしてください</strong>
+          <span class="observation-height-camera-status" id="observation-height-camera-status" role="status" aria-live="polite">カメラ待機</span>
+          <strong id="observation-height-level-warning" role="status" aria-live="assertive" hidden>画面を立てたまま、左右の傾きを水平にしてください</strong>
         </div>
 
         <div class="observation-height-metrics" aria-label="観測点高さ測定の状態">
@@ -672,7 +678,8 @@
         </section>
 
         <div class="observation-height-actions">
-          <button class="observation-height-primary" id="observation-height-start" type="button">測定開始</button>
+          <button id="observation-height-back" type="button" hidden>戻る</button>
+          <button class="observation-height-primary" id="observation-height-start" type="button">次へ：カメラを起動</button>
           <button id="observation-height-retry" type="button" hidden>再測定</button>
           <button class="observation-height-apply" id="observation-height-apply" type="button" hidden>カメラ高へ反映</button>
           <button type="button" data-observation-height-close>閉じる</button>
@@ -744,6 +751,6 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
     <script src="./js/vendor/suncalc.js"></script>
     <script src="./js/vendor/astronomy-engine.min.js"></script>
-    <script type="module" src="./js/app.js?v=91"></script>
+    <script type="module" src="./js/app.js?v=92"></script>
   </body>
 </html>

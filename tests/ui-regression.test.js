@@ -118,8 +118,8 @@ test("expanded mobile deck stays above Leaflet attribution and controls", () => 
   assert.match(css, /\.control-deck\.is-expanded \{[^}]*z-index:\s*1100;/);
   assert.ok(html.includes("./tokens.css?v=1"));
   assert.ok(worker.includes("./tokens.css?v=1"));
-  assert.ok(html.includes("./css/app.css?v=90"));
-  assert.ok(worker.includes("./css/app.css?v=90"));
+  assert.ok(html.includes("./css/app.css?v=91"));
+  assert.ok(worker.includes("./css/app.css?v=91"));
 });
 
 test("observation height measurement is accessible from More and requires explicit confirmation", () => {
@@ -129,11 +129,18 @@ test("observation height measurement is accessible from More and requires explic
   const worker = readProjectFile("service-worker.js");
   assert.ok(html.indexOf("観測点高さ測定") < html.indexOf("表示設定"));
   assert.ok(html.includes('id="observation-height-level-warning" role="status" aria-live="assertive"'));
+  assert.ok(html.includes('data-observation-height-step="1" aria-current="step"'));
+  assert.ok(html.includes('data-observation-height-step="2"'));
+  assert.ok(html.includes('data-observation-height-step="3"'));
+  assert.ok(html.includes('id="observation-height-camera" autoplay muted playsinline'));
   assert.ok(html.includes('id="observation-height-confirm-dialog"'));
   assert.ok(html.includes('data-observation-height-mode="structure"'));
   assert.ok(measurementController.includes("建造物の高さへ反映"));
   assert.ok(html.includes("端末センサー、被写体位置、標高データ等の誤差を含む参考値です。"));
   assert.ok(app.includes("bindObservationHeightMeasurement"));
   assert.ok(worker.includes("./js/measurement/observation-height-service.js?v=2"));
-  assert.ok(worker.includes("./js/measurement/observation-height-controller.js?v=2"));
+  assert.ok(worker.includes("./js/measurement/observation-camera-service.js?v=1"));
+  assert.ok(worker.includes("./js/measurement/observation-height-controller.js?v=3"));
+  assert.ok(measurementController.includes("camera.stop()"));
+  assert.ok(measurementController.includes("カメラなしで次へ"));
 });

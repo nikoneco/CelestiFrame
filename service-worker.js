@@ -1,4 +1,4 @@
-const CACHE_VERSION = "celestiframe-shell-v108";
+const CACHE_VERSION = "celestiframe-shell-v109";
 const TRUSTED_STATIC_HOSTS = new Set(["unpkg.com", "www.gstatic.com"]);
 const OPTIONAL_SHELL = [
   "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
@@ -44,8 +44,8 @@ const APP_SHELL = [
   "./assets/fonts/IBMPlexMono-SemiBold.woff2",
   "./assets/fonts/LICENSE-IBM-PLEX.txt",
   "./tokens.css?v=1",
-  "./css/app.css?v=90",
-  "./js/app.js?v=91",
+  "./css/app.css?v=91",
+  "./js/app.js?v=92",
   "./js/config/runtime-config.js?v=35",
   "./js/config/firebase-config.js?v=1",
   "./js/state.js?v=43",
@@ -90,7 +90,8 @@ const APP_SHELL = [
   "./js/terrain/terrain-profile-controller.js?v=40",
   "./js/field/field-mode.js?v=49",
   "./js/measurement/observation-height-service.js?v=2",
-  "./js/measurement/observation-height-controller.js?v=2",
+  "./js/measurement/observation-camera-service.js?v=1",
+  "./js/measurement/observation-height-controller.js?v=3",
   "./js/vendor/suncalc.js",
   "./js/vendor/astronomy-engine.min.js",
 ];
