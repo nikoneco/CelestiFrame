@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" href="./assets/icons/app-180.png">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
     <link rel="stylesheet" href="./tokens.css?v=1">
-    <link rel="stylesheet" href="./css/app.css?v=91">
+    <link rel="stylesheet" href="./css/app.css?v=92">
   </head>
   <body>
     <div class="app-shell">
@@ -40,7 +40,7 @@
               <span class="ui-icon icon-ellipsis" aria-hidden="true"></span><small>その他</small>
             </button>
             <div class="topbar-menu" id="topbar-menu" role="menu" hidden>
-              <button id="observation-height-button" type="button" role="menuitem" aria-haspopup="dialog">
+              <button id="observation-height-button" type="button" role="menuitem" aria-haspopup="dialog" data-observation-height-open="observer">
                 <span class="ui-icon icon-crosshair" aria-hidden="true"></span><span>観測点高さ測定</span>
               </button>
               <button id="settings-button" type="button" role="menuitem" aria-haspopup="dialog">
@@ -370,7 +370,13 @@
                 <label><span>センサー</span><select data-composition-field="sensorPreset"><option value="full-frame">フルサイズ</option><option value="aps-c">APS-C</option><option value="mft">マイクロフォーサーズ</option><option value="one-inch">1型</option></select></label>
                 <label><span>焦点距離</span><span class="input-unit"><input type="number" data-composition-field="focalLengthMm" min="1" max="2000" step="1"><i>mm</i></span></label>
                 <div class="composition-orientation"><span>構図方向</span><div><button type="button" data-composition-orientation="landscape" aria-pressed="true">横</button><button type="button" data-composition-orientation="portrait" aria-pressed="false">縦</button></div></div>
-                <label><span>カメラ高</span><span class="input-unit"><input type="number" data-composition-field="cameraHeightMeters" min="0" max="1000" step="0.1"><i>m</i></span></label>
+                <div class="composition-measure-field">
+                  <label for="camera-height-meters">カメラ高(地面から)</label>
+                  <span class="measurement-input-row">
+                    <span class="input-unit"><input id="camera-height-meters" type="number" data-composition-field="cameraHeightMeters" min="0" max="1000" step="0.1"><i>m</i></span>
+                    <button type="button" data-observation-height-open="observer" aria-haspopup="dialog" aria-label="観測点高さを測定">測定</button>
+                  </span>
+                </div>
               </fieldset>
               <fieldset class="composition-control-group composition-elevation-group">
                 <legend>標高 <span>ELEVATION</span></legend>
@@ -387,7 +393,13 @@
               </fieldset>
               <fieldset class="composition-control-group composition-other-group">
                 <legend>その他 <span>OTHER</span></legend>
-                <label class="subject-height-field"><span>建造物の高さ</span><span class="input-unit"><input type="number" data-subject-field="heightMeters" min="0" max="10000" step="0.1"><i>m</i></span></label>
+                <div class="composition-measure-field subject-height-field">
+                  <label for="structure-height-meters">建造物の高さ</label>
+                  <span class="measurement-input-row">
+                    <span class="input-unit"><input id="structure-height-meters" type="number" data-subject-field="heightMeters" min="0" max="10000" step="0.1"><i>m</i></span>
+                    <button type="button" data-observation-height-open="structure" aria-haspopup="dialog" aria-label="建造物の高さを測定">測定</button>
+                  </span>
+                </div>
               </fieldset>
             </form>
             <p class="composition-note">標高は国土地理院DEMによる推定値です。建物・樹木・積雪・実際の大気状態は反映しません。</p>
@@ -751,6 +763,6 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
     <script src="./js/vendor/suncalc.js"></script>
     <script src="./js/vendor/astronomy-engine.min.js"></script>
-    <script type="module" src="./js/app.js?v=92"></script>
+    <script type="module" src="./js/app.js?v=93"></script>
   </body>
 </html>

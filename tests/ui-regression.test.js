@@ -118,8 +118,8 @@ test("expanded mobile deck stays above Leaflet attribution and controls", () => 
   assert.match(css, /\.control-deck\.is-expanded \{[^}]*z-index:\s*1100;/);
   assert.ok(html.includes("./tokens.css?v=1"));
   assert.ok(worker.includes("./tokens.css?v=1"));
-  assert.ok(html.includes("./css/app.css?v=91"));
-  assert.ok(worker.includes("./css/app.css?v=91"));
+  assert.ok(html.includes("./css/app.css?v=92"));
+  assert.ok(worker.includes("./css/app.css?v=92"));
 });
 
 test("observation height measurement is accessible from More and requires explicit confirmation", () => {
@@ -136,6 +136,13 @@ test("observation height measurement is accessible from More and requires explic
   assert.ok(html.includes("スマートフォンの画面を立てたまま、水平ガイドが傾かないように構えます。"));
   assert.ok(html.includes('id="observation-height-confirm-dialog"'));
   assert.ok(html.includes('data-observation-height-mode="structure"'));
+  assert.ok(html.includes("カメラ高(地面から)"));
+  assert.equal((html.match(/data-observation-height-open="observer"/g) || []).length, 2);
+  assert.equal((html.match(/data-observation-height-open="structure"/g) || []).length, 1);
+  assert.ok(html.includes('aria-label="観測点高さを測定"'));
+  assert.ok(html.includes('aria-label="建造物の高さを測定"'));
+  assert.ok(measurementController.includes('document.querySelectorAll("[data-observation-height-open]")'));
+  assert.ok(measurementController.includes('["observer", "structure"].includes(requestedMode)'));
   assert.ok(measurementController.includes("建造物の高さへ反映"));
   assert.ok(measurementController.includes("スマートフォンの画面を立てたまま、水平ガイドが傾かないように構えます。"));
   assert.ok(!measurementController.includes("スマートフォンを横向きに"));
@@ -143,7 +150,7 @@ test("observation height measurement is accessible from More and requires explic
   assert.ok(app.includes("bindObservationHeightMeasurement"));
   assert.ok(worker.includes("./js/measurement/observation-height-service.js?v=2"));
   assert.ok(worker.includes("./js/measurement/observation-camera-service.js?v=1"));
-  assert.ok(worker.includes("./js/measurement/observation-height-controller.js?v=3"));
+  assert.ok(worker.includes("./js/measurement/observation-height-controller.js?v=4"));
   assert.ok(measurementController.includes("camera.stop()"));
   assert.ok(measurementController.includes("カメラなしで次へ"));
 });

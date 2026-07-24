@@ -25,7 +25,7 @@ import { apparentSolarAltitude, calculateTargetAltitude } from "./geometry/targe
 import { bindShootingPlanner } from "./planning/shooting-planner.js?v=41";
 import { bindTerrainProfile } from "./terrain/terrain-profile-controller.js?v=40";
 import { bindFieldMode } from "./field/field-mode.js?v=49";
-import { bindObservationHeightMeasurement } from "./measurement/observation-height-controller.js?v=3";
+import { bindObservationHeightMeasurement } from "./measurement/observation-height-controller.js?v=4";
 import { bindWeatherOverlay } from "./weather/weather-controller.js?v=9";
 import { bindTargetSelector } from "./ui/target-selector.js?v=1";
 import { bindLightPollutionOverlay } from "./light-pollution/light-pollution-controller.js?v=2";

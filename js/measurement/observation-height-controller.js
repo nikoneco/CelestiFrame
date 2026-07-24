@@ -70,7 +70,7 @@ export function bindObservationHeightMeasurement(store, showToast, {
 } = {}) {
   const dialog = document.querySelector("#observation-height-dialog");
   const confirmDialog = document.querySelector("#observation-height-confirm-dialog");
-  const openButton = document.querySelector("#observation-height-button");
+  const openButtons = [...document.querySelectorAll("[data-observation-height-open]")];
   const modeButtons = [...document.querySelectorAll("[data-observation-height-mode]")];
   const stepButtons = [...document.querySelectorAll("[data-observation-height-step]")];
   const guideTitle = document.querySelector("#observation-height-guide-title");
@@ -434,7 +434,8 @@ export function bindObservationHeightMeasurement(store, showToast, {
     }, 3500);
   }
 
-  function open() {
+  function open(requestedMode = "observer") {
+    measurementMode = ["observer", "structure"].includes(requestedMode) ? requestedMode : "observer";
     closeTopbarMenu();
     measurementStep = 1;
     cameraNotice = "";
@@ -444,7 +445,9 @@ export function bindObservationHeightMeasurement(store, showToast, {
     dialog.showModal();
   }
 
-  openButton.addEventListener("click", open);
+  openButtons.forEach((button) => button.addEventListener("click", () => {
+    open(button.dataset.observationHeightOpen);
+  }));
   modeButtons.forEach((button) => button.addEventListener("click", () => {
     measurementMode = button.dataset.observationHeightMode;
     measurementStep = 1;
