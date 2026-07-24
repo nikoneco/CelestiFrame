@@ -75,6 +75,7 @@ export function bindObservationHeightMeasurement(store, showToast, {
   const stepButtons = [...document.querySelectorAll("[data-observation-height-step]")];
   const guideTitle = document.querySelector("#observation-height-guide-title");
   const guideTarget = document.querySelector("#observation-height-guide-target");
+  const cameraBasis = document.querySelector("#observation-height-camera-basis");
   const guideNote = document.querySelector("#observation-height-guide-note");
   const viewfinder = document.querySelector(".observation-height-viewfinder");
   const cameraVideo = document.querySelector("#observation-height-camera");
@@ -215,6 +216,11 @@ export function bindObservationHeightMeasurement(store, showToast, {
     pickSubjectButton.textContent = state.subjectLocation ? "被写体地点を地図で変更" : "被写体地点を地図で選択";
     modeButtons.forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.observationHeightMode === measurementMode)));
     const structureMode = measurementMode === "structure";
+    const cameraHeight = Number(state.composition.cameraHeightMeters);
+    cameraBasis.hidden = !structureMode;
+    cameraBasis.textContent = structureMode
+      ? `現在のカメラ高（地面から）を基準に計算します。現在 ${Number.isFinite(cameraHeight) ? cameraHeight.toFixed(1) : "—"} m`
+      : "";
     resultTitle.textContent = structureMode ? "推定建造物高さ" : "推定観測点高さ";
     applyButton.textContent = structureMode ? "建造物の高さへ反映" : "カメラ高へ反映";
     renderStep();

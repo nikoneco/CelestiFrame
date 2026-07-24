@@ -33,7 +33,7 @@ test("release metadata stays aligned with the visible app version", () => {
   assert.equal(lockMetadata.packages[""].version, packageMetadata.version);
   assert.ok(html.includes(`Ver ${packageMetadata.version} - CelestiFrame`));
   assert.ok(readme.includes(`Version ${packageMetadata.version}として`));
-  assert.ok(readProjectFile("service-worker.js").includes("celestiframe-shell-v112"));
+  assert.ok(readProjectFile("service-worker.js").includes("celestiframe-shell-v113"));
   assert.match(css, /\.phase-note \{[^}]*color: var\(--muted\);/);
 });
 
