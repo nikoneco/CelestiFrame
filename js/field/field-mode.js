@@ -1,7 +1,6 @@
 import { subjectGeometry } from "../geometry/bearing.js?v=7";
 import { normalizeDegrees, signedAngleDifference } from "../geometry/angle.js";
-
-const formatDistance = (meters) => meters >= 1000 ? `${(meters / 1000).toFixed(2)} km` : `${Math.round(meters)} m`;
+import { formatDistance } from "../utils/format.js?v=1";
 
 export function headingRelativeCardinalOffsets(heading, radius = 76) {
   if (!Number.isFinite(Number(heading)) || !Number.isFinite(Number(radius))) return [];

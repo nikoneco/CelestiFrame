@@ -16,7 +16,6 @@ const timestamp = (value) => Number.isFinite(new Date(value).getTime()) ? new Da
 
 export function bindCloudAccount({ coordinator, store, showToast, onPlansChanged }) {
   const account = document.querySelector("#cloud-account");
-  const plansButton = document.querySelector("#plans-button");
   const title = document.querySelector("#cloud-account-title");
   const detail = document.querySelector("#cloud-account-detail");
   const avatar = document.querySelector("#cloud-account-avatar");
@@ -36,7 +35,6 @@ export function bindCloudAccount({ coordinator, store, showToast, onPlansChanged
 
   function setState(nextState, nextTitle, nextDetail) {
     account.dataset.state = nextState;
-    plansButton.dataset.cloudState = nextState;
     title.textContent = nextTitle;
     detail.textContent = nextDetail;
   }

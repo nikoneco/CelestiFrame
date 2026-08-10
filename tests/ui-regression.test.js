@@ -22,6 +22,15 @@ test("light theme gives compact celestial rows readable local tokens", () => {
   assert.ok(css.includes(':root[data-theme="light"] .celestial-card.is-compact .horizon-state.is-above'));
 });
 
+test("plan controls avoid notification-like sync dots and duplicate file controls", () => {
+  const html = readProjectFile("index.html");
+  const css = readProjectFile("css/app.css");
+  const accountController = readProjectFile("js/cloud/account-controller.js");
+  assert.match(html, /<input id="plans-import-input" type="file" accept="application\/json,\.json" hidden>/);
+  assert.equal(css.includes("#plans-button[data-cloud-state]::after"), false);
+  assert.equal(accountController.includes("plansButton.dataset.cloudState"), false);
+});
+
 test("Hallmark refinement flattens nested tools and removes side-stripe selection", () => {
   const css = readProjectFile("css/app.css");
   const toolsBlock = css.match(/\.shooting-planner, \.terrain-profile-panel \{([^}]*)\}/)?.[1] || "";
@@ -116,10 +125,10 @@ test("expanded mobile deck stays above Leaflet attribution and controls", () => 
   const css = readProjectFile("css/app.css");
   const worker = readProjectFile("service-worker.js");
   assert.match(css, /\.control-deck\.is-expanded \{[^}]*z-index:\s*1100;/);
-  assert.ok(html.includes("./tokens.css?v=1"));
-  assert.ok(worker.includes("./tokens.css?v=1"));
-  assert.ok(html.includes("./css/app.css?v=92"));
-  assert.ok(worker.includes("./css/app.css?v=92"));
+  assert.ok(html.includes("./tokens.css?v=2"));
+  assert.ok(worker.includes("./tokens.css?v=2"));
+  assert.ok(html.includes("./css/app.css?v=93"));
+  assert.ok(worker.includes("./css/app.css?v=93"));
 });
 
 test("observation height measurement is accessible from More and requires explicit confirmation", () => {
@@ -153,7 +162,7 @@ test("observation height measurement is accessible from More and requires explic
   assert.ok(app.includes("bindObservationHeightMeasurement"));
   assert.ok(worker.includes("./js/measurement/observation-height-service.js?v=2"));
   assert.ok(worker.includes("./js/measurement/observation-camera-service.js?v=1"));
-  assert.ok(worker.includes("./js/measurement/observation-height-controller.js?v=5"));
+  assert.ok(worker.includes("./js/measurement/observation-height-controller.js?v=6"));
   assert.ok(measurementController.includes("camera.stop()"));
   assert.ok(measurementController.includes("カメラなしで次へ"));
 });

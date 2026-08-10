@@ -33,7 +33,7 @@ test("release metadata stays aligned with the visible app version", () => {
   assert.equal(lockMetadata.packages[""].version, packageMetadata.version);
   assert.ok(html.includes(`Ver ${packageMetadata.version} - CelestiFrame`));
   assert.ok(readme.includes(`Version ${packageMetadata.version}として`));
-  assert.ok(readProjectFile("service-worker.js").includes("celestiframe-shell-v113"));
+  assert.ok(readProjectFile("service-worker.js").includes("celestiframe-shell-v114"));
   assert.match(css, /\.phase-note \{[^}]*color: var\(--muted\);/);
 });
 
@@ -57,6 +57,32 @@ test("P3 service worker keeps the core shell reliable and warms optional Leaflet
   assert.ok(worker.includes("./js/pwa/pwa-runtime.js?v=1"));
 });
 
+test("service worker precaches every exact relative module dependency", () => {
+  const worker = readProjectFile("service-worker.js");
+  const appShellBlock = worker.match(/const APP_SHELL = \[([\s\S]*?)\n\];/)?.[1] || "";
+  const shellAssets = new Set([...appShellBlock.matchAll(/"([^"]+)"/g)].map((match) => match[1]));
+
+  for (const asset of shellAssets) {
+    if (!asset.startsWith("./")) continue;
+    const pathname = new URL(asset, "https://app.invalid/").pathname.replace(/^\//, "");
+    assert.equal(existsSync(projectUrl(pathname)), true, `${asset} is missing`);
+    if (!pathname.startsWith("js/") || !pathname.endsWith(".js") || pathname.startsWith("js/vendor/")) continue;
+
+    const source = readProjectFile(pathname);
+    const specifiers = [...source.matchAll(/(?:\bfrom\s+|\bimport\s*)["'](\.{1,2}\/[^"']+)["']/g)]
+      .map((match) => match[1]);
+    for (const call of source.matchAll(/\bimportScripts\(([^)]*)\)/g)) {
+      specifiers.push(...[...call[1].matchAll(/["'](\.{1,2}\/[^"']+)["']/g)].map((match) => match[1]));
+    }
+
+    for (const specifier of specifiers) {
+      const dependency = new URL(specifier, new URL(asset, "https://app.invalid/"));
+      const exactAsset = `.${dependency.pathname}${dependency.search}`;
+      assert.ok(shellAssets.has(exactAsset), `${asset} imports ${specifier}, but ${exactAsset} is not precached`);
+    }
+  }
+});
+
 test("P3 landscape and standalone rules preserve map space and mobile input sizing", () => {
   const css = readProjectFile("css/app.css");
   assert.match(css, /@media \(display-mode: standalone\)/);
@@ -74,5 +100,10 @@ test("dark, light, and red primary and supporting text meet WCAG AA contrast", (
     const tokens = themeTokens(css, selector);
     assert.ok(contrast(tokens.text, tokens.panel) >= 4.5, `${selector} text`);
     assert.ok(contrast(tokens.muted, tokens.panel) >= 4.5, `${selector} muted`);
+  }
+  const stableDetail = themeTokens(css, ":root");
+  for (const surface of [stableDetail["detail-surface-start"], stableDetail["detail-surface-end"]]) {
+    assert.ok(contrast(stableDetail["detail-text"], surface) >= 4.5, `detail text on ${surface}`);
+    assert.ok(contrast(stableDetail["detail-muted"], surface) >= 4.5, `detail muted on ${surface}`);
   }
 });

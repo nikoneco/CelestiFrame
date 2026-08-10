@@ -12,22 +12,23 @@ import { calculateSelectedTargets } from "./astronomy/target-service.js?v=1";
 import { targetLabelList } from "./astronomy/target-catalog.js?v=1";
 import { subjectGeometry } from "./geometry/bearing.js?v=7";
 import { signedAngleDifference } from "./geometry/angle.js";
+import { formatDistance } from "./utils/format.js?v=1";
 import { bindSearchControls } from "./search/search-controller.js?v=45";
 import { bindPlanManager } from "./plans/plan-manager.js?v=45";
 import { createPlanRepository } from "./plans/plan-repository.js?v=16";
-import { createPlanSyncCoordinator } from "./cloud/plan-sync.js?v=1";
-import { bindCloudAccount } from "./cloud/account-controller.js?v=2";
+import { createPlanSyncCoordinator } from "./cloud/plan-sync.js?v=2";
+import { bindCloudAccount } from "./cloud/account-controller.js?v=3";
 import { parseSharedState } from "./plans/plan-data.js?v=41";
 import { calculateComposition, focalLengthForFill, SENSOR_PRESETS } from "./composition/composition.js?v=19";
 import { bindCompositionControls } from "./ui/composition-controls.js?v=24";
 import { bindElevationControls } from "./elevation/elevation-controller.js?v=25";
 import { apparentSolarAltitude, calculateTargetAltitude } from "./geometry/target-altitude.js?v=24";
 import { bindShootingPlanner } from "./planning/shooting-planner.js?v=41";
-import { bindTerrainProfile } from "./terrain/terrain-profile-controller.js?v=40";
-import { bindFieldMode } from "./field/field-mode.js?v=49";
-import { bindObservationHeightMeasurement } from "./measurement/observation-height-controller.js?v=5";
+import { bindTerrainProfile } from "./terrain/terrain-profile-controller.js?v=41";
+import { bindFieldMode } from "./field/field-mode.js?v=50";
+import { bindObservationHeightMeasurement } from "./measurement/observation-height-controller.js?v=6";
 import { bindWeatherOverlay } from "./weather/weather-controller.js?v=9";
-import { bindTargetSelector } from "./ui/target-selector.js?v=1";
+import { bindTargetSelector } from "./ui/target-selector.js?v=2";
 import { bindLightPollutionOverlay } from "./light-pollution/light-pollution-controller.js?v=2";
 import { bindPwaRuntime } from "./pwa/pwa-runtime.js?v=1";
 
@@ -414,10 +415,6 @@ function renderCelestialDirections(state, cameraTargetData) {
     subjectData.forEach((data) => directions.push({ targetId: data.target.id, location: state.subjectLocation, data, origin: "subject" }));
   }
   mapController.setCelestialDirections(directions);
-}
-
-function formatDistance(value) {
-  return value >= 1000 ? `${(value / 1000).toFixed(2)} km` : `${Math.round(value)} m`;
 }
 
 function formatAlignmentDifference(value) {

@@ -1,4 +1,5 @@
 import { subjectGeometry } from "../geometry/bearing.js?v=7";
+import { formatDistance } from "../utils/format.js?v=1";
 import {
   calculateObservationHeight,
   calculateStructureHeight,
@@ -11,7 +12,6 @@ import {
 } from "./observation-camera-service.js?v=1";
 
 const READY_ELEVATION_STATES = new Set(["ready", "manual"]);
-const formatDistance = (meters) => meters >= 1000 ? `${(meters / 1000).toFixed(2)} km` : `${Math.round(meters)} m`;
 const isLocation = (value) => Number.isFinite(Number(value?.latitude)) && Number.isFinite(Number(value?.longitude));
 
 export class MeasurementCommitter {
