@@ -1,7 +1,7 @@
-import { MAX_PLAN_IMPORT_BYTES, buildShareUrl, createPlan, defaultPlanName, normalizePlan, parsePlansFile, serializePlans } from "./plan-data.js?v=41";
-import { createPlanRepository } from "./plan-repository.js?v=16";
-import { buildGoogleMapsDirectionsUrl, buildGoogleMapsSearchUrl } from "../map/google-maps-url.js?v=1";
-import { targetLabelList } from "../astronomy/target-catalog.js?v=1";
+import { MAX_PLAN_IMPORT_BYTES, buildShareUrl, createPlan, defaultPlanName, normalizePlan, parsePlansFile, serializePlans } from "./plan-data.js?v=1.7.0";
+import { createPlanRepository } from "./plan-repository.js?v=1.7.0";
+import { buildGoogleMapsDirectionsUrl, buildGoogleMapsSearchUrl } from "../map/google-maps-url.js?v=1.7.0";
+import { targetLabelList } from "../astronomy/target-catalog.js?v=1.7.0";
 
 const formatDateTime = (value) => new Intl.DateTimeFormat("ja-JP", {
   year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false,

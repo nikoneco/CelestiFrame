@@ -15,8 +15,8 @@
     <link rel="icon" href="./assets/icon.svg?v=43" type="image/svg+xml">
     <link rel="apple-touch-icon" href="./assets/icons/app-180.png">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
-    <link rel="stylesheet" href="./tokens.css?v=2">
-    <link rel="stylesheet" href="./css/app.css?v=93">
+    <link rel="stylesheet" href="./tokens.css?v=1.7.0">
+    <link rel="stylesheet" href="./css/app.css?v=1.7.0">
   </head>
   <body>
     <div class="app-shell">
@@ -173,6 +173,15 @@
                 <button id="deck-tab-alignment" type="button" role="tab" aria-selected="false" aria-controls="alignment-card" data-deck-tab="alignment-card" data-requires-subject>重なり</button>
                 <button id="deck-tab-composition" type="button" role="tab" aria-selected="false" aria-controls="composition-card" data-deck-tab="composition-card" data-requires-subject>構図</button>
               </nav>
+              <div class="quick-time-controls" id="quick-time-controls" aria-label="表示中の時刻を調整" hidden>
+                <div class="quick-time-row">
+                  <button id="quick-time-date" type="button" aria-label="日付を変更">日付</button>
+                  <button type="button" data-minutes="-1" aria-label="1分前へ">−1分</button>
+                  <input id="quick-time-input" type="time" step="60" aria-label="撮影時刻">
+                  <button type="button" data-minutes="1" aria-label="1分後へ">＋1分</button>
+                </div>
+                <input id="quick-time-slider" type="range" min="0" max="1439" step="1" aria-label="選択日の時刻">
+              </div>
             </div>
 
             <div class="deck-tab-panels">
@@ -182,12 +191,11 @@
                 <span class="section-label">撮影日時</span>
                 <strong id="date-summary">—</strong>
               </div>
-              <span class="timezone" id="timezone-label">LOCAL</span>
             </div>
 
             <div class="datetime-inputs">
               <div class="datetime-field date-field">
-                <span id="date-input-label">日付</span>
+                <span id="date-input-label">日付 <small class="timezone" id="timezone-label">LOCAL</small></span>
                 <div class="date-input-row" role="group" aria-labelledby="date-input-label">
                   <button type="button" data-days="-1" aria-label="前日に移動"><span class="ui-icon icon-chevron-left" aria-hidden="true"></span></button>
                   <input id="date-input" type="date" aria-labelledby="date-input-label">
@@ -281,7 +289,7 @@
                 <span class="card-vector-line is-subject" aria-hidden="true"></span>
               </div>
               <div class="metric-pair">
-                <div><span>アーチ最高点 <em data-milkyway-field="direction">—</em></span><strong><b data-milkyway-field="azimuth">—</b><small>°</small></strong></div>
+                <div><span><i class="detail-metric-label">アーチ最高点</i><i class="compact-metric-label" title="アーチ最高点の方位">方位角</i> <em data-milkyway-field="direction">—</em></span><strong><b data-milkyway-field="azimuth">—</b><small>°</small></strong></div>
                 <div><span>高度角</span><strong><b data-milkyway-field="altitude">—</b><small>°</small></strong></div>
               </div>
               <div class="milkyway-arc-chart" aria-label="地平線より上に見える天の川アーチ">
@@ -366,7 +374,7 @@
                 </div>
               </div>
               <fieldset class="composition-control-group composition-camera-group">
-                <legend>カメラ関係 <span>CAMERA</span></legend>
+                <legend>カメラ</legend>
                 <label><span>センサー</span><select data-composition-field="sensorPreset"><option value="full-frame">フルサイズ</option><option value="aps-c">APS-C</option><option value="mft">マイクロフォーサーズ</option><option value="one-inch">1型</option></select></label>
                 <label><span>焦点距離</span><span class="input-unit"><input type="number" data-composition-field="focalLengthMm" min="1" max="2000" step="1"><i>mm</i></span></label>
                 <div class="composition-orientation"><span>構図方向</span><div><button type="button" data-composition-orientation="landscape" aria-pressed="true">横</button><button type="button" data-composition-orientation="portrait" aria-pressed="false">縦</button></div></div>
@@ -379,7 +387,7 @@
                 </div>
               </fieldset>
               <fieldset class="composition-control-group composition-elevation-group">
-                <legend>標高 <span>ELEVATION</span></legend>
+                <legend>標高</legend>
                 <label class="elevation-field">
                   <span>撮影地点の標高 <b data-elevation-status="camera">未取得</b></span>
                   <span class="elevation-input-row"><span class="input-unit"><input type="number" data-composition-field="cameraElevationMeters" min="-500" max="9000" step="0.1"><i>m</i></span><button type="button" data-elevation-retry="camera">再取得</button></span>
@@ -392,7 +400,7 @@
                 </label>
               </fieldset>
               <fieldset class="composition-control-group composition-other-group">
-                <legend>その他 <span>OTHER</span></legend>
+                <legend>撮影設定</legend>
                 <div class="composition-measure-field subject-height-field">
                   <label for="structure-height-meters">建造物の高さ</label>
                   <span class="measurement-input-row">
@@ -406,7 +414,7 @@
           </article>
 
             </div>
-          <p class="phase-note">Ver 1.6.0 - CelestiFrame by NikoNeco</p>
+          <p class="phase-note">Ver 1.7.0 - CelestiFrame by NikoNeco</p>
           </div>
         </section>
       </main>
@@ -553,7 +561,7 @@
         <div class="target-selector-list" id="target-selector-list"></div>
         <footer>
           <p id="target-selector-feedback" aria-live="polite"></p>
-          <button type="button" data-target-selector-close>選択を反映</button>
+          <button type="button" data-target-selector-close>完了</button>
         </footer>
       </section>
     </dialog>
@@ -593,7 +601,7 @@
                 <label><span>最低仰角</span><span class="input-unit"><input type="number" name="minAltitude" value="0" min="-90" max="90" step="1"><i>°</i></span></label>
                 <label><span>最高仰角</span><span class="input-unit"><input type="number" name="maxAltitude" value="45" min="-90" max="90" step="1"><i>°</i></span></label>
                 <aside class="search-altitude-reference" aria-label="現在の照準仰角">
-                  <span><b>SIGHTLINE REFERENCE</b>撮影地点 → 被写体地点</span>
+                  <span>撮影地点 → 被写体地点</span>
                   <output id="search-target-altitude-reference">—</output>
                   <small id="search-target-altitude-note">被写体地点を設定すると表示します</small>
                 </aside>
@@ -633,7 +641,6 @@
       <section class="observation-height-panel">
         <header>
           <div>
-            <small>FIELD MEASUREMENT</small>
             <h2 id="observation-height-title">観測点高さ測定</h2>
           </div>
           <button type="button" data-observation-height-close aria-label="観測点高さ測定を閉じる"><span class="ui-icon icon-x" aria-hidden="true"></span></button>
@@ -762,8 +769,8 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
-    <script src="./js/vendor/suncalc.js"></script>
-    <script src="./js/vendor/astronomy-engine.min.js"></script>
-    <script type="module" src="./js/app.js?v=95"></script>
+    <script src="./js/vendor/suncalc.js?v=1.7.0"></script>
+    <script src="./js/vendor/astronomy-engine.min.js?v=1.7.0"></script>
+    <script type="module" src="./js/app.js?v=1.7.0"></script>
   </body>
 </html>

@@ -1,5 +1,5 @@
-import { FIREBASE_CONFIG } from "../config/firebase-config.js?v=1";
-import { normalizePlan } from "../plans/plan-data.js?v=41";
+import { FIREBASE_CONFIG } from "../config/firebase-config.js?v=1.7.0";
+import { createFirestorePlanRepository } from "./firestore-plan-repository.js?v=1.7.0";
 
 const SDK_VERSION = "12.16.0";
 const sdkUrl = (name) => `https://www.gstatic.com/firebasejs/${SDK_VERSION}/firebase-${name}.js`;
@@ -18,21 +18,7 @@ export async function createFirebaseClient() {
   const provider = new authSdk.GoogleAuthProvider();
   provider.setCustomParameters({ prompt: "select_account" });
 
-  const plansFor = (userId) => {
-    const plans = firestoreSdk.collection(database, "users", userId, "plans");
-    return {
-      async list() {
-        const snapshot = await firestoreSdk.getDocs(plans);
-        return snapshot.docs.map((item) => normalizePlan(item.data()));
-      },
-      put(plan) {
-        return firestoreSdk.setDoc(firestoreSdk.doc(plans, plan.id), structuredClone(plan));
-      },
-      delete(planId) {
-        return firestoreSdk.deleteDoc(firestoreSdk.doc(plans, String(planId)));
-      },
-    };
-  };
+  const plansFor = (userId) => createFirestorePlanRepository(firestoreSdk, database, userId);
 
   return {
     onAuthStateChanged(listener) { return authSdk.onAuthStateChanged(auth, listener); },

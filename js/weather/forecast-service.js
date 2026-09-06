@@ -16,9 +16,10 @@ const HOURLY_FIELDS = [
   "wind_gusts_10m",
 ];
 
-const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+const clamp = (value, min, max) => value == null ? null : Math.min(max, Math.max(min, value));
 
 function finiteNumber(value, fallback = 0) {
+  if (value == null || value === "") return fallback;
   const number = Number(value);
   return Number.isFinite(number) ? number : fallback;
 }
@@ -97,7 +98,7 @@ export function buildForecastUrl(endpoint, locations, hour, { includePast = fals
   url.searchParams.set("hourly", HOURLY_FIELDS.join(","));
   url.searchParams.set("timezone", "Asia/Tokyo");
   if (includePast) {
-    url.searchParams.set("past_days", "1");
+    url.searchParams.set("past_days", "2");
     url.searchParams.set("forecast_days", "1");
   } else {
     url.searchParams.set("start_hour", hour);
@@ -108,14 +109,14 @@ export function buildForecastUrl(endpoint, locations, hour, { includePast = fals
 }
 
 function valueAt(record, field, index) {
-  return finiteNumber(record?.hourly?.[field]?.[index], 0);
+  return finiteNumber(record?.hourly?.[field]?.[index], null);
 }
 
 export function parseForecastResponse(payload, locations, hour) {
   const records = Array.isArray(payload) ? payload : [payload];
   if (records.length !== locations.length) throw new Error("予報データの地点数が一致しません");
   return records.map((record, index) => {
-    const timeIndex = record?.hourly?.time?.indexOf(hour);
+    const timeIndex = Array.isArray(record?.hourly?.time) ? record.hourly.time.indexOf(hour) : -1;
     if (timeIndex < 0) throw new Error("選択時刻の予報がありません");
     return {
       location: locations[index],
@@ -124,10 +125,10 @@ export function parseForecastResponse(payload, locations, hour) {
         low: clamp(valueAt(record, "cloud_cover_low", timeIndex), 0, 100),
         mid: clamp(valueAt(record, "cloud_cover_mid", timeIndex), 0, 100),
         high: clamp(valueAt(record, "cloud_cover_high", timeIndex), 0, 100),
-        visibilityMeters: Math.max(0, valueAt(record, "visibility", timeIndex)),
+        visibilityMeters: clamp(valueAt(record, "visibility", timeIndex), 0, Infinity),
         precipitationProbability: clamp(valueAt(record, "precipitation_probability", timeIndex), 0, 100),
-        windKmh: Math.max(0, valueAt(record, "wind_speed_10m", timeIndex)),
-        gustKmh: Math.max(0, valueAt(record, "wind_gusts_10m", timeIndex)),
+        windKmh: clamp(valueAt(record, "wind_speed_10m", timeIndex), 0, Infinity),
+        gustKmh: clamp(valueAt(record, "wind_gusts_10m", timeIndex), 0, Infinity),
       },
     };
   });

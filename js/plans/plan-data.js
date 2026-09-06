@@ -1,6 +1,6 @@
-import { normalizeSelectedTargets } from "../astronomy/target-catalog.js?v=1";
+import { normalizeSelectedTargets } from "../astronomy/target-catalog.js?v=1.7.0";
 
-export const PLAN_FILE_VERSION = 5;
+export const PLAN_FILE_VERSION = 6;
 export const MAX_PLAN_IMPORT_BYTES = 5 * 1024 * 1024;
 export const MAX_PLAN_IMPORT_COUNT = 1000;
 
@@ -15,6 +15,19 @@ function cloneLocation(location) {
 
 const locationKey = (location) => location ? `${Number(location.latitude).toFixed(6)},${Number(location.longitude).toFixed(6)}` : "";
 
+function snapshotElevation({ meters, status, mode, source, key, location }) {
+  const hasValue = meters != null && Number.isFinite(Number(meters));
+  const stale = mode === "auto" && key && key !== locationKey(location);
+  const resolved = hasValue && !stale && (["ready", "manual"].includes(status) || status == null);
+  return {
+    meters: hasValue ? Number(meters) : 0,
+    status: resolved ? (status || "manual") : "error",
+    mode: mode === "manual" || (mode == null && resolved) ? "manual" : "auto",
+    source: String(source || "").slice(0, 120),
+    key: resolved ? locationKey(location) : "",
+  };
+}
+
 export function defaultPlanName(state) {
   const date = new Date(state.selectedDateTime);
   const dateLabel = Number.isNaN(date.getTime())
@@ -26,6 +39,16 @@ export function defaultPlanName(state) {
 export function snapshotPlanState(state) {
   const selectedDateTime = new Date(state.selectedDateTime);
   if (Number.isNaN(selectedDateTime.getTime())) throw new Error("撮影日時が正しくありません");
+  const subjectElevation = snapshotElevation({
+    meters: state.subject?.groundElevationMeters, status: state.subject?.groundElevationStatus,
+    mode: state.subject?.groundElevationMode, source: state.subject?.groundElevationSource,
+    key: state.subject?.groundElevationKey, location: state.subjectLocation,
+  });
+  const cameraElevation = snapshotElevation({
+    meters: state.composition?.cameraElevationMeters, status: state.composition?.cameraElevationStatus,
+    mode: state.composition?.cameraElevationMode, source: state.composition?.cameraElevationSource,
+    key: state.composition?.cameraElevationKey, location: state.cameraLocation,
+  });
   return {
     selectedDateTime: selectedDateTime.toISOString(),
     selectedTargets: normalizeSelectedTargets(state.selectedTargets, state.selectedBody),
@@ -36,22 +59,20 @@ export function snapshotPlanState(state) {
       heightMeters: state.subject?.heightMeters != null && Number.isFinite(Number(state.subject.heightMeters))
         ? Number(state.subject.heightMeters)
         : null,
-      groundElevationMeters: state.subject?.groundElevationMeters != null && Number.isFinite(Number(state.subject.groundElevationMeters))
-        ? Number(state.subject.groundElevationMeters)
-        : 0,
-      groundElevationStatus: ["ready", "manual"].includes(state.subject?.groundElevationStatus) ? state.subject.groundElevationStatus : "manual",
-      groundElevationSource: String(state.subject?.groundElevationSource || ""),
-      groundElevationMode: state.subject?.groundElevationMode === "auto" ? "auto" : "manual",
-      groundElevationKey: String(state.subject?.groundElevationKey || locationKey(state.subjectLocation)),
+      groundElevationMeters: subjectElevation.meters,
+      groundElevationStatus: subjectElevation.status,
+      groundElevationSource: subjectElevation.source,
+      groundElevationMode: subjectElevation.mode,
+      groundElevationKey: subjectElevation.key,
       targetMode: state.subject?.targetMode === "terrain" ? "terrain" : "structure",
     },
     composition: {
-      cameraElevationMeters: Number(state.composition?.cameraElevationMeters) || 0,
-      cameraHeightMeters: Math.min(100, Math.max(0, state.composition?.cameraHeightMeters == null ? 1.5 : Number(state.composition.cameraHeightMeters) || 0)),
-      cameraElevationStatus: ["ready", "manual"].includes(state.composition?.cameraElevationStatus) ? state.composition.cameraElevationStatus : "manual",
-      cameraElevationSource: String(state.composition?.cameraElevationSource || ""),
-      cameraElevationMode: state.composition?.cameraElevationMode === "auto" ? "auto" : "manual",
-      cameraElevationKey: String(state.composition?.cameraElevationKey || locationKey(state.cameraLocation)),
+      cameraElevationMeters: cameraElevation.meters,
+      cameraHeightMeters: Math.min(1000, Math.max(0, state.composition?.cameraHeightMeters == null ? 1.5 : Number(state.composition.cameraHeightMeters) || 0)),
+      cameraElevationStatus: cameraElevation.status,
+      cameraElevationSource: cameraElevation.source,
+      cameraElevationMode: cameraElevation.mode,
+      cameraElevationKey: cameraElevation.key,
       focalLengthMm: Math.min(2000, Math.max(1, Number(state.composition?.focalLengthMm) || 50)),
       sensorPreset: ["full-frame", "aps-c", "mft", "one-inch"].includes(state.composition?.sensorPreset)
         ? state.composition.sensorPreset : "full-frame",
@@ -125,6 +146,7 @@ export function buildShareUrl(state, baseUrl = location.href) {
   url.searchParams.set("sensor", snapshot.composition.sensorPreset);
   url.searchParams.set("orientation", snapshot.composition.orientation);
   url.searchParams.set("ce", String(snapshot.composition.cameraElevationMeters));
+  if (snapshot.composition.cameraElevationStatus === "error") url.searchParams.set("ces", "unknown");
   url.searchParams.set("ch", String(snapshot.composition.cameraHeightMeters));
   if (snapshot.subjectLocation) {
     url.searchParams.set("slat", snapshot.subjectLocation.latitude.toFixed(6));
@@ -132,6 +154,7 @@ export function buildShareUrl(state, baseUrl = location.href) {
     url.searchParams.set("subject", snapshot.subject.name);
     url.searchParams.set("height", String(snapshot.subject.heightMeters ?? 10));
     url.searchParams.set("se", String(snapshot.subject.groundElevationMeters));
+    if (snapshot.subject.groundElevationStatus === "error") url.searchParams.set("ses", "unknown");
     url.searchParams.set("tm", snapshot.subject.targetMode);
   }
   return url.toString();
@@ -159,19 +182,19 @@ export function parseSharedState(urlValue) {
       name: url.searchParams.get("subject")?.slice(0, 120) || "被写体",
       heightMeters: Math.max(0.1, Number(url.searchParams.get("height")) || 10),
       groundElevationMeters: Number(url.searchParams.get("se")) || 0,
-      groundElevationStatus: "manual",
+      groundElevationStatus: url.searchParams.get("ses") === "unknown" ? "error" : "manual",
       groundElevationSource: "共有計画",
-      groundElevationMode: "manual",
-      groundElevationKey: locationKey(subjectLocation),
+      groundElevationMode: url.searchParams.get("ses") === "unknown" ? "auto" : "manual",
+      groundElevationKey: url.searchParams.get("ses") === "unknown" ? "" : locationKey(subjectLocation),
       targetMode: url.searchParams.get("tm") === "terrain" ? "terrain" : "structure",
     },
     composition: {
       cameraElevationMeters: Number(url.searchParams.get("ce")) || 0,
-      cameraHeightMeters: Math.min(100, Math.max(0, Number(url.searchParams.get("ch")) || 1.5)),
-      cameraElevationStatus: "manual",
+      cameraHeightMeters: Math.min(1000, Math.max(0, url.searchParams.has("ch") && Number.isFinite(Number(url.searchParams.get("ch"))) ? Number(url.searchParams.get("ch")) : 1.5)),
+      cameraElevationStatus: url.searchParams.get("ces") === "unknown" ? "error" : "manual",
       cameraElevationSource: "共有計画",
-      cameraElevationMode: "manual",
-      cameraElevationKey: locationKey(cameraLocation),
+      cameraElevationMode: url.searchParams.get("ces") === "unknown" ? "auto" : "manual",
+      cameraElevationKey: url.searchParams.get("ces") === "unknown" ? "" : locationKey(cameraLocation),
       focalLengthMm: Math.min(2000, Math.max(1, Number(url.searchParams.get("f")) || 50)),
       sensorPreset: ["full-frame", "aps-c", "mft", "one-inch"].includes(url.searchParams.get("sensor"))
         ? url.searchParams.get("sensor") : "full-frame",

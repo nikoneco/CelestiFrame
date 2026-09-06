@@ -1,4 +1,4 @@
-import { EARTH_RADIUS_METERS } from "../geometry/target-altitude.js?v=24";
+import { EARTH_RADIUS_METERS } from "../geometry/target-altitude.js?v=1.7.0";
 
 export const SHORT_DISTANCE_THRESHOLD_METERS = 50;
 export const DEFAULT_REFRACTION_COEFFICIENT = 0.13;
@@ -44,8 +44,8 @@ export function calculateObservationHeight({
 
   let cameraAbsoluteMeters;
   if (applyCurvature) {
-    const centralAngle = distance / EARTH_RADIUS_METERS;
     const effectiveRadius = EARTH_RADIUS_METERS / (1 - refraction);
+    const centralAngle = distance / effectiveRadius;
     const targetRadius = effectiveRadius + targetGround;
     const horizontal = targetRadius * Math.sin(centralAngle);
     const cameraRadius = targetRadius * Math.cos(centralAngle) - horizontal * Math.tan(toRadians(angle));
@@ -90,8 +90,8 @@ export function calculateStructureHeight({
   let targetAbsoluteMeters;
   const cameraAbsoluteMeters = cameraGround + cameraHeight;
   if (applyCurvature) {
-    const centralAngle = distance / EARTH_RADIUS_METERS;
     const effectiveRadius = EARTH_RADIUS_METERS / (1 - refraction);
+    const centralAngle = distance / effectiveRadius;
     const cameraRadius = effectiveRadius + cameraAbsoluteMeters;
     const denominator = Math.cos(centralAngle) - Math.tan(toRadians(angle)) * Math.sin(centralAngle);
     if (!Number.isFinite(denominator) || denominator <= 0) throw new Error("端末の角度から高さを計算できません");

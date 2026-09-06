@@ -1,17 +1,4 @@
-@font-face {
-  font-family: "IBM Plex Sans JP";
-  src: url("./assets/fonts/IBMPlexSansJP-Regular.woff2") format("woff2");
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-}
-@font-face {
-  font-family: "IBM Plex Sans JP";
-  src: url("./assets/fonts/IBMPlexSansJP-SemiBold.woff2") format("woff2");
-  font-style: normal;
-  font-weight: 600 800;
-  font-display: swap;
-}
+@import url("./css/ui-fonts.css?v=1.7.0");
 @font-face {
   font-family: "IBM Plex Sans Condensed";
   src: url("./assets/fonts/IBMPlexSansCondensed-Regular.woff2") format("woff2");
@@ -53,6 +40,7 @@
   --solar: #ffb44a;
   --milkyway: #b58af2;
   --horizon: #62d5c7;
+  --on-accent: #07111f;
   --danger: #ff6b6b;
   --text: #f3f7fc;
   --muted: #93a4b8;
@@ -150,6 +138,7 @@
   --moon-blue: #386fa8;
   --solar: #c66a12;
   --horizon: #087e75;
+  --on-accent: #ffffff;
   --danger: #bd3030;
   --text: #102033;
   --muted: #5c6d7d;
@@ -189,11 +178,28 @@
   --moon-blue: #e45c54;
   --solar: #ff9b62;
   --horizon: #ff655d;
+  --on-accent: #100304;
   --danger: #ff4038;
   --text: #ffd7d2;
   --muted: #bd7973;
   --line: rgba(255, 120, 110, 0.2);
   --glass: rgba(16, 3, 4, 0.86);
+  --detail-surface-start: #310c0d;
+  --detail-surface-end: #100304;
+  --detail-text: #ffd7d2;
+  --detail-muted: #d9938b;
+  --detail-line: rgba(255, 120, 110, 0.2);
+  --detail-moon: #ff8378;
+  --detail-moon-blue: #e45c54;
+  --detail-solar: #ff9b62;
+  --detail-milkyway: #ffa49c;
+  --compact-text: #ffd7d2;
+  --compact-muted: #d9938b;
+  --compact-line: rgba(255, 120, 110, 0.2);
+  --compact-moon: #ff8378;
+  --compact-moon-blue: #e45c54;
+  --compact-solar: #ff9b62;
+  --compact-milkyway: #ffa49c;
   --sky-day: #8b3a37;
   --sky-civil: #6f2627;
   --sky-nautical: #4f191c;

@@ -1,5 +1,5 @@
-import { subjectGeometry } from "../geometry/bearing.js?v=7";
-import { fetchElevation } from "../elevation/elevation-service.js?v=25";
+import { subjectGeometry } from "../geometry/bearing.js?v=1.7.0";
+import { fetchElevation } from "../elevation/elevation-service.js?v=1.7.0";
 
 const EFFECTIVE_EARTH_RADIUS_METERS = 6371008.8 * (7 / 6);
 
@@ -58,31 +58,34 @@ export async function fetchTerrainProfile(start, end, {
 } = {}) {
   const count = Math.min(31, Math.max(3, Math.round(sampleCount)));
   const totalDistanceMeters = subjectGeometry(start, end).distanceMeters;
-  const points = [];
-  for (let index = 0; index < count; index += 1) {
-    if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
-    const fraction = index / (count - 1);
-    const location = interpolateLocation(start, end, fraction);
-    let elevationMeters;
-    let source;
-    if (index === 0 && Number.isFinite(Number(cameraElevationMeters))) {
-      elevationMeters = Number(cameraElevationMeters);
-      source = "撮影計画";
-    } else if (index === count - 1 && Number.isFinite(Number(subjectElevationMeters))) {
-      elevationMeters = Number(subjectElevationMeters);
-      source = "撮影計画";
-    } else {
-      const elevation = await fetchElevationImpl(location, { signal });
-      elevationMeters = elevation.meters;
-      source = elevation.source;
+  const points = new Array(count);
+  let nextIndex = 0;
+  let completed = 0;
+  let failed = false;
+  async function worker() {
+    while (nextIndex < count && !failed) {
+      const index = nextIndex++;
+      if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
+      const fraction = index / (count - 1);
+      const location = interpolateLocation(start, end, fraction);
+      let elevationMeters;
+      let source;
+      if (index === 0 && cameraElevationMeters != null && Number.isFinite(Number(cameraElevationMeters))) {
+        elevationMeters = Number(cameraElevationMeters);
+        source = "撮影計画";
+      } else if (index === count - 1 && subjectElevationMeters != null && Number.isFinite(Number(subjectElevationMeters))) {
+        elevationMeters = Number(subjectElevationMeters);
+        source = "撮影計画";
+      } else {
+        const elevation = await fetchElevationImpl(location, { signal });
+        elevationMeters = elevation.meters;
+        source = elevation.source;
+      }
+      points[index] = { location, distanceMeters: totalDistanceMeters * fraction, elevationMeters, source };
+      completed += 1;
+      onProgress(completed / count);
     }
-    points.push({
-      location,
-      distanceMeters: totalDistanceMeters * fraction,
-      elevationMeters,
-      source,
-    });
-    onProgress((index + 1) / count);
   }
+  await Promise.all(Array.from({ length: 3 }, () => worker().catch((error) => { failed = true; throw error; })));
   return analyzeTerrainProfile(points, { cameraHeightMeters, targetHeightMeters });
 }

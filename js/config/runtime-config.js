@@ -59,16 +59,22 @@ export function normalizeRuntimeConfig(value) {
 export async function loadRuntimeConfig({
   fetchImpl = fetch,
   url = "./config/runtime-config.json",
+  timeoutMs = 3500,
 } = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetchImpl(url, {
       cache: "no-store",
       headers: { Accept: "application/json" },
+      signal: controller.signal,
     });
     if (!response.ok) throw new Error(`設定ファイルを取得できません（${response.status}）`);
     return normalizeRuntimeConfig(await response.json());
   } catch (error) {
     console.warn("実行時設定を読み込めないため既定値を使用します", error);
     return DEFAULT_RUNTIME_CONFIG;
+  } finally {
+    clearTimeout(timer);
   }
 }

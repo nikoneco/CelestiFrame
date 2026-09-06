@@ -1,5 +1,5 @@
-import { destinationPoint } from "../geometry/destination.js";
-import { getTarget } from "../astronomy/target-catalog.js?v=1";
+import { destinationPoint } from "../geometry/destination.js?v=1.7.0";
+import { getTarget } from "../astronomy/target-catalog.js?v=1.7.0";
 
 export function focusCurrentLocation(mapController, coords, minimumZoom = 14) {
   if (!mapController) return false;
@@ -62,7 +62,7 @@ export function createMapController({
     icon: markerIcon,
     title: "撮影地点",
   }).addTo(map);
-  let celestialDirectionLayers = [];
+  const celestialDirectionLayers = new Map();
   let shootingCandidateLayers = [];
   let cloudOverlayLayers = [];
   let lightPollutionLayer = null;
@@ -183,12 +183,10 @@ export function createMapController({
       } else {
         subjectMarker.setLatLng([subjectLocation.latitude, subjectLocation.longitude]);
       }
-      subjectLine?.remove();
-      subjectLine = L.polyline(
-        [
-          [cameraLocation.latitude, cameraLocation.longitude],
-          [subjectLocation.latitude, subjectLocation.longitude],
-        ],
+      const points = [[cameraLocation.latitude, cameraLocation.longitude], [subjectLocation.latitude, subjectLocation.longitude]];
+      if (subjectLine) subjectLine.setLatLngs(points);
+      else subjectLine = L.polyline(
+        points,
         { color: "#ff6b6b", weight: 2, opacity: 0.78, dashArray: "3 6", interactive: false, className: "subject-direction-line" },
       ).addTo(map);
     },
@@ -199,14 +197,15 @@ export function createMapController({
       subjectLine = null;
     },
     setCelestialDirections(directions) {
-      celestialDirectionLayers.forEach((layer) => layer.remove());
-      celestialDirectionLayers = directions.map(({ targetId, location, data, origin }) => {
+      const retained = new Set();
+      directions.forEach(({ targetId, location, data, origin }) => {
+        const key = `${origin}:${targetId}`;
+        retained.add(key);
         const target = getTarget(targetId);
         const color = target?.color || "#dceaff";
         const points = directionLineLocations(location, data.azimuth, origin);
-        return L.polyline(
-          points.map((point) => [point.latitude, point.longitude]),
-          {
+        const coordinates = points.map((point) => [point.latitude, point.longitude]);
+        const style = {
             color,
             weight: origin === "subject" ? 2.15 : 3,
             opacity: data.isAboveHorizon ? (origin === "subject" ? 0.78 : 0.9) : 0.3,
@@ -215,13 +214,18 @@ export function createMapController({
               : targetId === "milkyway" ? "4 5" : data.isAboveHorizon ? null : "7 8",
             interactive: false,
             className: `celestial-direction-line celestial-direction-${targetId} ${origin}-origin-line`,
-          },
-        ).addTo(map);
+          };
+        const layer = celestialDirectionLayers.get(key);
+        if (layer) layer.setLatLngs(coordinates).setStyle(style);
+        else celestialDirectionLayers.set(key, L.polyline(coordinates, style).addTo(map));
       });
+      for (const [key, layer] of celestialDirectionLayers) {
+        if (!retained.has(key)) { layer.remove(); celestialDirectionLayers.delete(key); }
+      }
     },
     clearCelestialDirections() {
       celestialDirectionLayers.forEach((layer) => layer.remove());
-      celestialDirectionLayers = [];
+      celestialDirectionLayers.clear();
     },
     setShootingCandidates(candidates) {
       shootingCandidateLayers.forEach((layer) => layer.remove());

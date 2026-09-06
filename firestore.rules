@@ -29,7 +29,7 @@ service cloud.firestore {
         && value.groundElevationMeters is number
         && value.groundElevationMeters >= -500
         && value.groundElevationMeters <= 9000
-        && value.groundElevationStatus in ['ready', 'manual']
+        && value.groundElevationStatus in ['ready', 'manual', 'error']
         && value.groundElevationSource is string
         && value.groundElevationSource.size() <= 120
         && value.groundElevationMode in ['auto', 'manual']
@@ -50,8 +50,8 @@ service cloud.firestore {
         && value.cameraElevationMeters <= 9000
         && value.cameraHeightMeters is number
         && value.cameraHeightMeters >= 0
-        && value.cameraHeightMeters <= 100
-        && value.cameraElevationStatus in ['ready', 'manual']
+        && value.cameraHeightMeters <= 1000
+        && value.cameraElevationStatus in ['ready', 'manual', 'error']
         && value.cameraElevationSource is string
         && value.cameraElevationSource.size() <= 120
         && value.cameraElevationMode in ['auto', 'manual']
@@ -86,7 +86,7 @@ service cloud.firestore {
         && data.id.size() <= 128
         && data.version is int
         && data.version >= 1
-        && data.version <= 5
+        && data.version <= 6
         && data.name is string
         && data.name.size() > 0
         && data.name.size() <= 120
@@ -130,8 +130,25 @@ service cloud.firestore {
     }
 
     match /users/{userId}/plans/{planId} {
-      allow read, delete: if owns(userId);
-      allow create, update: if owns(userId) && validPlan(planId);
+      function deletionPath() {
+        return /databases/$(database)/documents/users/$(userId)/plan-tombstones/$(planId);
+      }
+      allow read: if owns(userId);
+      allow delete: if owns(userId) && existsAfter(deletionPath())
+        && getAfter(deletionPath()).data.deletedAt >= resource.data.updatedAt;
+      allow create, update: if owns(userId) && validPlan(planId)
+        && (!exists(deletionPath()) || request.resource.data.updatedAt > get(deletionPath()).data.deletedAt);
+    }
+
+    match /users/{userId}/plan-tombstones/{planId} {
+      allow read: if owns(userId);
+      allow create, update: if owns(userId)
+        && request.resource.data.keys().hasOnly(['id', 'deletedAt'])
+        && request.resource.data.id == planId
+        && request.resource.data.deletedAt is string
+        && request.resource.data.deletedAt.size() <= 40
+        && (!exists(/databases/$(database)/documents/users/$(userId)/plan-tombstones/$(planId))
+          || request.resource.data.deletedAt >= resource.data.deletedAt);
     }
 
     match /users/{userId}/preferences/{documentId} {

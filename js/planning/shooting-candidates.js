@@ -1,4 +1,4 @@
-import { destinationPoint } from "../geometry/destination.js";
+import { destinationPoint } from "../geometry/destination.js?v=1.7.0";
 
 export const DEFAULT_CANDIDATE_DISTANCES_METERS = Object.freeze([1000, 5000, 10000, 20000]);
 

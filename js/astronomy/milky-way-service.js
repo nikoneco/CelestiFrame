@@ -1,4 +1,4 @@
-import { degreesToDirection, normalizeDegrees } from "../geometry/angle.js";
+import { degreesToDirection, normalizeDegrees } from "../geometry/angle.js?v=1.7.0";
 
 const DEG = Math.PI / 180;
 const RAD = 180 / Math.PI;

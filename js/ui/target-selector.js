@@ -4,7 +4,7 @@ import {
   MAX_SELECTED_TARGETS,
   getTarget,
   normalizeSelectedTargets,
-} from "../astronomy/target-catalog.js?v=1";
+} from "../astronomy/target-catalog.js?v=1.7.0";
 
 export function bindTargetSelector(store, showToast) {
   const dialog = document.querySelector("#target-selector-dialog");
@@ -42,8 +42,12 @@ export function bindTargetSelector(store, showToast) {
     list.append(group);
   });
 
+  let lastSelectionKey = "";
   function sync(state) {
     const selected = normalizeSelectedTargets(state.selectedTargets);
+    const key = selected.join(",");
+    if (key === lastSelectionKey) return;
+    lastSelectionKey = key;
     const atLimit = selected.length >= MAX_SELECTED_TARGETS;
     dialog.querySelectorAll('input[name="celestialTarget"]').forEach((input) => {
       const checked = selected.includes(input.value);

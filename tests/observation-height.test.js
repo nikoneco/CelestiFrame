@@ -11,6 +11,15 @@ import {
 } from "../js/measurement/observation-height-service.js";
 import { MeasurementCommitter, validateObservationContext } from "../js/measurement/observation-height-controller.js";
 
+test("short-baseline height agrees with independent triangle geometry with refraction enabled", () => {
+  const structure = calculateStructureHeight({ distanceMeters: 100, cameraGroundElevationMeters: 0,
+    targetGroundElevationMeters: 0, cameraHeightMeters: 0, angleDegrees: 45 });
+  assert.ok(Math.abs(structure.heightMeters - 100) < 0.003);
+  const observation = calculateObservationHeight({ distanceMeters: 100, cameraGroundElevationMeters: 0,
+    targetGroundElevationMeters: 0, angleDegrees: -45 });
+  assert.ok(Math.abs(observation.heightMeters - 100) < 0.003);
+});
+
 test("observation height inverts a measured depression or elevation angle", () => {
   const flatDepression = calculateObservationHeight({
     distanceMeters: 620,

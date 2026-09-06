@@ -1,10 +1,11 @@
-import { degreesToDirection, normalizeDegrees } from "../geometry/angle.js";
+import { degreesToDirection, normalizeDegrees } from "../geometry/angle.js?v=1.7.0";
+import { cachedEphemeris } from "./ephemeris-cache.js?v=1.7.0";
 
 const SYNODIC_MONTH_DAYS = 29.530588853;
 const toDegrees = (radians) => radians * 180 / Math.PI;
 
 function validDateOrNull(value) {
-  return value instanceof Date && !Number.isNaN(value.getTime()) ? value : null;
+  return value instanceof Date && !Number.isNaN(value.getTime()) ? new Date(value) : null;
 }
 
 export function moonPhaseName(phase) {
@@ -27,9 +28,12 @@ export function calculateMoonData(date, location, calculator = globalThis.SunCal
   }
 
   const { latitude, longitude } = location;
-  const position = calculator.getMoonPosition(date, latitude, longitude);
-  const illumination = calculator.getMoonIllumination(date);
-  const times = calculator.getMoonTimes(date, latitude, longitude);
+  const point = `${latitude}:${longitude}`;
+  const midnight = new Date(date);
+  midnight.setHours(0, 0, 0, 0);
+  const position = cachedEphemeris(calculator, `moon-position:${+date}:${point}`, () => calculator.getMoonPosition(date, latitude, longitude));
+  const illumination = cachedEphemeris(calculator, `moon-light:${+date}`, () => calculator.getMoonIllumination(date));
+  const times = cachedEphemeris(calculator, `moon-times:${+midnight}:${point}`, () => calculator.getMoonTimes(date, latitude, longitude));
   const azimuth = normalizeDegrees(toDegrees(position.azimuth) + 180);
   const altitude = toDegrees(position.altitude);
 

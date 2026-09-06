@@ -2,6 +2,17 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { buildForecastUrl, createForecastGrid, isForecastHour, isPastForecastHour, parseForecastResponse, toForecastHour } from "../js/weather/forecast-service.js";
 
+test("missing forecast measurements stay unknown while genuine zero is retained", () => {
+  const hour = "2026-09-06T12:00";
+  const locations = [{ latitude: 35, longitude: 139 }];
+  const [result] = parseForecastResponse({ hourly: { time: [hour], cloud_cover: [null], wind_speed_10m: [0] } }, locations, hour);
+  assert.equal(result.forecast.total, null);
+  assert.equal(result.forecast.precipitationProbability, null);
+  assert.equal(result.forecast.visibilityMeters, null);
+  assert.equal(result.forecast.windKmh, 0);
+  assert.throws(() => parseForecastResponse({ hourly: {} }, locations, hour), /選択時刻/);
+});
+
 test("forecast grid divides the visible map into bounded cells", () => {
   const cells = createForecastGrid({ north: 36, south: 35, east: 140, west: 139 }, { rows: 2, columns: 2 });
   assert.equal(cells.length, 4);
@@ -21,7 +32,7 @@ test("forecast URL batches locations and only asks for the selected hour", () =>
 
 test("past forecast URL includes the previous day without a conflicting fixed range", () => {
   const url = buildForecastUrl("https://weather.example.test/forecast", [{ latitude: 35.68, longitude: 139.76 }], "2026-07-14T03:00", { includePast: true });
-  assert.equal(url.searchParams.get("past_days"), "1");
+  assert.equal(url.searchParams.get("past_days"), "2");
   assert.equal(url.searchParams.get("forecast_days"), "1");
   assert.equal(url.searchParams.has("start_hour"), false);
   assert.equal(url.searchParams.has("end_hour"), false);

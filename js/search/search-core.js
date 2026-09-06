@@ -46,6 +46,7 @@
     const progressInterval = Math.max(1, Math.floor(totalSamples / 100));
     const results = [];
     const refinementSeeds = [];
+    const windows = [];
     let completed = 0;
 
     function evaluate(date, { refinement = false } = {}) {
@@ -79,7 +80,7 @@
       if (sunAltitude !== null && sunAltitude > (input.maxSunAltitude ?? 90)) return null;
       if (diamond && Math.abs(diamond.verticalDifference) > SUN_RADIUS + input.verticalToleranceDegrees + coarseBuffer) return null;
 
-      if (!refinement && diamond && input.stepMinutes > 1) return { seed: true, timestamp: date.getTime() };
+      if (!refinement && diamond) return { seed: true, timestamp: date.getTime() };
       const alignmentScore = Math.max(0, 1 - Math.abs(difference) / input.toleranceDegrees);
       const illuminationScore = illumination === null ? 0 : 15 * illumination / 100;
       const horizonScore = altitude >= 0 ? 10 : 0;
@@ -106,6 +107,11 @@
     }
 
     for (const day = new Date(startDate); day <= endDate; day.setDate(day.getDate() + 1)) {
+      const windowStart = new Date(day);
+      const windowEnd = new Date(day);
+      windowStart.setMinutes(input.startMinute);
+      windowEnd.setMinutes(input.endMinute);
+      windows.push([windowStart.getTime(), windowEnd.getTime()]);
       for (let minute = input.startMinute; minute <= input.endMinute; minute += input.stepMinutes) {
         const date = new Date(day);
         date.setMinutes(minute);
@@ -120,12 +126,13 @@
       }
     }
 
-    if (input.matchTargetAltitude && input.target === "sun" && input.stepMinutes > 1) {
+    if (input.matchTargetAltitude && input.target === "sun") {
       const seen = new Set();
       refinementSeeds.forEach((timestamp) => {
         const halfWindowSeconds = input.stepMinutes * 60;
         for (let offset = -halfWindowSeconds; offset <= halfWindowSeconds; offset += 10) {
           const refinedTime = timestamp + offset * 1000;
+          if (!windows.some(([start, end]) => refinedTime >= start && refinedTime <= end)) continue;
           const key = Math.round(refinedTime / 10000);
           if (seen.has(key)) continue;
           seen.add(key);

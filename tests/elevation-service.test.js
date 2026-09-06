@@ -27,3 +27,18 @@ test("fetchElevation rejects missing elevation data", async () => {
   const fetcher = async () => ({ ok: true, json: async () => ({ elevation: "-----", hsrc: "-----" }) });
   await assert.rejects(() => fetchElevation({ latitude: 0, longitude: 0 }, { fetcher }), /ありません/);
 });
+
+test("null elevation is unknown, but a genuine sea-level value is accepted", async () => {
+  const location = { latitude: 0, longitude: 0 };
+  for (const elevation of [null, undefined, ""]) {
+    await assert.rejects(fetchElevation(location, { force: true, fetcher: async () => ({ ok: true, json: async () => ({ elevation }) }) }), /ありません/);
+  }
+  assert.equal((await fetchElevation(location, { force: true, fetcher: async () => ({ ok: true, json: async () => ({ elevation: 0 }) }) })).meters, 0);
+});
+
+test("a stalled elevation request times out and remains retryable", async () => {
+  await assert.rejects(fetchElevation({ latitude: 1, longitude: 1 }, {
+    force: true, timeoutMs: 5,
+    fetcher: async (_url, { signal }) => new Promise((_resolve, reject) => signal.addEventListener("abort", () => reject(signal.reason))),
+  }), { name: "TimeoutError" });
+});

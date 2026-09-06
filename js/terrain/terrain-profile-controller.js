@@ -1,6 +1,15 @@
-import { fetchTerrainProfile } from "./terrain-profile.js?v=41";
+import { fetchTerrainProfile } from "./terrain-profile.js?v=1.7.0";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
+
+export function terrainProfileKey(state) {
+  return JSON.stringify([
+    state.cameraLocation, state.subjectLocation, state.composition.cameraHeightMeters,
+    state.composition.cameraElevationMeters, state.composition.cameraElevationStatus,
+    state.subject.heightMeters, state.subject.targetMode, state.subject.groundElevationMeters,
+    state.subject.groundElevationStatus,
+  ]);
+}
 
 function chartPoints(points, field, min, max) {
   const range = Math.max(1, max - min);
@@ -49,9 +58,7 @@ export function bindTerrainProfile(store, getMapController, showToast) {
 
   store.subscribe((state) => {
     panel.hidden = !state.subjectLocation;
-    const key = state.subjectLocation
-      ? `${state.cameraLocation.latitude},${state.cameraLocation.longitude}:${state.subjectLocation.latitude},${state.subjectLocation.longitude}`
-      : "";
+    const key = terrainProfileKey(state);
     if (key !== lastLocationKey) {
       lastLocationKey = key;
       reset();
@@ -63,6 +70,7 @@ export function bindTerrainProfile(store, getMapController, showToast) {
     if (!state.subjectLocation) return showToast("先に被写体地点を設定してください");
     controller?.abort();
     controller = new AbortController();
+    const pending = controller;
     button.disabled = true;
     result.hidden = true;
     getMapController()?.clearTerrainObstruction();
@@ -77,10 +85,12 @@ export function bindTerrainProfile(store, getMapController, showToast) {
         cameraHeightMeters: state.composition.cameraHeightMeters,
         targetHeightMeters,
         onProgress: (progress) => {
+          if (pending !== controller || pending.signal.aborted) return;
           status.textContent = `標高を取得中… ${Math.round(progress * 100)}%`;
           button.textContent = `${Math.round(progress * 100)}%`;
         },
       });
+      if (pending !== controller || pending.signal.aborted) return;
       renderChart(analysis);
       result.hidden = false;
       if (analysis.isClear) {
@@ -93,14 +103,16 @@ export function bindTerrainProfile(store, getMapController, showToast) {
         getMapController()?.setTerrainObstruction(analysis.obstruction.location);
       }
     } catch (error) {
-      if (error.name !== "AbortError") {
+      if (pending === controller && error.name !== "AbortError") {
         console.error(error);
         status.textContent = error.message || "地形断面を取得できませんでした";
       }
     } finally {
-      button.disabled = false;
-      button.textContent = "再計算";
-      controller = null;
+      if (pending === controller) {
+        button.disabled = false;
+        button.textContent = "再計算";
+        controller = null;
+      }
     }
   });
 }

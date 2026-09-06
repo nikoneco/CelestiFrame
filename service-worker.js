@@ -1,4 +1,4 @@
-const CACHE_VERSION = "celestiframe-shell-v114";
+const CACHE_VERSION = "celestiframe-shell-v1.7.0";
 const TRUSTED_STATIC_HOSTS = new Set(["unpkg.com", "www.gstatic.com"]);
 const OPTIONAL_SHELL = [
   "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
@@ -36,65 +36,69 @@ const APP_SHELL = [
   "./assets/icons/sparkles.svg",
   "./assets/icons/trash-2.svg",
   "./assets/icons/x.svg",
-  "./assets/fonts/IBMPlexSansJP-Regular.woff2",
-  "./assets/fonts/IBMPlexSansJP-SemiBold.woff2",
+  "./assets/fonts/IBMPlexSansJP-Regular-ui.woff2",
+  "./assets/fonts/IBMPlexSansJP-SemiBold-ui.woff2",
+  "./css/ui-fonts.css?v=1.7.0",
   "./assets/fonts/IBMPlexSansCondensed-Regular.woff2",
   "./assets/fonts/IBMPlexSansCondensed-SemiBold.woff2",
   "./assets/fonts/IBMPlexMono-Regular.woff2",
   "./assets/fonts/IBMPlexMono-SemiBold.woff2",
   "./assets/fonts/LICENSE-IBM-PLEX.txt",
-  "./tokens.css?v=2",
-  "./css/app.css?v=93",
-  "./js/app.js?v=95",
-  "./js/config/runtime-config.js?v=35",
-  "./js/config/firebase-config.js?v=1",
-  "./js/state.js?v=43",
-  "./js/astronomy/sun-service.js",
-  "./js/astronomy/moon-service.js?v=5",
-  "./js/astronomy/milky-way-service.js?v=41",
-  "./js/astronomy/target-catalog.js?v=1",
-  "./js/astronomy/target-service.js?v=1",
-  "./js/geometry/angle.js",
-  "./js/geometry/bearing.js?v=7",
-  "./js/geometry/destination.js",
-  "./js/geometry/target-altitude.js?v=24",
-  "./js/elevation/elevation-service.js?v=25",
-  "./js/elevation/elevation-controller.js?v=25",
-  "./js/map/geocoder.js?v=32",
-  "./js/map/map-controller.js?v=52",
-  "./js/map/place-search.js?v=34",
-  "./js/plans/plan-data.js?v=41",
-  "./js/plans/plan-manager.js?v=45",
-  "./js/plans/plan-repository.js?v=16",
-  "./js/map/google-maps-url.js?v=1",
-  "./js/weather/forecast-service.js?v=2",
-  "./js/weather/weather-controller.js?v=9",
-  "./js/light-pollution/light-pollution-controller.js?v=2",
-  "./js/cloud/plan-sync.js?v=2",
-  "./js/cloud/firebase-client.js?v=1",
-  "./js/cloud/account-controller.js?v=3",
-  "./js/utils/lru-cache.js?v=1",
-  "./js/utils/format.js?v=1",
-  "./js/composition/composition.js?v=19",
-  "./js/search/search-controller.js?v=45",
-  "./js/search/search-core.js?v=45",
-  "./js/search/search-worker.js?v=45",
-  "./js/ui/datetime-controls.js?v=12",
-  "./js/ui/sky-state-rail.js?v=1",
-  "./js/ui/composition-controls.js?v=24",
-  "./js/ui/theme.js?v=6",
-  "./js/ui/target-selector.js?v=2",
-  "./js/pwa/pwa-runtime.js?v=1",
-  "./js/planning/shooting-candidates.js?v=40",
-  "./js/planning/shooting-planner.js?v=41",
-  "./js/terrain/terrain-profile.js?v=41",
-  "./js/terrain/terrain-profile-controller.js?v=41",
-  "./js/field/field-mode.js?v=50",
-  "./js/measurement/observation-height-service.js?v=2",
-  "./js/measurement/observation-camera-service.js?v=1",
-  "./js/measurement/observation-height-controller.js?v=6",
-  "./js/vendor/suncalc.js",
-  "./js/vendor/astronomy-engine.min.js",
+  "./tokens.css?v=1.7.0",
+  "./css/app.css?v=1.7.0",
+  "./js/app.js?v=1.7.0",
+  "./js/config/runtime-config.js?v=1.7.0",
+  "./js/config/firebase-config.js?v=1.7.0",
+  "./js/state.js?v=1.7.0",
+  "./js/astronomy/sun-service.js?v=1.7.0",
+  "./js/astronomy/ephemeris-cache.js?v=1.7.0",
+  "./js/astronomy/moon-service.js?v=1.7.0",
+  "./js/astronomy/milky-way-service.js?v=1.7.0",
+  "./js/astronomy/target-catalog.js?v=1.7.0",
+  "./js/astronomy/target-service.js?v=1.7.0",
+  "./js/geometry/angle.js?v=1.7.0",
+  "./js/geometry/bearing.js?v=1.7.0",
+  "./js/geometry/destination.js?v=1.7.0",
+  "./js/geometry/target-altitude.js?v=1.7.0",
+  "./js/elevation/elevation-service.js?v=1.7.0",
+  "./js/elevation/elevation-controller.js?v=1.7.0",
+  "./js/map/geocoder.js?v=1.7.0",
+  "./js/map/map-controller.js?v=1.7.0",
+  "./js/map/place-search.js?v=1.7.0",
+  "./js/plans/plan-data.js?v=1.7.0",
+  "./js/plans/plan-manager.js?v=1.7.0",
+  "./js/plans/plan-repository.js?v=1.7.0",
+  "./js/map/google-maps-url.js?v=1.7.0",
+  "./js/weather/forecast-service.js?v=1.7.0",
+  "./js/weather/weather-controller.js?v=1.7.0",
+  "./js/light-pollution/light-pollution-controller.js?v=1.7.0",
+  "./js/cloud/plan-sync.js?v=1.7.0",
+  "./js/cloud/firebase-client.js?v=1.7.0",
+  "./js/cloud/firestore-plan-repository.js?v=1.7.0",
+  "./js/utils/storage.js?v=1.7.0",
+  "./js/cloud/account-controller.js?v=1.7.0",
+  "./js/utils/lru-cache.js?v=1.7.0",
+  "./js/utils/format.js?v=1.7.0",
+  "./js/composition/composition.js?v=1.7.0",
+  "./js/search/search-controller.js?v=1.7.0",
+  "./js/search/search-core.js?v=1.7.0",
+  "./js/search/search-worker.js?v=1.7.0",
+  "./js/ui/datetime-controls.js?v=1.7.0",
+  "./js/ui/sky-state-rail.js?v=1.7.0",
+  "./js/ui/composition-controls.js?v=1.7.0",
+  "./js/ui/theme.js?v=1.7.0",
+  "./js/ui/target-selector.js?v=1.7.0",
+  "./js/pwa/pwa-runtime.js?v=1.7.0",
+  "./js/planning/shooting-candidates.js?v=1.7.0",
+  "./js/planning/shooting-planner.js?v=1.7.0",
+  "./js/terrain/terrain-profile.js?v=1.7.0",
+  "./js/terrain/terrain-profile-controller.js?v=1.7.0",
+  "./js/field/field-mode.js?v=1.7.0",
+  "./js/measurement/observation-height-service.js?v=1.7.0",
+  "./js/measurement/observation-camera-service.js?v=1.7.0",
+  "./js/measurement/observation-height-controller.js?v=1.7.0",
+  "./js/vendor/suncalc.js?v=1.7.0",
+  "./js/vendor/astronomy-engine.min.js?v=1.7.0",
 ];
 
 async function fetchWithTimeout(request, timeout = 3500) {
@@ -111,7 +115,7 @@ self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_VERSION).then(async (cache) => {
     await cache.addAll(APP_SHELL);
     await Promise.allSettled(OPTIONAL_SHELL.map(async (url) => {
-      const response = await fetch(url, { mode: "cors" });
+      const response = await fetchWithTimeout(new Request(url, { mode: "cors" }));
       if (response.ok) await cache.put(url, response);
     }));
   }));
@@ -120,7 +124,7 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((key) => key !== CACHE_VERSION).map((key) => caches.delete(key))))
+      .then((keys) => Promise.all(keys.filter((key) => key.startsWith("celestiframe-shell-") && key !== CACHE_VERSION).map((key) => caches.delete(key))))
       .then(() => self.clients.claim()),
   );
 });
@@ -133,7 +137,11 @@ self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
 
   if (event.request.mode === "navigate") {
-    event.respondWith(fetchWithTimeout(event.request).catch(() => caches.match("./index.html").then((response) => response || caches.match("./offline.html"))));
+    // A controlled page uses the HTML installed with its complete module graph.
+    // registration.update() checks for releases; activation reloads every open page.
+    event.respondWith(caches.open(CACHE_VERSION).then(async (cache) => (
+      await cache.match("./index.html") || await fetchWithTimeout(event.request)
+    )).catch(() => caches.match("./offline.html")));
     return;
   }
 
@@ -147,18 +155,19 @@ self.addEventListener("fetch", (event) => {
     return;
   }
   const isVersionedSource = requestUrl.origin === self.location.origin
-    && (event.request.destination === "script" || event.request.destination === "style");
+    && ["script", "style", "font"].includes(event.request.destination);
 
   if (isVersionedSource) {
     event.respondWith(
-      fetch(event.request)
-        .then((response) => {
+      caches.open(CACHE_VERSION).then(async (cache) => {
+          const cached = await cache.match(event.request);
+          if (cached) return cached;
+          const response = await fetchWithTimeout(event.request);
           if (!response.ok) throw new Error(`Asset request failed: ${response.status}`);
           const copy = response.clone();
-          caches.open(CACHE_VERSION).then((cache) => cache.put(event.request, copy));
+          await cache.put(event.request, copy);
           return response;
-        })
-        .catch(() => caches.match(event.request)),
+        }).catch(() => new Response("Offline", { status: 503, statusText: "Offline" })),
     );
     return;
   }

@@ -1,4 +1,4 @@
-import { createFirebaseClient } from "./firebase-client.js?v=1";
+import { createFirebaseClient } from "./firebase-client.js?v=1.7.0";
 
 const MIGRATION_KEY = "celestiframe:cloud-migration:v1:";
 const SETTINGS_KEY = "celestiframe:cloud-settings:v1:";
@@ -29,6 +29,7 @@ export function bindCloudAccount({ coordinator, store, showToast, onPlansChanged
   let client = null;
   let clientInitialization = null;
   let currentUser = null;
+  let authGeneration = 0;
   let applyingRemoteSettings = false;
   let settingsPushTimer;
   let lastSettings = JSON.stringify(safeSettings(store.getState().settings));
@@ -59,10 +60,13 @@ export function bindCloudAccount({ coordinator, store, showToast, onPlansChanged
   }
 
   async function syncSettings(userId) {
+    const generation = authGeneration;
+    const settingsAtStart = safeSettings(store.getState().settings);
     const key = `${SETTINGS_KEY}${userId}`;
     let localRecord = null;
     try { localRecord = JSON.parse(localStorage.getItem(key)); } catch { localRecord = null; }
     const cloudRecord = await client.getPreferences(userId);
+    if (generation !== authGeneration || currentUser?.uid !== userId) return;
     if (!localRecord && cloudRecord) {
       applyingRemoteSettings = true;
       store.setState((state) => ({
@@ -75,7 +79,7 @@ export function bindCloudAccount({ coordinator, store, showToast, onPlansChanged
       return;
     }
     if (!localRecord && !cloudRecord) {
-      localRecord = { settings: safeSettings(store.getState().settings), updatedAt: new Date().toISOString() };
+      localRecord = { settings: settingsAtStart, updatedAt: new Date().toISOString() };
       localStorage.setItem(key, JSON.stringify(localRecord));
       await client.putPreferences(userId, localRecord);
       return;
@@ -98,11 +102,14 @@ export function bindCloudAccount({ coordinator, store, showToast, onPlansChanged
 
   async function syncAll({ announce = false } = {}) {
     if (!currentUser) return;
+    const generation = authGeneration;
     try {
       await Promise.all([coordinator.sync(), syncSettings(currentUser.uid)]);
+      if (generation !== authGeneration) return;
       await onPlansChanged();
       if (announce) showToast("撮影計画と設定を同期しました");
     } catch (error) {
+      if (generation !== authGeneration) return;
       console.error(error);
       if (announce) showToast(navigator.onLine ? "同期を完了できませんでした" : "オフラインです。変更は端末に保存しました");
     }
@@ -110,14 +117,17 @@ export function bindCloudAccount({ coordinator, store, showToast, onPlansChanged
 
   async function finishMigration(mode) {
     if (!currentUser) return;
+    const userId = currentUser.uid;
+    const generation = authGeneration;
     mergeButton.disabled = true;
     skipButton.disabled = true;
     try {
       if (mode === "merge") {
-        const copied = await coordinator.copyGuestPlans(currentUser.uid);
+        const copied = await coordinator.copyGuestPlans(userId);
+        if (generation !== authGeneration) return;
         showToast(`${copied}件の端末計画をアカウントへ追加します`);
       }
-      localStorage.setItem(`${MIGRATION_KEY}${currentUser.uid}`, mode);
+      localStorage.setItem(`${MIGRATION_KEY}${userId}`, mode);
       migration.hidden = true;
       await syncAll({ announce: true });
     } finally {
@@ -127,6 +137,8 @@ export function bindCloudAccount({ coordinator, store, showToast, onPlansChanged
   }
 
   async function handleUser(user) {
+    const generation = ++authGeneration;
+    window.clearTimeout(settingsPushTimer);
     currentUser = user;
     if (!user) {
       window.clearTimeout(settingsPushTimer);
@@ -137,8 +149,11 @@ export function bindCloudAccount({ coordinator, store, showToast, onPlansChanged
     }
     renderUser(user);
     await coordinator.connect(user.uid, client.plansFor(user.uid), { syncNow: false });
+    if (generation !== authGeneration) return;
     await onPlansChanged();
+    if (generation !== authGeneration) return;
     const guestPlans = await coordinator.listGuestPlans();
+    if (generation !== authGeneration) return;
     const migrationChoice = localStorage.getItem(`${MIGRATION_KEY}${user.uid}`);
     if (guestPlans.length && !migrationChoice) {
       migrationText.textContent = `この端末にある${guestPlans.length}件の計画を、${user.email || "このアカウント"}へ追加できます。`;
@@ -233,3 +248,4 @@ export function bindCloudAccount({ coordinator, store, showToast, onPlansChanged
   renderSignedOut();
   scheduleClientInitialization();
 }
+import { safeStorage as localStorage } from "../utils/storage.js?v=1.7.0";

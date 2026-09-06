@@ -20,6 +20,27 @@ const baseInput = {
   minIllumination: 0,
 };
 
+test("diamond refinement respects daytime and overnight window boundaries", () => {
+  const calculator = { getPosition: () => ({ azimuth: 0, altitude: 0.1 }) };
+  for (const [startMinute, endMinute] of [[600, 610], [1430, 1450]]) {
+    const input = { ...baseInput, startMinute, endMinute, stepMinutes: 10, matchTargetAltitude: true,
+      targetAltitude: apparentSolarAltitude(0.1 * 180 / Math.PI), verticalToleranceDegrees: 0.3 };
+    const results = globalThis.CelestiSearchCore.searchCandidates(input, calculator);
+    const start = new Date(2026, 6, 12, 0, startMinute).getTime();
+    const end = new Date(2026, 6, 12, 0, endMinute).getTime();
+    assert.ok(results.length > 0);
+    assert.ok(results.every(({ timestamp }) => timestamp >= start && timestamp <= end));
+  }
+});
+
+test("one-minute diamond search still refines between the minute samples", () => {
+  const calculator = { getPosition: (date) => ({ azimuth: (date.getSeconds() - 30) / 1000, altitude: 0.1 }) };
+  const results = globalThis.CelestiSearchCore.searchCandidates({ ...baseInput, startMinute: 600, endMinute: 601,
+    stepMinutes: 1, matchTargetAltitude: true, toleranceDegrees: 2,
+    targetAltitude: apparentSolarAltitude(0.1 * 180 / Math.PI), verticalToleranceDegrees: 0.3 }, calculator);
+  assert.equal(new Date(results[0].timestamp).getSeconds(), 30);
+});
+
 test("searchCandidates returns scored and sorted solar candidates", () => {
   const progress = [];
   const results = globalThis.CelestiSearchCore.searchCandidates(baseInput, SunCalc, (value) => progress.push(value));

@@ -97,7 +97,7 @@ export function createPlanRepository(initialOwner = GUEST_PLAN_OWNER) {
     return plan;
   }
 
-  return {
+  const repository = {
     setOwner(nextOwner) { ownerId = normalizeOwner(nextOwner); },
     getOwner() { return ownerId; },
     list: () => listForOwner(ownerId),
@@ -105,11 +105,12 @@ export function createPlanRepository(initialOwner = GUEST_PLAN_OWNER) {
     put: (plan) => putForOwner(plan, ownerId),
     putForOwner,
     async delete(id, deletedAt = new Date().toISOString()) {
-      const key = scopedPlanKey(ownerId, id);
+      const deletionOwner = ownerId;
+      const key = scopedPlanKey(deletionOwner, id);
       await runTransaction([STORE_NAME, TOMBSTONE_STORE_NAME], "readwrite", async (transaction) => {
         transaction.objectStore(STORE_NAME).delete(key);
-        if (ownerId !== GUEST_PLAN_OWNER) {
-          transaction.objectStore(TOMBSTONE_STORE_NAME).put({ key, ownerId, id: String(id), deletedAt });
+        if (deletionOwner !== GUEST_PLAN_OWNER) {
+          transaction.objectStore(TOMBSTONE_STORE_NAME).put({ key, ownerId: deletionOwner, id: String(id), deletedAt });
         }
       });
     },
@@ -129,6 +130,15 @@ export function createPlanRepository(initialOwner = GUEST_PLAN_OWNER) {
       for (const plan of sourcePlans) await putForOwner(plan, toOwner);
       return sourcePlans.length;
     },
+    forOwner(targetOwner) {
+      // A separate repository closes over an owner that no account switch can change.
+      const scoped = createPlanRepository(normalizeOwner(targetOwner));
+      return {
+        list: scoped.list, put: scoped.put, delete: scoped.delete,
+        listTombstones: scoped.listTombstones, clearTombstone: scoped.clearTombstone,
+      };
+    },
   };
+  return repository;
 }
-import { normalizePlan } from "./plan-data.js?v=41";
+import { normalizePlan } from "./plan-data.js?v=1.7.0";

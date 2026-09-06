@@ -71,3 +71,12 @@ test("loadRuntimeConfig falls back when the runtime file is invalid", async () =
     console.warn = originalWarn;
   }
 });
+
+test("a stalled runtime config cannot block application startup indefinitely", async () => {
+  const warn = console.warn;
+  console.warn = () => {};
+  try {
+    const config = await loadRuntimeConfig({ timeoutMs: 5, fetchImpl: (_url, {signal}) => new Promise((_resolve,reject) => signal.addEventListener('abort',()=>reject(signal.reason))) });
+    assert.equal(config, DEFAULT_RUNTIME_CONFIG);
+  } finally { console.warn = warn; }
+});

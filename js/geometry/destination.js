@@ -1,4 +1,4 @@
-import { normalizeDegrees } from "./angle.js";
+import { normalizeDegrees } from "./angle.js?v=1.7.0";
 
 const EARTH_RADIUS_METERS = 6371008.8;
 const toRadians = (degrees) => degrees * Math.PI / 180;

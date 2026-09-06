@@ -93,11 +93,11 @@ test("P2 sky-state rail keeps the photographic timeline and bundled typography o
   const worker = readProjectFile("service-worker.js");
   assert.ok(html.includes('id="sky-state-bands"'));
   assert.ok(html.includes('id="sky-state-markers"'));
-  assert.match(tokens, /font-family:\s*"IBM Plex Sans JP"/);
+  assert.match(readProjectFile("css/ui-fonts.css"), /font-family:\s*"IBM Plex Sans JP"/);
   assert.match(tokens, /font-family:\s*"IBM Plex Sans Condensed"/);
   assert.match(tokens, /font-family:\s*"IBM Plex Mono"/);
   [
-    "IBMPlexSansJP-Regular.woff2",
+    "IBMPlexSansJP-Regular-ui.woff2",
     "IBMPlexSansCondensed-Regular.woff2",
     "IBMPlexMono-Regular.woff2",
   ].forEach((font) => assert.ok(worker.includes(font)));
@@ -125,10 +125,9 @@ test("expanded mobile deck stays above Leaflet attribution and controls", () => 
   const css = readProjectFile("css/app.css");
   const worker = readProjectFile("service-worker.js");
   assert.match(css, /\.control-deck\.is-expanded \{[^}]*z-index:\s*1100;/);
-  assert.ok(html.includes("./tokens.css?v=2"));
-  assert.ok(worker.includes("./tokens.css?v=2"));
-  assert.ok(html.includes("./css/app.css?v=93"));
-  assert.ok(worker.includes("./css/app.css?v=93"));
+  for (const stylesheet of [...html.matchAll(/href="(\.\/[^" ]+\.css\?v=[^"]+)"/g)]) {
+    assert.ok(worker.includes(stylesheet[1]), `Stylesheet missing from offline shell: ${stylesheet[1]}`);
+  }
 });
 
 test("observation height measurement is accessible from More and requires explicit confirmation", () => {
@@ -160,9 +159,9 @@ test("observation height measurement is accessible from More and requires explic
   assert.ok(!measurementController.includes("スマートフォンを横向きに"));
   assert.ok(html.includes("端末センサー、被写体位置、標高データ等の誤差を含む参考値です。"));
   assert.ok(app.includes("bindObservationHeightMeasurement"));
-  assert.ok(worker.includes("./js/measurement/observation-height-service.js?v=2"));
-  assert.ok(worker.includes("./js/measurement/observation-camera-service.js?v=1"));
-  assert.ok(worker.includes("./js/measurement/observation-height-controller.js?v=6"));
+  assert.ok(worker.includes("./js/measurement/observation-height-service.js?v="));
+  assert.ok(worker.includes("./js/measurement/observation-camera-service.js?v="));
+  assert.ok(worker.includes("./js/measurement/observation-height-controller.js?v="));
   assert.ok(measurementController.includes("camera.stop()"));
   assert.ok(measurementController.includes("カメラなしで次へ"));
 });

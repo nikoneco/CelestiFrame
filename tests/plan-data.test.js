@@ -11,6 +11,38 @@ const state = {
   map: { zoom: 16, center: { latitude: 35.7, longitude: 139.8 } },
 };
 
+test("camera heights 0, 300 and 1000 survive storage, JSON and sharing", () => {
+  for (const cameraHeightMeters of [0, 300, 1000]) {
+    const input = { ...state, composition: { cameraHeightMeters } };
+    const plan = createPlan({ state: input, id: "height" });
+    assert.equal(plan.state.composition.cameraHeightMeters, cameraHeightMeters);
+    assert.equal(parsePlansFile(serializePlans([plan]))[0].state.composition.cameraHeightMeters, cameraHeightMeters);
+    assert.equal(parseSharedState(buildShareUrl(input, "https://example.com/")).composition.cameraHeightMeters, cameraHeightMeters);
+  }
+});
+
+test("unresolved automatic elevation is never promoted to manual by saving or sharing", () => {
+  for (const status of ["error", "loading"]) {
+    const input = { ...state,
+      composition: { cameraElevationMeters: 0, cameraElevationStatus: status, cameraElevationMode: "auto", cameraElevationKey: "35.681236,139.767125" },
+      subject: { ...state.subject, groundElevationMeters: 0, groundElevationStatus: status, groundElevationMode: "auto" },
+    };
+    for (const restored of [snapshotPlanState(input), parseSharedState(buildShareUrl(input, "https://example.com/"))]) {
+      assert.equal(restored.composition.cameraElevationStatus, "error");
+      assert.equal(restored.composition.cameraElevationMode, "auto");
+      assert.equal(restored.composition.cameraElevationKey, "");
+      assert.equal(restored.subject.groundElevationStatus, "error");
+      assert.equal(restored.subject.groundElevationKey, "");
+    }
+  }
+});
+
+test("valid sea-level manual elevation survives saving", () => {
+  const restored = snapshotPlanState({ ...state, composition: { cameraElevationMeters: 0, cameraElevationStatus: "manual", cameraElevationMode: "manual" } });
+  assert.equal(restored.composition.cameraElevationStatus, "manual");
+  assert.equal(restored.composition.cameraElevationMeters, 0);
+});
+
 test("snapshotPlanState keeps planning data without display settings", () => {
   const snapshot = snapshotPlanState({ ...state, settings: { theme: "red" } });
   assert.equal(snapshot.subject.name, "東京スカイツリー");

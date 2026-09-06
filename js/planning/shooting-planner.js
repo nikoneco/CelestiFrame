@@ -1,6 +1,6 @@
-import { calculateTargetData } from "../astronomy/target-service.js?v=1";
-import { getTarget } from "../astronomy/target-catalog.js?v=1";
-import { createShootingCandidates } from "./shooting-candidates.js?v=40";
+import { calculateTargetData } from "../astronomy/target-service.js?v=1.7.0";
+import { getTarget } from "../astronomy/target-catalog.js?v=1.7.0";
+import { createShootingCandidates } from "./shooting-candidates.js?v=1.7.0";
 
 function bodyData(body, date, location) {
   return calculateTargetData(body, date, location);
@@ -16,8 +16,12 @@ export function bindShootingPlanner(store, getMapController, showToast) {
   const summary = document.querySelector("#candidate-summary");
   let active = false;
   let currentCandidates = [];
+  let lastTargetsKey = "";
 
   function syncBodyOptions(state) {
+    const key = state.selectedTargets.join(",");
+    if (key === lastTargetsKey) return;
+    lastTargetsKey = key;
     const current = bodySelect.value;
     bodySelect.replaceChildren(...state.selectedTargets.map((targetId) => {
       const target = getTarget(targetId);

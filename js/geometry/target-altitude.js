@@ -35,10 +35,11 @@ export function calculateTargetAltitude({
   const targetAbsoluteMeters = targetGround + targetHeight;
   const centralAngle = distance / EARTH_RADIUS_METERS;
   const effectiveRadius = EARTH_RADIUS_METERS / (1 - refraction);
+  const effectiveAngle = distance / effectiveRadius;
   const cameraRadius = effectiveRadius + cameraAbsoluteMeters;
   const targetRadius = effectiveRadius + targetAbsoluteMeters;
-  const horizontal = targetRadius * Math.sin(centralAngle);
-  const vertical = targetRadius * Math.cos(centralAngle) - cameraRadius;
+  const horizontal = targetRadius * Math.sin(effectiveAngle);
+  const vertical = targetRadius * Math.cos(effectiveAngle) - cameraRadius;
   const geometricRadius = EARTH_RADIUS_METERS;
   const geometricVertical = (geometricRadius + targetAbsoluteMeters) * Math.cos(centralAngle)
     - (geometricRadius + cameraAbsoluteMeters);

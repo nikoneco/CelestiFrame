@@ -2,6 +2,16 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { apparentSolarAltitude, calculateTargetAltitude, classifyDiamondAlignment } from "../js/geometry/target-altitude.js";
 
+test("refraction preserves the ground baseline rather than scaling it by 1/(1-k)", () => {
+  const result = calculateTargetAltitude({ distanceMeters: 1000, cameraElevationMeters: 0, cameraHeightMeters: 0,
+    targetElevationMeters: 0, targetHeightMeters: 100, targetMode: "structure" });
+  assert.ok(Math.abs(result.altitudeDegrees - 5.70664235) < 0.000001);
+  // On a short baseline, curvature/refraction must approach ordinary right-triangle geometry.
+  const nearby = calculateTargetAltitude({ distanceMeters: 100, cameraElevationMeters: 0, cameraHeightMeters: 0,
+    targetElevationMeters: 0, targetHeightMeters: 100, targetMode: "structure" });
+  assert.ok(Math.abs(nearby.altitudeDegrees - 45) < 0.001);
+});
+
 test("target altitude adds structure height but not terrain height", () => {
   const common = { distanceMeters: 1000, cameraElevationMeters: 10, cameraHeightMeters: 1.5, targetElevationMeters: 10, targetHeightMeters: 100, refractionCoefficient: 0 };
   const terrain = calculateTargetAltitude({ ...common, targetMode: "terrain" });

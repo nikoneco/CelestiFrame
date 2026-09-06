@@ -1,36 +1,36 @@
-import { createStore } from "./state.js?v=43";
-import { createMapController, focusCurrentLocation } from "./map/map-controller.js?v=52";
-import { bindPlaceSearch } from "./map/place-search.js?v=34";
-import { loadRuntimeConfig } from "./config/runtime-config.js?v=35";
-import { bindDateTimeControls } from "./ui/datetime-controls.js?v=12";
-import { bindSkyStateRail } from "./ui/sky-state-rail.js?v=1";
-import { normalizeThemePreference, resolveThemePreference, themeColor } from "./ui/theme.js?v=6";
-import { calculateSunData } from "./astronomy/sun-service.js";
-import { calculateMoonData } from "./astronomy/moon-service.js?v=5";
-import { calculateMilkyWay } from "./astronomy/milky-way-service.js?v=41";
-import { calculateSelectedTargets } from "./astronomy/target-service.js?v=1";
-import { targetLabelList } from "./astronomy/target-catalog.js?v=1";
-import { subjectGeometry } from "./geometry/bearing.js?v=7";
-import { signedAngleDifference } from "./geometry/angle.js";
-import { formatDistance } from "./utils/format.js?v=1";
-import { bindSearchControls } from "./search/search-controller.js?v=45";
-import { bindPlanManager } from "./plans/plan-manager.js?v=45";
-import { createPlanRepository } from "./plans/plan-repository.js?v=16";
-import { createPlanSyncCoordinator } from "./cloud/plan-sync.js?v=2";
-import { bindCloudAccount } from "./cloud/account-controller.js?v=3";
-import { parseSharedState } from "./plans/plan-data.js?v=41";
-import { calculateComposition, focalLengthForFill, SENSOR_PRESETS } from "./composition/composition.js?v=19";
-import { bindCompositionControls } from "./ui/composition-controls.js?v=24";
-import { bindElevationControls } from "./elevation/elevation-controller.js?v=25";
-import { apparentSolarAltitude, calculateTargetAltitude } from "./geometry/target-altitude.js?v=24";
-import { bindShootingPlanner } from "./planning/shooting-planner.js?v=41";
-import { bindTerrainProfile } from "./terrain/terrain-profile-controller.js?v=41";
-import { bindFieldMode } from "./field/field-mode.js?v=50";
-import { bindObservationHeightMeasurement } from "./measurement/observation-height-controller.js?v=6";
-import { bindWeatherOverlay } from "./weather/weather-controller.js?v=9";
-import { bindTargetSelector } from "./ui/target-selector.js?v=2";
-import { bindLightPollutionOverlay } from "./light-pollution/light-pollution-controller.js?v=2";
-import { bindPwaRuntime } from "./pwa/pwa-runtime.js?v=1";
+import { createStore } from "./state.js?v=1.7.0";
+import { createMapController, focusCurrentLocation } from "./map/map-controller.js?v=1.7.0";
+import { bindPlaceSearch } from "./map/place-search.js?v=1.7.0";
+import { loadRuntimeConfig } from "./config/runtime-config.js?v=1.7.0";
+import { bindDateTimeControls } from "./ui/datetime-controls.js?v=1.7.0";
+import { bindSkyStateRail } from "./ui/sky-state-rail.js?v=1.7.0";
+import { normalizeThemePreference, resolveThemePreference, themeColor } from "./ui/theme.js?v=1.7.0";
+import { calculateSunData } from "./astronomy/sun-service.js?v=1.7.0";
+import { calculateMoonData } from "./astronomy/moon-service.js?v=1.7.0";
+import { calculateMilkyWay } from "./astronomy/milky-way-service.js?v=1.7.0";
+import { calculateSelectedTargets } from "./astronomy/target-service.js?v=1.7.0";
+import { targetLabelList } from "./astronomy/target-catalog.js?v=1.7.0";
+import { subjectGeometry } from "./geometry/bearing.js?v=1.7.0";
+import { signedAngleDifference } from "./geometry/angle.js?v=1.7.0";
+import { formatDistance } from "./utils/format.js?v=1.7.0";
+import { bindSearchControls } from "./search/search-controller.js?v=1.7.0";
+import { bindPlanManager } from "./plans/plan-manager.js?v=1.7.0";
+import { createPlanRepository } from "./plans/plan-repository.js?v=1.7.0";
+import { createPlanSyncCoordinator } from "./cloud/plan-sync.js?v=1.7.0";
+import { bindCloudAccount } from "./cloud/account-controller.js?v=1.7.0";
+import { parseSharedState } from "./plans/plan-data.js?v=1.7.0";
+import { calculateComposition, focalLengthForFill, SENSOR_PRESETS } from "./composition/composition.js?v=1.7.0";
+import { bindCompositionControls } from "./ui/composition-controls.js?v=1.7.0";
+import { bindElevationControls } from "./elevation/elevation-controller.js?v=1.7.0";
+import { apparentSolarAltitude, calculateTargetAltitude } from "./geometry/target-altitude.js?v=1.7.0";
+import { bindShootingPlanner } from "./planning/shooting-planner.js?v=1.7.0";
+import { bindTerrainProfile } from "./terrain/terrain-profile-controller.js?v=1.7.0";
+import { bindFieldMode } from "./field/field-mode.js?v=1.7.0";
+import { bindObservationHeightMeasurement } from "./measurement/observation-height-controller.js?v=1.7.0";
+import { bindWeatherOverlay } from "./weather/weather-controller.js?v=1.7.0";
+import { bindTargetSelector } from "./ui/target-selector.js?v=1.7.0";
+import { bindLightPollutionOverlay } from "./light-pollution/light-pollution-controller.js?v=1.7.0";
+import { bindPwaRuntime } from "./pwa/pwa-runtime.js?v=1.7.0";
 
 let toastTimer;
 registerServiceWorker();
@@ -119,6 +119,8 @@ function setActiveDeckTab(panelId, { focus = false, persist = true } = {}) {
   const requested = tabs.find((tab) => tab.dataset.deckTab === panelId) || tabs[0];
   if (!requested) return;
   activeDeckTabId = requested.dataset.deckTab;
+  const quickTimeControls = document.querySelector("#quick-time-controls");
+  if (quickTimeControls) quickTimeControls.hidden = activeDeckTabId === "time-panel";
   deckTabs.forEach((tab) => {
     const selected = tab === requested;
     tab.setAttribute("aria-selected", String(selected));
@@ -135,6 +137,7 @@ deckTabs.forEach((tab) => {
   tab.addEventListener("click", () => {
     controlDeck.scrollTop = 0;
     setActiveDeckTab(tab.dataset.deckTab);
+    renderState(store.getState());
   });
   tab.addEventListener("keydown", (event) => {
     const tabs = availableDeckTabs();
@@ -145,7 +148,14 @@ deckTabs.forEach((tab) => {
       : event.key === "End" ? tabs.length - 1
         : (index + (event.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
     setActiveDeckTab(tabs[nextIndex].dataset.deckTab, { focus: true });
+    renderState(store.getState());
   });
+});
+
+document.querySelector("#quick-time-date")?.addEventListener("click", () => {
+  setActiveDeckTab("time-panel");
+  renderState(store.getState());
+  document.querySelector("#date-input").focus();
 });
 
 function setDeckExpanded(expanded) {
@@ -318,8 +328,20 @@ function renderMilkyWay(state, calculatedData = null) {
 
 function renderStellarTargets(targetData) {
   const container = document.querySelector("#stellar-target-grid");
-  container.replaceChildren();
+  const selected = new Set(targetData.map((data) => data.target.id));
+  container.querySelectorAll("[data-card]").forEach((card) => { if (!selected.has(card.dataset.card)) card.remove(); });
   targetData.filter((data) => !["sun", "moon", "milkyway"].includes(data.target.id)).forEach((data) => {
+    const existing = container.querySelector(`[data-card="${data.target.id}"]`);
+    if (existing) {
+      const stateLabel = existing.querySelector(".horizon-state");
+      stateLabel.className = `horizon-state ${data.isAboveHorizon ? "is-above" : "is-below"}`;
+      stateLabel.textContent = data.isAboveHorizon ? "地平線の上" : "地平線の下（計算値）";
+      const metrics = existing.querySelectorAll(".metric-pair b");
+      metrics[0].textContent = data.azimuth.toFixed(1);
+      metrics[1].textContent = data.altitude.toFixed(1);
+      existing.querySelector(".metric-pair em").textContent = data.direction;
+      return;
+    }
     const card = document.createElement("article");
     card.className = "celestial-card celestial-card-target";
     card.dataset.card = data.target.id;
@@ -332,6 +354,7 @@ function renderStellarTargets(targetData) {
     const title = document.createElement("div");
     const heading = document.createElement("h2");
     heading.textContent = data.target.label;
+    heading.title = data.target.label;
     title.append(heading);
     const stateLabel = document.createElement("span");
     stateLabel.className = `horizon-state ${data.isAboveHorizon ? "is-above" : "is-below"}`;
@@ -454,7 +477,8 @@ function renderAlignment(state, targetData = []) {
     const item = document.createElement("div");
     const label = document.createElement("span");
     label.textContent = `${candidate.shortName}との差`;
-    label.style.color = candidate.color;
+    label.className = "alignment-target-label";
+    label.style.setProperty("--target-color", candidate.color);
     const value = document.createElement("strong");
     value.textContent = formatAlignmentDifference(candidate.difference);
     item.append(label, value);
@@ -467,7 +491,6 @@ function renderAlignment(state, targetData = []) {
   document.querySelector('[data-alignment-field="message"]').textContent = absoluteDifference < 0.05
     ? `${closest.name}は被写体の正面方向です。`
     : `${closest.name}は被写体の${formatAlignmentDifference(closest.difference)}にあります。`;
-  mapController?.setSubjectLocation(state.cameraLocation, state.subjectLocation);
 }
 
 const clampPercent = (value) => Math.min(100, Math.max(0, value));
@@ -782,6 +805,11 @@ function syncDeckTabs(state) {
   setActiveDeckTab(activeDeckTabId, { persist: false });
 }
 
+let lastRenderKey = "";
+let lastTargetKey = "";
+let lastTargetData = [];
+let lastCelestialKey = "";
+let lastDirectionKey = "";
 function renderState(state) {
   applyTheme(state.settings.theme);
   const directionLineOrigin = ["camera", "subject", "both"].includes(state.settings.directionLineOrigin)
@@ -798,21 +826,41 @@ function renderState(state) {
   document.querySelectorAll("[data-card]").forEach((card) => {
     card.hidden = !state.selectedTargets.includes(card.dataset.card);
   });
-  let targetData = [];
-  try {
-    targetData = calculateSelectedTargets(state.selectedTargets, new Date(state.selectedDateTime), state.cameraLocation);
-  } catch (error) {
-    console.error("Selected target calculation failed", error);
-  }
-  renderSun(state, targetData.find((data) => data.target.id === "sun"));
-  renderMoon(state, targetData.find((data) => data.target.id === "moon"));
-  renderMilkyWay(state, targetData.find((data) => data.target.id === "milkyway"));
-  renderStellarTargets(targetData);
-  syncCelestialCardDensity(state);
-  renderCelestialDirections(state, targetData);
-  renderAlignment(state, targetData);
-  renderComposition(state, targetData);
+  document.querySelector("#alignment-card").dataset.available = String(Boolean(state.subjectLocation && state.selectedTargets.length));
+  document.querySelector("#composition-card").dataset.available = String(Boolean(state.subjectLocation));
   syncDeckTabs(state);
+  const renderKey = JSON.stringify([state.selectedDateTime, state.cameraLocation, state.subjectLocation,
+    state.selectedTargets, state.subject, state.composition, directionLineOrigin, Boolean(mapController), activeDeckTabId]);
+  if (renderKey === lastRenderKey) return;
+  lastRenderKey = renderKey;
+  const targetKey = JSON.stringify([state.selectedDateTime, state.cameraLocation, state.selectedTargets]);
+  if (targetKey !== lastTargetKey) {
+    try {
+      lastTargetData = calculateSelectedTargets(state.selectedTargets, new Date(state.selectedDateTime), state.cameraLocation);
+      lastTargetKey = targetKey;
+    } catch (error) {
+      lastTargetData = [];
+      console.error("Selected target calculation failed", error);
+    }
+  }
+  const targetData = lastTargetData;
+  if (activeDeckTabId === "celestial-panel" && lastCelestialKey !== targetKey) {
+    renderSun(state, targetData.find((data) => data.target.id === "sun"));
+    renderMoon(state, targetData.find((data) => data.target.id === "moon"));
+    renderMilkyWay(state, targetData.find((data) => data.target.id === "milkyway"));
+    renderStellarTargets(targetData);
+    syncCelestialCardDensity(state);
+    lastCelestialKey = targetKey;
+  }
+  const directionKey = JSON.stringify([targetKey, state.subjectLocation, directionLineOrigin, Boolean(mapController)]);
+  if (directionKey !== lastDirectionKey) {
+    renderCelestialDirections(state, targetData);
+    if (state.subjectLocation) mapController?.setSubjectLocation(state.cameraLocation, state.subjectLocation);
+    else mapController?.clearSubjectLocation();
+    lastDirectionKey = directionKey;
+  }
+  if (activeDeckTabId === "alignment-card") renderAlignment(state, targetData);
+  if (activeDeckTabId === "composition-card") renderComposition(state, targetData);
   compositionControls.sync(state);
   const compactDate = new Intl.DateTimeFormat("ja-JP", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(state.selectedDateTime));
   const compactTargets = targetLabelList(state.selectedTargets, { short: true }).join("・");
@@ -911,3 +959,4 @@ async function registerServiceWorker() {
     console.warn("Service Worker registration failed", error);
   }
 }
+import { safeStorage as localStorage } from "./utils/storage.js?v=1.7.0";

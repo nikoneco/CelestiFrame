@@ -28,12 +28,12 @@ test("release metadata stays aligned with the visible app version", () => {
   const html = readProjectFile("index.html");
   const readme = readProjectFile("README.md");
   const css = readProjectFile("css/app.css");
-  assert.equal(packageMetadata.version, "1.6.0");
+  assert.match(packageMetadata.version, /^\d+\.\d+\.\d+$/);
   assert.equal(lockMetadata.version, packageMetadata.version);
   assert.equal(lockMetadata.packages[""].version, packageMetadata.version);
   assert.ok(html.includes(`Ver ${packageMetadata.version} - CelestiFrame`));
   assert.ok(readme.includes(`Version ${packageMetadata.version}として`));
-  assert.ok(readProjectFile("service-worker.js").includes("celestiframe-shell-v114"));
+  assert.ok(readProjectFile("service-worker.js").includes(`celestiframe-shell-v${packageMetadata.version}`));
   assert.match(css, /\.phase-note \{[^}]*color: var\(--muted\);/);
 });
 
@@ -54,7 +54,7 @@ test("P3 service worker keeps the core shell reliable and warms optional Leaflet
   assert.ok(worker.includes("leaflet@1.9.4/dist/leaflet.css"));
   assert.ok(worker.includes("leaflet@1.9.4/dist/leaflet.js"));
   assert.ok(worker.includes("fetchWithTimeout(event.request)"));
-  assert.ok(worker.includes("./js/pwa/pwa-runtime.js?v=1"));
+  assert.ok(worker.includes("./js/pwa/pwa-runtime.js?v="));
 });
 
 test("service worker precaches every exact relative module dependency", () => {

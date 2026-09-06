@@ -1,8 +1,9 @@
-import { CLOUD_MODES, createForecastGrid, fetchForecastGrid, isForecastHour, isPastForecastHour, toForecastHour } from "./forecast-service.js?v=2";
-import { createLruCache } from "../utils/lru-cache.js?v=1";
+import { CLOUD_MODES, createForecastGrid, fetchForecastGrid, isForecastHour, isPastForecastHour, toForecastHour } from "./forecast-service.js?v=1.7.0";
+import { createLruCache } from "../utils/lru-cache.js?v=1.7.0";
 
-const formatPercent = (value) => `${Math.round(Number(value) || 0)}%`;
-const formatVisibility = (meters) => meters >= 1000 ? `${(meters / 1000).toFixed(meters >= 10000 ? 0 : 1)} km` : `${Math.round(meters)} m`;
+const formatPercent = (value) => Number.isFinite(value) ? `${Math.round(value)}%` : "—";
+const formatNumber = (value) => Number.isFinite(value) ? String(Math.round(value)) : "—";
+const formatVisibility = (meters) => !Number.isFinite(meters) ? "—" : meters >= 1000 ? `${(meters / 1000).toFixed(meters >= 10000 ? 0 : 1)} km` : `${Math.round(meters)} m`;
 const formatSelectedTime = (value) => new Intl.DateTimeFormat("ja-JP", {
   month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Tokyo",
 }).format(new Date(value));
@@ -42,7 +43,7 @@ export function bindWeatherOverlay(store, getMapController, { endpoint, fetchImp
   function setMetrics(forecast) {
     latestForecast = forecast || null;
     visibility.textContent = forecast ? formatVisibility(forecast.visibilityMeters) : "—";
-    wind.textContent = forecast ? `${Math.round(forecast.windKmh)} / ${Math.round(forecast.gustKmh)}` : "—";
+    wind.textContent = forecast ? `${formatNumber(forecast.windKmh)} / ${formatNumber(forecast.gustKmh)}` : "—";
     precipitation.textContent = forecast ? `降水 ${formatPercent(forecast.precipitationProbability)}` : "降水 —";
   }
 
@@ -75,6 +76,7 @@ export function bindWeatherOverlay(store, getMapController, { endpoint, fetchImp
   }
 
   function setLayerEnabled(enabled, { message } = {}) {
+    requestSequence++;
     requestController?.abort();
     requestController = null;
     isLayerEnabled = Boolean(enabled);
@@ -86,11 +88,15 @@ export function bindWeatherOverlay(store, getMapController, { endpoint, fetchImp
   }
 
   function scheduleRefresh({ force = false, delay = 450 } = {}) {
+    requestSequence++;
+    requestController?.abort();
     window.clearTimeout(refreshTimer);
     refreshTimer = window.setTimeout(() => refresh({ force }), delay);
   }
 
   async function refresh({ force = false } = {}) {
+    requestController?.abort();
+    const sequence = ++requestSequence;
     const mapController = getMapController();
     const state = store.getState();
     if (!activeMode || !isLayerEnabled || !mapController) return;
@@ -98,29 +104,29 @@ export function bindWeatherOverlay(store, getMapController, { endpoint, fetchImp
       mapController.clearCloudOverlay();
       setMetrics(null);
       isLayerEnabled = false;
-      setStatus("予報雲は前日から16日先まで表示できます");
+      setStatus("予報雲は48時間前から16日先まで表示できます");
       render();
       return;
     }
     const hour = toForecastHour(state.selectedDateTime);
     const bounds = mapController.getVisibleBounds();
-    const key = `${hour}|${mapKey(bounds)}`;
+    const key = `${hour}|${mapKey(bounds)}|${state.cameraLocation.latitude.toFixed(4)},${state.cameraLocation.longitude.toFixed(4)}`;
     const grid = createForecastGrid(bounds, { rows: 7, columns: 7 });
     const locations = [state.cameraLocation, ...grid];
     selectedTime.textContent = `${formatSelectedTime(state.selectedDateTime)} の予報`;
     source.textContent = "Open-Meteo・予報値";
-    let records = !force ? cache.get(key) : null;
+    const cached = !force ? cache.get(key) : null;
+    let records = cached && Date.now() - cached.fetchedAt < 15 * 60 * 1000 ? cached.records : null;
     if (!records) {
       requestController?.abort();
       requestController = new AbortController();
-      const sequence = ++requestSequence;
       setStatus("地図の雲を読んでいます…", { busy: true });
       try {
         records = await fetchForecastGrid({ endpoint, locations, hour, includePast: isPastForecastHour(hour), fetchImpl, signal: requestController.signal });
         if (sequence !== requestSequence) return;
-        cache.set(key, records);
+        cache.set(key, { records, fetchedAt: Date.now() });
       } catch (error) {
-        if (error?.name === "AbortError") return;
+        if (error?.name === "AbortError" || sequence !== requestSequence) return;
         console.warn("Weather forecast fetch failed", error);
         mapController.clearCloudOverlay();
         setMetrics(null);
@@ -137,7 +143,7 @@ export function bindWeatherOverlay(store, getMapController, { endpoint, fetchImp
     mapController.setCloudOverlay(gridRecords.map((record, index) => ({
       ...grid[index],
       value: record.forecast[activeMode],
-    })), { color: CLOUD_MODES[activeMode].color });
+    })).filter((cell) => Number.isFinite(cell.value)), { color: CLOUD_MODES[activeMode].color });
     setStatus("予報雲を地図に表示中");
     render();
   }
@@ -186,9 +192,12 @@ export function bindWeatherOverlay(store, getMapController, { endpoint, fetchImp
   store.subscribe((state) => {
     selectedTime.textContent = `${formatSelectedTime(state.selectedDateTime)} の予報`;
     if (!activeMode || !isLayerEnabled) return;
-    const stateKey = `${state.selectedDateTime}|${state.cameraLocation.latitude.toFixed(3)}|${state.cameraLocation.longitude.toFixed(3)}|${state.map.center.latitude.toFixed(3)}|${state.map.center.longitude.toFixed(3)}|${state.map.zoom}`;
+    const stateKey = `${state.selectedDateTime}|${state.cameraLocation.latitude.toFixed(4)}|${state.cameraLocation.longitude.toFixed(4)}|${state.map.center.latitude.toFixed(3)}|${state.map.center.longitude.toFixed(3)}|${state.map.zoom}`;
     if (stateKey === lastStateKey) return;
     lastStateKey = stateKey;
+    setMetrics(null);
+    getMapController()?.clearCloudOverlay();
+    render();
     scheduleRefresh();
   });
 
