@@ -1,8 +1,8 @@
-import { degreesToDirection } from "../geometry/angle.js?v=1.7.0";
-import { calculateSunData } from "./sun-service.js?v=1.7.0";
-import { calculateMoonData } from "./moon-service.js?v=1.7.0";
-import { calculateMilkyWay, milkyWayInternals } from "./milky-way-service.js?v=1.7.0";
-import { getTarget } from "./target-catalog.js?v=1.7.0";
+import { degreesToDirection } from "../geometry/angle.js?v=1.8.0";
+import { calculateSunData } from "./sun-service.js?v=1.8.0";
+import { calculateMoonData } from "./moon-service.js?v=1.8.0";
+import { calculateMilkyWay, milkyWayInternals } from "./milky-way-service.js?v=1.8.0";
+import { getTarget } from "./target-catalog.js?v=1.8.0";
 
 function validateInput(date, location) {
   if (!(date instanceof Date) || Number.isNaN(date.getTime())) throw new Error("日時が正しくありません");
@@ -43,6 +43,16 @@ function calculateFixed(target, date, location) {
   };
 }
 
+function attachTarget(data, target) {
+  // Preserve lazy Milky Way fan geometry when adding the catalog target.  A
+  // spread would invoke the getter and make every search minute pay for map
+  // geometry it never renders.
+  return Object.defineProperties({}, {
+    ...Object.getOwnPropertyDescriptors(data),
+    target: { value: target, enumerable: true, writable: true, configurable: true },
+  });
+}
+
 export function calculateTargetData(targetId, dateValue, locationValue, astronomy = globalThis.Astronomy) {
   const target = getTarget(targetId);
   if (!target) throw new Error("未対応の撮影対象です");
@@ -50,7 +60,7 @@ export function calculateTargetData(targetId, dateValue, locationValue, astronom
   const location = validateInput(date, locationValue);
   if (target.kind === "sun") return { ...calculateSunData(date, location), target };
   if (target.kind === "moon") return { ...calculateMoonData(date, location), target };
-  if (target.kind === "milkyway") return { ...calculateMilkyWay(date, location), target };
+  if (target.kind === "milkyway") return attachTarget(calculateMilkyWay(date, location), target);
   const data = target.kind === "planet"
     ? calculatePlanet(target, date, location, astronomy)
     : calculateFixed(target, date, location);

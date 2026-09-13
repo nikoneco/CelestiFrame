@@ -1,4 +1,4 @@
-@import url("./css/ui-fonts.css?v=1.7.0");
+@import url("./css/ui-fonts.css?v=1.8.0");
 @font-face {
   font-family: "IBM Plex Sans Condensed";
   src: url("./assets/fonts/IBMPlexSansCondensed-Regular.woff2") format("woff2");
@@ -39,6 +39,9 @@
   --moon-blue: #91b8ec;
   --solar: #ffb44a;
   --milkyway: #b58af2;
+  --milkyway-fan-base-opacity: 0.08;
+  --milkyway-fan-center-opacity: 0.16;
+  --milkyway-core-opacity: 0.82;
   --horizon: #62d5c7;
   --on-accent: #07111f;
   --danger: #ff6b6b;
@@ -137,6 +140,10 @@
   --moon: #163a67;
   --moon-blue: #386fa8;
   --solar: #c66a12;
+  --milkyway: #7443a8;
+  --milkyway-fan-base-opacity: 0.12;
+  --milkyway-fan-center-opacity: 0.18;
+  --milkyway-core-opacity: 0.86;
   --horizon: #087e75;
   --on-accent: #ffffff;
   --danger: #bd3030;
@@ -177,6 +184,10 @@
   --moon: #ff8378;
   --moon-blue: #e45c54;
   --solar: #ff9b62;
+  --milkyway: #ffa49c;
+  --milkyway-fan-base-opacity: 0.1;
+  --milkyway-fan-center-opacity: 0.18;
+  --milkyway-core-opacity: 0.86;
   --horizon: #ff655d;
   --on-accent: #100304;
   --danger: #ff4038;

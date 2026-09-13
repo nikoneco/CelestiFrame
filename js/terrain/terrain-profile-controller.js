@@ -1,4 +1,4 @@
-import { fetchTerrainProfile } from "./terrain-profile.js?v=1.7.0";
+import { fetchTerrainProfile } from "./terrain-profile.js?v=1.8.0";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 

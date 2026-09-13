@@ -1,4 +1,4 @@
-import { GUEST_PLAN_OWNER } from "../plans/plan-repository.js?v=1.7.0";
+import { GUEST_PLAN_OWNER } from "../plans/plan-repository.js?v=1.8.0";
 
 const timestamp = (value) => {
   const parsed = new Date(value).getTime();

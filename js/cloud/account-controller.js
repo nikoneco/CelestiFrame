@@ -1,4 +1,4 @@
-import { createFirebaseClient } from "./firebase-client.js?v=1.7.0";
+import { createFirebaseClient } from "./firebase-client.js?v=1.8.0";
 
 const MIGRATION_KEY = "celestiframe:cloud-migration:v1:";
 const SETTINGS_KEY = "celestiframe:cloud-settings:v1:";
@@ -248,4 +248,4 @@ export function bindCloudAccount({ coordinator, store, showToast, onPlansChanged
   renderSignedOut();
   scheduleClientInitialization();
 }
-import { safeStorage as localStorage } from "../utils/storage.js?v=1.7.0";
+import { safeStorage as localStorage } from "../utils/storage.js?v=1.8.0";

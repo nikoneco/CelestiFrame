@@ -4,7 +4,7 @@ import {
   MAX_SELECTED_TARGETS,
   getTarget,
   normalizeSelectedTargets,
-} from "../astronomy/target-catalog.js?v=1.7.0";
+} from "../astronomy/target-catalog.js?v=1.8.0";
 
 export function bindTargetSelector(store, showToast) {
   const dialog = document.querySelector("#target-selector-dialog");

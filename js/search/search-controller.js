@@ -1,6 +1,6 @@
-import { subjectGeometry } from "../geometry/bearing.js?v=1.7.0";
-import { calculateTargetAltitude } from "../geometry/target-altitude.js?v=1.7.0";
-import { getTarget } from "../astronomy/target-catalog.js?v=1.7.0";
+import { subjectGeometry } from "../geometry/bearing.js?v=1.8.0";
+import { calculateTargetAltitude } from "../geometry/target-altitude.js?v=1.8.0";
+import { getTarget } from "../astronomy/target-catalog.js?v=1.8.0";
 
 const pad = (value) => String(value).padStart(2, "0");
 
@@ -404,7 +404,7 @@ export function bindSearchControls(store, showToast) {
     stopWorker();
     clearFeedback();
     if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
-    const searchWorker = new Worker(new URL("./search-worker.js?v=1.7.0", import.meta.url));
+    const searchWorker = new Worker(new URL("./search-worker.js?v=1.8.0", import.meta.url));
     worker = searchWorker;
     setSearchBusy(true);
     progressPanel.hidden = false;

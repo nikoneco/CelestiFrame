@@ -146,6 +146,34 @@ main { min-height: 100dvh; }
 .leaflet-control-attribution { font-size: 9px; background: var(--glass) !important; color: var(--muted); }
 .leaflet-control-attribution a { color: var(--moon-blue); }
 .leaflet-bar a { background: var(--panel) !important; color: var(--text) !important; border-color: var(--line) !important; }
+.leaflet-overlay-pane .milkyway-fan-camera {
+  fill: var(--milkyway) !important;
+  fill-opacity: calc(var(--milkyway-fan-base-opacity) + var(--milkyway-central-weight, 0) * var(--milkyway-fan-center-opacity)) !important;
+  stroke: none !important;
+  pointer-events: none !important;
+}
+.leaflet-overlay-pane .milkyway-fan-subject {
+  fill: none !important;
+  stroke: var(--milkyway) !important;
+  stroke-dasharray: 5 7 !important;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none !important;
+}
+.leaflet-overlay-pane .milkyway-core-line {
+  fill: none !important;
+  stroke: var(--milkyway) !important;
+  stroke-opacity: var(--milkyway-core-opacity) !important;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none !important;
+}
+.leaflet-overlay-pane .milkyway-core-line-subject { stroke-opacity: calc(var(--milkyway-core-opacity) * 0.7) !important; }
+.leaflet-overlay-pane .milkyway-core-marker {
+  fill: var(--milkyway) !important;
+  fill-opacity: var(--milkyway-core-opacity) !important;
+  stroke: var(--marker-core) !important;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none !important;
+}
 
 .map-fallback {
   position: absolute;
@@ -569,6 +597,35 @@ body.is-offline .map-status { border-color: color-mix(in srgb, var(--solar) 55%,
 .card-vector-line.is-subject {
   background: repeating-linear-gradient(90deg, currentColor 0 12px, transparent 12px 19px, currentColor 19px 21px, transparent 21px 28px);
 }
+.milkyway-vector-key { gap: 3px; }
+.milkyway-vector-key .card-vector-line.is-camera {
+  height: 6px;
+  border: 1px solid color-mix(in srgb, currentColor 60%, transparent);
+  background: color-mix(in srgb, currentColor 22%, transparent);
+}
+.milkyway-vector-key .card-vector-line.is-subject {
+  height: 0;
+  border-top: 2px dashed currentColor;
+  background: none;
+}
+.milkyway-vector-key .card-vector-core {
+  display: block;
+  position: relative;
+  height: 2px;
+  background: currentColor;
+}
+.milkyway-vector-key .card-vector-core::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  border: 1px solid var(--ink);
+  border-radius: 50%;
+  background: currentColor;
+  transform: translate(-50%, -50%);
+}
 .celestial-grid[data-line-origin="camera"] .card-vector-line.is-subject,
 .celestial-grid[data-line-origin="subject"] .card-vector-line.is-camera { display: none; }
 .celestial-symbol { position: relative; flex: 0 0 28px; width: 28px; height: 28px; border-radius: 50%; }
@@ -591,12 +648,14 @@ body.is-offline .map-status { border-color: color-mix(in srgb, var(--solar) 55%,
 .celestial-card-sun .eyebrow { color: var(--solar); }
 .celestial-card-milkyway .eyebrow, .celestial-card-milkyway .metric-pair span em { color: var(--milkyway); }
 .celestial-card-milkyway .horizon-state.is-above { color: var(--milkyway); }
-.milkyway-arc-chart { position: relative; height: 116px; margin: 9px 13px 3px; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: radial-gradient(circle at 50% 100%, color-mix(in srgb, var(--milkyway) 12%, var(--panel-raised)), var(--ink) 70%); }
+.milkyway-arc-chart { position: relative; height: 116px; margin: 9px 13px 3px; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: radial-gradient(circle at 50% 100%, color-mix(in srgb, var(--milkyway) 12%, var(--detail-surface-start)), var(--detail-surface-end) 70%); }
 #milkyway-arc { display: block; width: 100%; height: 92px; }
 #milkyway-arc .milkyway-horizon { stroke: color-mix(in srgb, var(--muted) 55%, transparent); stroke-width: 1; stroke-dasharray: 3 4; }
 #milkyway-arc .milkyway-path { fill: none; stroke: var(--milkyway); stroke-width: 3; stroke-linecap: round; }
 #milkyway-arc .milkyway-core { fill: var(--solar); stroke: var(--ink); stroke-width: 1.5; }
 .milkyway-horizon-label { position: absolute; left: 8px; right: 8px; bottom: 5px; color: var(--muted); font: 12px var(--data); text-align: justify; text-align-last: justify; }
+.milkyway-arc-legend { margin: 0 13px 5px; color: var(--muted); font-size: 11px; line-height: 1.35; }
+.celestial-card.is-compact .milkyway-arc-legend { display: none; }
 .celestial-card footer.milkyway-details { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
 .celestial-card footer.milkyway-details span:nth-child(2) { text-align: center; }
 .celestial-card footer.milkyway-details span:last-child { text-align: right; }

@@ -2,11 +2,12 @@
 // QA_URL selects the app; QA_OUTPUT selects the screenshot directory.
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
 const { chromium } = createRequire(import.meta.url)("playwright");
-const base = process.env.QA_URL || "http://127.0.0.1:48731/";
+const { version } = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
+const base = process.env.QA_URL || "http://127.0.0.1:4173/";
 const output = process.env.QA_OUTPUT || path.join(os.tmpdir(), "celestiframe-qa");
 await mkdir(output, { recursive: true });
 const url = new URL(base);
@@ -84,10 +85,14 @@ try {
 
   // Compare with the audit's 60 synchronous minute updates, five targets and a subject.
   const measure = () => {
-    const counts = { polylines: 0, replaceChildren: 0, getPosition: 0, getTimes: 0, getMoonPosition: 0, getMoonTimes: 0, getMoonIllumination: 0 };
+    const counts = { polylines: 0, milkyWayLines: 0, replaceChildren: 0, getPosition: 0, getTimes: 0, getMoonPosition: 0, getMoonTimes: 0, getMoonIllumination: 0 };
     const restore = [];
     for (const [object, key, counter] of [[L, 'polyline', 'polylines'], [Element.prototype, 'replaceChildren', 'replaceChildren'], ...['getPosition','getTimes','getMoonPosition','getMoonTimes','getMoonIllumination'].map((key) => [SunCalc,key,key])]) {
-      const original = object[key]; object[key] = function(...args) { counts[counter]++; return original.apply(this,args); }; restore.push(()=>{object[key]=original;});
+      const original = object[key]; object[key] = function(...args) {
+        counts[counter]++;
+        if (key === 'polyline' && args[1]?.className?.startsWith('milkyway-')) counts.milkyWayLines++;
+        return original.apply(this,args);
+      }; restore.push(()=>{object[key]=original;});
     }
     const times = [];
     const input = document.querySelector('#time-slider');
@@ -100,7 +105,10 @@ try {
   await cdp.send('Emulation.setCPUThrottlingRate', {rate:4});
   const constrainedPerformance = await page.evaluate(measure);
   await cdp.send('Emulation.setCPUThrottlingRate', {rate:1});
-  assert.equal(performance.counts.polylines, 0, 'time scrubbing reuses map lines');
+  assert.equal(performance.counts.polylines - performance.counts.milkyWayLines, 0, 'time scrubbing reuses existing point-target lines');
+  // Horizon crossings can add/remove a few Milky Way edges; rebuilding all
+  // boundaries on every update would allocate hundreds of lines here.
+  assert.ok(performance.counts.milkyWayLines < 60, 'time scrubbing reuses Milky Way boundaries between horizon crossings');
   assert.ok(performance.counts.getMoonTimes <= 2, 'daily moon events are reused per observing point');
   for (const height of [0, 300]) {
     await page.locator('#deck-tab-composition').click();
@@ -133,7 +141,7 @@ try {
   await page.locator('#deck-tab-composition').click();
   await page.locator('#camera-height-meters').fill('301');
   assert.equal(await page.locator('#terrain-profile-result').getAttribute('hidden'), '');
-  await page.evaluate(async () => (await import('./js/elevation/elevation-service.js?v=1.7.0')).clearElevationCache());
+  await page.evaluate(async (version) => (await import(`./js/elevation/elevation-service.js?v=${version}`)).clearElevationCache(), version);
   delayTerrain = true;
   terrainGate = new Promise((resolve) => { releaseTerrain = resolve; });
   const started = new Promise((resolve) => { terrainStarted = resolve; });
@@ -167,9 +175,9 @@ try {
   const weatherPage = await context.newPage();
   await weatherPage.route('**/qa-weather', (route)=>route.fulfill({contentType:'text/html',body:`<!doctype html><html><body>${weatherMarkup}</body></html>`}));
   await weatherPage.goto(new URL('qa-weather', base).href);
-  await weatherPage.evaluate(async () => {
-    const { bindWeatherOverlay } = await import('./js/weather/weather-controller.js?v=1.7.0');
-    const { toForecastHour } = await import('./js/weather/forecast-service.js?v=1.7.0');
+  await weatherPage.evaluate(async (version) => {
+    const { bindWeatherOverlay } = await import(`./js/weather/weather-controller.js?v=${version}`);
+    const { toForecastHour } = await import(`./js/weather/forecast-service.js?v=${version}`);
     let state = {selectedDateTime:new Date().toISOString(), cameraLocation:{latitude:35,longitude:139}, map:{center:{latitude:35,longitude:139},zoom:14}};
     const listeners = [];
     const fixture = window.weatherFixture = {calls:[],pending:[],hold:false,missing:false,cells:[]};
@@ -187,7 +195,7 @@ try {
         return response();
       },
     });
-  });
+  }, version);
   await weatherPage.locator('#weather-toggle').click();
   await weatherPage.waitForFunction(()=>document.querySelector('#weather-total').textContent==='20%');
   await weatherPage.evaluate(()=>window.weatherFixture.camera(35.002));
@@ -233,11 +241,11 @@ try {
   await offlinePage.evaluate(() => document.fonts.ready);
   const fonts = await offlinePage.evaluate(() => performance.getEntriesByType('resource').filter((entry)=>/\.woff2/.test(entry.name)).map((entry)=>entry.name));
   if (fonts.some((name)=>/IBMPlexSansJP-(Regular|SemiBold)\.woff2/.test(name))) {
-    const coverage = await offlinePage.evaluate(async () => {
-      const css = await (await fetch('./css/ui-fonts.css?v=1.7.0')).text();
+    const coverage = await offlinePage.evaluate(async (version) => {
+      const css = await (await fetch(`./css/ui-fonts.css?v=${version}`)).text();
       const supported = new Set([...css.matchAll(/U\+([0-9A-F]+)/g)].map((match)=>parseInt(match[1],16)));
       return [...new Set(document.body.innerText)].filter((character)=>character.codePointAt(0)>32 && !supported.has(character.codePointAt(0)));
-    });
+    }, version);
     console.log('FONT FALLBACK DIAGNOSTIC', JSON.stringify({fonts,missingVisibleCharacters:coverage}));
   }
   assert.ok(!fonts.some((name)=>/IBMPlexSansJP-(Regular|SemiBold)\.woff2/.test(name)), 'initial UI only needs subset fonts');

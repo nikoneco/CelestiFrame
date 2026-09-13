@@ -1,4 +1,4 @@
-import { MAX_PLACE_QUERY_LENGTH, normalizePlaceQuery, searchPlaces } from "./geocoder.js?v=1.7.0";
+import { MAX_PLACE_QUERY_LENGTH, normalizePlaceQuery, searchPlaces } from "./geocoder.js?v=1.8.0";
 
 const CACHE_KEY = "celestiframe:place-search:v1";
 const COLLAPSED_KEY = "celestiframe:place-search-collapsed:v1";
@@ -175,4 +175,4 @@ export function bindPlaceSearch(store, getMapController, showToast, { geocoderEn
     panel.hidden = true;
   });
 }
-import { safeStorage as localStorage } from "../utils/storage.js?v=1.7.0";
+import { safeStorage as localStorage } from "../utils/storage.js?v=1.8.0";

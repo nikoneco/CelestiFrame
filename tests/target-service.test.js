@@ -19,3 +19,10 @@ test("planets use Astronomy Engine and return a visible-sky direction", () => {
   assert.ok(mars.altitude >= -90 && mars.altitude <= 90);
   assert.equal(typeof mars.direction, "string");
 });
+
+test("Milky Way target wrapper keeps adaptive fan geometry lazy for searches", () => {
+  const milkyWay = calculateTargetData("milkyway", date, tokyo, Astronomy);
+  const descriptor = Object.getOwnPropertyDescriptor(milkyWay, "visibleSegments");
+  assert.equal(typeof descriptor?.get, "function");
+  assert.ok(milkyWay.visibleSegments.length > 0);
+});

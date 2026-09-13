@@ -1,5 +1,5 @@
-import { degreesToDirection, normalizeDegrees } from "../geometry/angle.js?v=1.7.0";
-import { cachedEphemeris } from "./ephemeris-cache.js?v=1.7.0";
+import { degreesToDirection, normalizeDegrees } from "../geometry/angle.js?v=1.8.0";
+import { cachedEphemeris } from "./ephemeris-cache.js?v=1.8.0";
 
 const SYNODIC_MONTH_DAYS = 29.530588853;
 const toDegrees = (radians) => radians * 180 / Math.PI;

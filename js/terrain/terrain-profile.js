@@ -1,5 +1,5 @@
-import { subjectGeometry } from "../geometry/bearing.js?v=1.7.0";
-import { fetchElevation } from "../elevation/elevation-service.js?v=1.7.0";
+import { subjectGeometry } from "../geometry/bearing.js?v=1.8.0";
+import { fetchElevation } from "../elevation/elevation-service.js?v=1.8.0";
 
 const EFFECTIVE_EARTH_RADIUS_METERS = 6371008.8 * (7 / 6);
 

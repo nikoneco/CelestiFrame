@@ -15,8 +15,8 @@
     <link rel="icon" href="./assets/icon.svg?v=43" type="image/svg+xml">
     <link rel="apple-touch-icon" href="./assets/icons/app-180.png">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
-    <link rel="stylesheet" href="./tokens.css?v=1.7.0">
-    <link rel="stylesheet" href="./css/app.css?v=1.7.0">
+    <link rel="stylesheet" href="./tokens.css?v=1.8.0">
+    <link rel="stylesheet" href="./css/app.css?v=1.8.0">
   </head>
   <body>
     <div class="app-shell">
@@ -284,18 +284,20 @@
                 <div><h2>天の川</h2></div>
                 <span class="horizon-state" data-milkyway-field="state">計算準備中</span>
               </header>
-              <div class="card-vector-key" role="img" aria-label="天の川の方向線。実線は撮影地点、破線は被写体地点">
+              <div class="card-vector-key milkyway-vector-key" role="img" aria-label="天の川の地図表示。塗りつぶしのファンは撮影地点を起点にした地平線より上の銀河面、破線の外周は被写体地点を起点にした銀河面、細線と点は地平線上の銀河中心">
                 <span class="card-vector-line is-camera" aria-hidden="true"></span>
                 <span class="card-vector-line is-subject" aria-hidden="true"></span>
+                <span class="card-vector-core" aria-hidden="true"></span>
               </div>
               <div class="metric-pair">
                 <div><span><i class="detail-metric-label">アーチ最高点</i><i class="compact-metric-label" title="アーチ最高点の方位">方位角</i> <em data-milkyway-field="direction">—</em></span><strong><b data-milkyway-field="azimuth">—</b><small>°</small></strong></div>
                 <div><span>高度角</span><strong><b data-milkyway-field="altitude">—</b><small>°</small></strong></div>
               </div>
-              <div class="milkyway-arc-chart" aria-label="地平線より上に見える天の川アーチ">
+              <div class="milkyway-arc-chart" aria-label="地平線より上に見える天の川銀河面のアーチ。点は地平線上の銀河中心">
                 <svg id="milkyway-arc" viewBox="0 0 360 100" preserveAspectRatio="none" role="img"></svg>
                 <span class="milkyway-horizon-label">北　　東　　南　　西　　北</span>
               </div>
+              <p class="milkyway-arc-legend">扇：地平線上　濃色：銀河中心周辺　点：見える銀河中心</p>
               <footer class="milkyway-details">
                 <span>銀河中心 <b data-milkyway-field="core-direction">—</b></span>
                 <span>中心高度 <b data-milkyway-field="core-altitude">—</b></span>
@@ -414,7 +416,7 @@
           </article>
 
             </div>
-          <p class="phase-note">Ver 1.7.0 - CelestiFrame by NikoNeco</p>
+          <p class="phase-note">Ver 1.8.0 - CelestiFrame by NikoNeco</p>
           </div>
         </section>
       </main>
@@ -769,8 +771,8 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
-    <script src="./js/vendor/suncalc.js?v=1.7.0"></script>
-    <script src="./js/vendor/astronomy-engine.min.js?v=1.7.0"></script>
-    <script type="module" src="./js/app.js?v=1.7.0"></script>
+    <script src="./js/vendor/suncalc.js?v=1.8.0"></script>
+    <script src="./js/vendor/astronomy-engine.min.js?v=1.8.0"></script>
+    <script type="module" src="./js/app.js?v=1.8.0"></script>
   </body>
 </html>

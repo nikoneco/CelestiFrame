@@ -1,5 +1,5 @@
-import { CLOUD_MODES, createForecastGrid, fetchForecastGrid, isForecastHour, isPastForecastHour, toForecastHour } from "./forecast-service.js?v=1.7.0";
-import { createLruCache } from "../utils/lru-cache.js?v=1.7.0";
+import { CLOUD_MODES, createForecastGrid, fetchForecastGrid, isForecastHour, isPastForecastHour, toForecastHour } from "./forecast-service.js?v=1.8.0";
+import { createLruCache } from "../utils/lru-cache.js?v=1.8.0";
 
 const formatPercent = (value) => Number.isFinite(value) ? `${Math.round(value)}%` : "—";
 const formatNumber = (value) => Number.isFinite(value) ? String(Math.round(value)) : "—";
