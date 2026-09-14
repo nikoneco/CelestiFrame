@@ -12,9 +12,29 @@ const HOURLY_FIELDS = [
   "cloud_cover_high",
   "visibility",
   "precipitation_probability",
+  "temperature_2m",
+  "relative_humidity_2m",
+  "dew_point_2m",
   "wind_speed_10m",
   "wind_gusts_10m",
 ];
+
+export const FORECAST_SNAPSHOT_VERSION = 1;
+
+const SNAPSHOT_FORECAST_FIELDS = Object.freeze([
+  "total",
+  "low",
+  "mid",
+  "high",
+  "visibilityMeters",
+  "precipitationProbability",
+  "windKmh",
+  "gustKmh",
+  "temperatureC",
+  "relativeHumidityPercent",
+  "dewPointC",
+  "temperatureDewPointSpreadC",
+]);
 
 const clamp = (value, min, max) => value == null ? null : Math.min(max, Math.max(min, value));
 
@@ -104,6 +124,7 @@ export function buildForecastUrl(endpoint, locations, hour, { includePast = fals
     url.searchParams.set("start_hour", hour);
     url.searchParams.set("end_hour", hour);
   }
+  url.searchParams.set("temperature_unit", "celsius");
   url.searchParams.set("wind_speed_unit", "kmh");
   return url;
 }
@@ -127,6 +148,14 @@ export function parseForecastResponse(payload, locations, hour) {
         high: clamp(valueAt(record, "cloud_cover_high", timeIndex), 0, 100),
         visibilityMeters: clamp(valueAt(record, "visibility", timeIndex), 0, Infinity),
         precipitationProbability: clamp(valueAt(record, "precipitation_probability", timeIndex), 0, 100),
+        temperatureC: valueAt(record, "temperature_2m", timeIndex),
+        relativeHumidityPercent: valueAt(record, "relative_humidity_2m", timeIndex),
+        dewPointC: valueAt(record, "dew_point_2m", timeIndex),
+        temperatureDewPointSpreadC: (() => {
+          const temperature = valueAt(record, "temperature_2m", timeIndex);
+          const dewPoint = valueAt(record, "dew_point_2m", timeIndex);
+          return Number.isFinite(temperature) && Number.isFinite(dewPoint) ? temperature - dewPoint : null;
+        })(),
         windKmh: clamp(valueAt(record, "wind_speed_10m", timeIndex), 0, Infinity),
         gustKmh: clamp(valueAt(record, "wind_gusts_10m", timeIndex), 0, Infinity),
       },
@@ -141,4 +170,64 @@ export async function fetchForecastGrid({ endpoint, locations, hour, includePast
   });
   if (!response.ok) throw new Error(`空況データを取得できません（${response.status}）`);
   return parseForecastResponse(await response.json(), locations, hour);
+}
+
+export async function fetchForecastPoint({ endpoint, location, hour, includePast = false, fetchImpl = fetch, signal }) {
+  const [record] = await fetchForecastGrid({ endpoint, locations: [location], hour, includePast, fetchImpl, signal });
+  return record;
+}
+
+function normalizeSnapshotTimestamp(value) {
+  if (value instanceof Date) return Number.isFinite(value.getTime()) ? value.getTime() : null;
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (typeof value === "string" && value.trim()) {
+    const timestamp = Date.parse(value);
+    return Number.isFinite(timestamp) ? timestamp : null;
+  }
+  return null;
+}
+
+function normalizeSnapshotLocation(value) {
+  const latitude = Number(value?.latitude);
+  const longitude = Number(value?.longitude);
+  if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90
+    || !Number.isFinite(longitude) || longitude < -180 || longitude > 180) return null;
+  return { latitude, longitude };
+}
+
+function normalizeSnapshotForecast(value) {
+  if (!value || typeof value !== "object") return null;
+  const forecast = Object.fromEntries(SNAPSHOT_FORECAST_FIELDS.map((field) => [field, finiteNumber(value[field], null)]));
+  return Object.freeze(forecast);
+}
+
+export function normalizeForecastSnapshot(snapshot) {
+  if (!snapshot || typeof snapshot !== "object") return null;
+  if (snapshot.version != null && Number(snapshot.version) !== FORECAST_SNAPSHOT_VERSION) return null;
+  const location = normalizeSnapshotLocation(snapshot.location);
+  const hour = typeof snapshot.hour === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:00$/.test(snapshot.hour)
+    ? snapshot.hour
+    : null;
+  const forecast = normalizeSnapshotForecast(snapshot.forecast);
+  const fetchedAt = normalizeSnapshotTimestamp(snapshot.fetchedAt);
+  if (!location || !hour || !forecast || fetchedAt == null) return null;
+  return Object.freeze({
+    version: FORECAST_SNAPSHOT_VERSION,
+    location: Object.freeze(location),
+    hour,
+    forecast,
+    fetchedAt,
+  });
+}
+
+export function createForecastSnapshot({ location, hour, forecast, fetchedAt = Date.now() } = {}) {
+  const snapshot = normalizeForecastSnapshot({
+    version: FORECAST_SNAPSHOT_VERSION,
+    location,
+    hour,
+    forecast,
+    fetchedAt,
+  });
+  if (!snapshot) throw new Error("予報スナップショットが正しくありません");
+  return snapshot;
 }

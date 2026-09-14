@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createPlanSharePayload, sharePlan } from "../js/plans/plan-manager.js";
+import { createPlanSharePayload, sharePlan, createPlanRestoreRunner } from "../js/plans/plan-manager.js";
 
 const plan = {
   name: "月とスカイツリー",
@@ -15,6 +15,47 @@ const plan = {
     map: { zoom: 16, center: { latitude: 35.7, longitude: 139.8 } },
   },
 };
+
+test("a delayed earlier plan read cannot replace the last clicked plan", async () => {
+  let releaseFirst;
+  const applied = [];
+  const restore = createPlanRestoreRunner({
+    getOwnerId: () => "alice",
+    readOffline: (plan) => plan.id === "A" ? new Promise((resolve) => { releaseFirst = resolve; }) : Promise.resolve(null),
+    applyState: async (state) => { applied.push(state.id); return true; },
+  });
+  const first = restore({ id: "A", state: { id: "A" } });
+  const second = await restore({ id: "B", state: { id: "B" } });
+  releaseFirst(null);
+  assert.ok(second);
+  assert.equal(await first, false);
+  assert.deepEqual(applied, ["B"]);
+});
+
+test("the owner guard remains valid through asynchronous cache restoration", async () => {
+  let owner = "alice";
+  let releaseCache;
+  let enteredCache;
+  const entered = new Promise((resolve) => { enteredCache = resolve; });
+  let applied = false;
+  const restore = createPlanRestoreRunner({
+    getOwnerId: () => owner,
+    readOffline: async () => null,
+    applyState: async (_state, { isCurrent }) => {
+      enteredCache();
+      await new Promise((resolve) => { releaseCache = resolve; });
+      if (!isCurrent()) return false;
+      applied = true;
+      return true;
+    },
+  });
+  const pending = restore({ state: {} });
+  await entered;
+  owner = "guest";
+  releaseCache();
+  assert.equal(await pending, false);
+  assert.equal(applied, false);
+});
 
 test("plan share payload includes its summary and restorable URL", () => {
   const payload = createPlanSharePayload(plan, "https://nikoneco.github.io/CelestiFrame/");

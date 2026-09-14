@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { buildPlanSyncActions, createPlanSyncCoordinator } from "../js/cloud/plan-sync.js";
+import { deletePlanData } from "../js/plans/plan-manager.js";
 
 const plan = (id, updatedAt) => ({ id, updatedAt });
 
@@ -19,6 +20,32 @@ function repositories(initial = {}) {
   }
   return { forOwner, setOwner() {}, listForOwner: (owner) => forOwner(owner).list() };
 }
+
+test("offline cleanup waiting across logout never deletes the guest copy of a signed-in plan", async () => {
+  const shared = plan("same-id", "2026-09-14T00:00:00Z");
+  const local = repositories({ alice: [shared], guest: [shared] });
+  const coordinator = createPlanSyncCoordinator(local);
+  await coordinator.connect("alice", repositories({ alice: [shared] }).forOwner("alice"), { syncNow: false });
+  let releaseCleanup;
+  let enteredCleanup;
+  const entered = new Promise((resolve) => { enteredCleanup = resolve; });
+  let cleanupOwner;
+  const deleting = deletePlanData(shared, {
+    repository: coordinator, ownerId: coordinator.getUserId(),
+    offlinePreparation: { remove: async (_plan, { ownerId }) => {
+      cleanupOwner = ownerId;
+      enteredCleanup();
+      await new Promise((resolve) => { releaseCleanup = resolve; });
+    } },
+  });
+  await entered;
+  coordinator.disconnect();
+  releaseCleanup();
+  assert.equal(await deleting, null);
+  assert.equal(cleanupOwner, "alice");
+  assert.deepEqual(await local.forOwner("alice").list(), []);
+  assert.deepEqual(await local.forOwner("guest").list(), [shared]);
+});
 
 test("a cloud deletion removes an unchanged plan on another device", () => {
   const deletedAt = "2026-09-06T02:00:00Z";

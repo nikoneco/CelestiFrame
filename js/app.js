@@ -1,36 +1,39 @@
-import { createStore } from "./state.js?v=1.8.0";
-import { createMapController, focusCurrentLocation } from "./map/map-controller.js?v=1.8.0";
-import { bindPlaceSearch } from "./map/place-search.js?v=1.8.0";
-import { loadRuntimeConfig } from "./config/runtime-config.js?v=1.8.0";
-import { bindDateTimeControls } from "./ui/datetime-controls.js?v=1.8.0";
-import { bindSkyStateRail } from "./ui/sky-state-rail.js?v=1.8.0";
-import { normalizeThemePreference, resolveThemePreference, themeColor } from "./ui/theme.js?v=1.8.0";
-import { calculateSunData } from "./astronomy/sun-service.js?v=1.8.0";
-import { calculateMoonData } from "./astronomy/moon-service.js?v=1.8.0";
-import { calculateMilkyWay } from "./astronomy/milky-way-service.js?v=1.8.0";
-import { calculateSelectedTargets } from "./astronomy/target-service.js?v=1.8.0";
-import { targetLabelList } from "./astronomy/target-catalog.js?v=1.8.0";
-import { subjectGeometry } from "./geometry/bearing.js?v=1.8.0";
-import { signedAngleDifference } from "./geometry/angle.js?v=1.8.0";
-import { formatDistance } from "./utils/format.js?v=1.8.0";
-import { bindSearchControls } from "./search/search-controller.js?v=1.8.0";
-import { bindPlanManager } from "./plans/plan-manager.js?v=1.8.0";
-import { createPlanRepository } from "./plans/plan-repository.js?v=1.8.0";
-import { createPlanSyncCoordinator } from "./cloud/plan-sync.js?v=1.8.0";
-import { bindCloudAccount } from "./cloud/account-controller.js?v=1.8.0";
-import { parseSharedState } from "./plans/plan-data.js?v=1.8.0";
-import { calculateComposition, focalLengthForFill, SENSOR_PRESETS } from "./composition/composition.js?v=1.8.0";
-import { bindCompositionControls } from "./ui/composition-controls.js?v=1.8.0";
-import { bindElevationControls } from "./elevation/elevation-controller.js?v=1.8.0";
-import { apparentSolarAltitude, calculateTargetAltitude } from "./geometry/target-altitude.js?v=1.8.0";
-import { bindShootingPlanner } from "./planning/shooting-planner.js?v=1.8.0";
-import { bindTerrainProfile } from "./terrain/terrain-profile-controller.js?v=1.8.0";
-import { bindFieldMode } from "./field/field-mode.js?v=1.8.0";
-import { bindObservationHeightMeasurement } from "./measurement/observation-height-controller.js?v=1.8.0";
-import { bindWeatherOverlay } from "./weather/weather-controller.js?v=1.8.0";
-import { bindTargetSelector } from "./ui/target-selector.js?v=1.8.0";
-import { bindLightPollutionOverlay } from "./light-pollution/light-pollution-controller.js?v=1.8.0";
-import { bindPwaRuntime } from "./pwa/pwa-runtime.js?v=1.8.0";
+import { createStore } from "./state.js?v=1.9.0";
+import { createMapController, focusCurrentLocation } from "./map/map-controller.js?v=1.9.0";
+import { bindPlaceSearch } from "./map/place-search.js?v=1.9.0";
+import { loadRuntimeConfig } from "./config/runtime-config.js?v=1.9.0";
+import { bindDateTimeControls } from "./ui/datetime-controls.js?v=1.9.0";
+import { bindSkyStateRail } from "./ui/sky-state-rail.js?v=1.9.0";
+import { normalizeThemePreference, resolveThemePreference, themeColor } from "./ui/theme.js?v=1.9.0";
+import { calculateSunData } from "./astronomy/sun-service.js?v=1.9.0";
+import { calculateMoonData } from "./astronomy/moon-service.js?v=1.9.0";
+import { calculateMilkyWay } from "./astronomy/milky-way-service.js?v=1.9.0";
+import { calculateSelectedTargets } from "./astronomy/target-service.js?v=1.9.0";
+import { targetLabelList } from "./astronomy/target-catalog.js?v=1.9.0";
+import { subjectGeometry } from "./geometry/bearing.js?v=1.9.0";
+import { signedAngleDifference } from "./geometry/angle.js?v=1.9.0";
+import { formatDistance } from "./utils/format.js?v=1.9.0";
+import { bindSearchControls } from "./search/search-controller.js?v=1.9.0";
+import { bindPlanManager } from "./plans/plan-manager.js?v=1.9.0";
+import { createPlanRepository } from "./plans/plan-repository.js?v=1.9.0";
+import { createPlanSyncCoordinator } from "./cloud/plan-sync.js?v=1.9.0";
+import { bindCloudAccount } from "./cloud/account-controller.js?v=1.9.0";
+import { parseSharedState } from "./plans/plan-data.js?v=1.9.0";
+import { calculateComposition, focalLengthForFill, SENSOR_PRESETS } from "./composition/composition.js?v=1.9.0";
+import { bindCompositionControls } from "./ui/composition-controls.js?v=1.9.0";
+import { bindElevationControls } from "./elevation/elevation-controller.js?v=1.9.0";
+import { apparentSolarAltitude, calculateTargetAltitude } from "./geometry/target-altitude.js?v=1.9.0";
+import { bindShootingPlanner } from "./planning/shooting-planner.js?v=1.9.0";
+import { bindTerrainProfile } from "./terrain/terrain-profile-controller.js?v=1.9.0";
+import { bindFieldMode } from "./field/field-mode.js?v=1.9.0";
+import { bindObservationHeightMeasurement } from "./measurement/observation-height-controller.js?v=1.9.0";
+import { bindWeatherOverlay } from "./weather/weather-controller.js?v=1.9.0";
+import { bindTargetSelector } from "./ui/target-selector.js?v=1.9.0";
+import { bindLightPollutionOverlay } from "./light-pollution/light-pollution-controller.js?v=1.9.0";
+import { bindPwaRuntime } from "./pwa/pwa-runtime.js?v=1.9.0";
+import { createOfflinePreparation } from "./plans/offline-preparation.js?v=1.9.0";
+import { createFieldDataCollector, stateWithOfflineElevation } from "./field/field-data-collector.js?v=1.9.0";
+import { restoreOfflineLight } from "./light-pollution/offline-light-pollution.js?v=1.9.0";
 
 let toastTimer;
 registerServiceWorker();
@@ -387,7 +390,11 @@ function renderStellarTargets(targetData) {
 
 function syncCelestialCardDensity(state) {
   const cards = [...document.querySelectorAll("#celestial-grid .celestial-card[data-card]")]
-    .filter((card) => state.selectedTargets.includes(card.dataset.card));
+    .filter((card) => state.selectedTargets.includes(card.dataset.card))
+    .sort((a, b) => state.selectedTargets.indexOf(a.dataset.card) - state.selectedTargets.indexOf(b.dataset.card));
+  const container = document.querySelector("#celestial-grid");
+  // DOM order follows the chips, including keyboard and screen reader order.
+  cards.forEach((card) => container.append(card));
   if (!cards.some((card) => card.dataset.card === activeCelestialId)) {
     activeCelestialId = cards[0]?.dataset.card || null;
   }
@@ -431,11 +438,11 @@ function renderCelestialDirections(state, cameraTargetData) {
   if (!mapController) return;
   const directions = [];
   if (state.settings.directionLineOrigin !== "subject") {
-    cameraTargetData.forEach((data) => directions.push({ targetId: data.target.id, location: state.cameraLocation, data, origin: "camera" }));
+    cameraTargetData.forEach((data) => directions.push({ targetId: data.target.id, isPrimary: data.target.id === state.selectedTargets[0], location: state.cameraLocation, data, origin: "camera" }));
   }
   if (state.subjectLocation && state.settings.directionLineOrigin !== "camera") {
     const subjectData = calculateSelectedTargets(state.selectedTargets, new Date(state.selectedDateTime), state.subjectLocation);
-    subjectData.forEach((data) => directions.push({ targetId: data.target.id, location: state.subjectLocation, data, origin: "subject" }));
+    subjectData.forEach((data) => directions.push({ targetId: data.target.id, isPrimary: data.target.id === state.selectedTargets[0], location: state.subjectLocation, data, origin: "subject" }));
   }
   mapController.setCelestialDirections(directions);
 }
@@ -879,17 +886,48 @@ bindSkyStateRail(store);
 bindSearchControls(store, showToast);
 initializeMap();
 bindPlaceSearch(store, () => mapController, showToast, { geocoderEndpoint: runtimeConfig.nominatimEndpoint });
-bindWeatherOverlay(store, () => mapController, { endpoint: runtimeConfig.weatherForecastEndpoint });
-bindLightPollutionOverlay(() => mapController, {
+const weatherController = bindWeatherOverlay(store, () => mapController, { endpoint: runtimeConfig.weatherForecastEndpoint });
+const lightController = bindLightPollutionOverlay(() => mapController, {
   tileUrl: runtimeConfig.lightPollutionTileUrl,
   dataYear: runtimeConfig.lightPollutionDataYear,
 });
 const localPlanRepository = createPlanRepository();
 const planSyncCoordinator = createPlanSyncCoordinator(localPlanRepository);
+const terrainController = bindTerrainProfile(store, () => mapController, showToast);
+const fieldController = bindFieldMode(store, showToast);
+const offlinePreparation = createOfflinePreparation({ sources: {
+  prepareParts: createFieldDataCollector({ config: runtimeConfig, terrainController }),
+} });
+let planRestoreSequence = 0;
+let lightRestoreQueue = Promise.resolve();
+async function restoreSavedPlan(planState, { offline, isCurrent = () => true } = {}) {
+  const sequence = ++planRestoreSequence;
+  const current = () => sequence === planRestoreSequence && isCurrent();
+  const readyPart = (name) => offline?.parts?.[name]?.status === "ready" ? offline.parts[name].data : null;
+  lightRestoreQueue = lightRestoreQueue.catch(() => {}).then(async () => {
+    if (!current()) return;
+    try {
+      await restoreOfflineLight(readyPart("lightPollution"));
+    } catch (error) {
+      console.warn("Saved light pollution could not be restored", error);
+      if (current() && readyPart("lightPollution")) showToast("保存済み光害レイヤーを読み込めませんでした");
+    }
+  });
+  await lightRestoreQueue;
+  if (!current()) return false;
+  applyPlanState(stateWithOfflineElevation(planState, offline?.parts?.elevation));
+  terrainController.restoreSnapshot(readyPart("terrain"));
+  weatherController.restoreSnapshot(readyPart("forecast"));
+  lightController.restoreSnapshot(readyPart("lightPollution"));
+  return true;
+}
 const planManager = bindPlanManager(store, {
-  applyState: applyPlanState,
+  applyState: restoreSavedPlan,
   showToast,
   repository: planSyncCoordinator,
+  offlinePreparation,
+  getOfflineOwnerId: () => planSyncCoordinator.getUserId() || "guest",
+  onFieldMode: () => fieldController.open(),
 });
 bindCloudAccount({
   coordinator: planSyncCoordinator,
@@ -898,8 +936,6 @@ bindCloudAccount({
   onPlansChanged: planManager.refresh,
 });
 bindShootingPlanner(store, () => mapController, showToast);
-bindTerrainProfile(store, () => mapController, showToast);
-bindFieldMode(store, showToast);
 observationHeightController = bindObservationHeightMeasurement(store, showToast, {
   beginSubjectSelection() {
     if (!mapController) return showToast("地図を読み込んでから被写体地点を設定してください");
@@ -959,4 +995,4 @@ async function registerServiceWorker() {
     console.warn("Service Worker registration failed", error);
   }
 }
-import { safeStorage as localStorage } from "./utils/storage.js?v=1.8.0";
+import { safeStorage as localStorage } from "./utils/storage.js?v=1.9.0";

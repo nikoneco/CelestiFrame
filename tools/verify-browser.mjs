@@ -53,7 +53,7 @@ try {
       await page.locator('#settings-dialog').press('Escape');
       await page.locator('#deck-tab-celestial').click();
       if (width < 759 && !(await page.locator('.control-deck').getAttribute('class')).includes('is-expanded')) await page.locator('.deck-handle').click();
-      await page.locator('.celestial-card.is-compact[data-card="sun"]').click();
+      if (await page.locator('.celestial-card.is-compact[data-card="sun"]').count()) await page.locator('.celestial-card.is-compact[data-card="sun"]').click();
       assert.equal(await page.locator('.celestial-card.is-detail').getAttribute('data-card'), 'sun');
       await page.locator('.celestial-card.is-compact[data-card="moon"]').click();
       const geometry = await page.evaluate(() => ({ width: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth,

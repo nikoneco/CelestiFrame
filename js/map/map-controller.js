@@ -1,5 +1,5 @@
-import { destinationPoint } from "../geometry/destination.js?v=1.8.0";
-import { getTarget } from "../astronomy/target-catalog.js?v=1.8.0";
+import { destinationPoint } from "../geometry/destination.js?v=1.9.0";
+import { getTarget } from "../astronomy/target-catalog.js?v=1.9.0";
 
 // This is a visual scale for the schematic sky fan, not a physical observing
 // distance.  It is converted from pixels for the current Leaflet zoom so the
@@ -58,6 +58,10 @@ function displayScaleRadiusMeters(map, location, radiusPixels = MILKY_WAY_FAN_RA
 
 function removeLayer(layer) {
   layer?.remove();
+}
+
+function setPrimaryClass(layer, isPrimary) {
+  layer?.getElement?.()?.classList.toggle("is-primary", Boolean(isPrimary));
 }
 
 function removeLayerBundle(bundle) {
@@ -251,7 +255,7 @@ export function createMapController({
       latestCelestialDirections = Array.isArray(directions) ? directions : [];
       const retained = new Set();
       const retainedMilkyWay = new Set();
-      latestCelestialDirections.forEach(({ targetId, location, data, origin }) => {
+      latestCelestialDirections.forEach(({ targetId, location, data, origin, isPrimary = false }) => {
         const key = `${origin}:${targetId}`;
         const target = getTarget(targetId);
         const color = target?.color || "#dceaff";
@@ -283,11 +287,13 @@ export function createMapController({
                 fillColor: color,
                 fillOpacity: 0.08 + centralWeight * 0.16,
                 interactive: false,
-                className: "milkyway-fan milkyway-fan-camera",
+                className: `milkyway-fan milkyway-fan-camera${isPrimary ? " is-primary" : ""}`,
               };
               const layer = bundle.fans.get(edgeKey);
-              if (layer) layer.setLatLngs(coordinates).setStyle(style);
-              else bundle.fans.set(edgeKey, L.polygon(coordinates, style).addTo(map));
+              if (layer) {
+                layer.setLatLngs(coordinates).setStyle(style);
+                setPrimaryClass(layer, isPrimary);
+              } else bundle.fans.set(edgeKey, L.polygon(coordinates, style).addTo(map));
               bundle.fans.get(edgeKey).getElement()?.style.setProperty("--milkyway-central-weight", String(centralWeight));
             } else {
               // Subject mode traces the outer fan edge only.  Repeating the
@@ -300,11 +306,13 @@ export function createMapController({
                 opacity: 0.34 + centralWeight * 0.22,
                 dashArray: "5 7",
                 interactive: false,
-                className: "milkyway-fan milkyway-fan-subject",
+                className: `milkyway-fan milkyway-fan-subject${isPrimary ? " is-primary" : ""}`,
               };
               const layer = bundle.boundaries.get(edgeKey);
-              if (layer) layer.setLatLngs(coordinates).setStyle(style);
-              else bundle.boundaries.set(edgeKey, L.polyline(coordinates, style).addTo(map));
+              if (layer) {
+                layer.setLatLngs(coordinates).setStyle(style);
+                setPrimaryClass(layer, isPrimary);
+              } else bundle.boundaries.set(edgeKey, L.polyline(coordinates, style).addTo(map));
             }
           });
           const activeLayers = origin === "camera" ? bundle.fans : bundle.boundaries;
@@ -321,9 +329,12 @@ export function createMapController({
               opacity: origin === "camera" ? 0.82 : 0.574,
               dashArray: origin === "subject" ? "4 5" : null,
               interactive: false,
-              className: `milkyway-core-line milkyway-core-line-${origin}`,
+              className: `milkyway-core-line milkyway-core-line-${origin}${isPrimary ? " is-primary" : ""}`,
             };
-            if (bundle.coreLine) bundle.coreLine.setLatLngs([originPoint, corePoint]).setStyle(coreLineStyle);
+            if (bundle.coreLine) {
+              bundle.coreLine.setLatLngs([originPoint, corePoint]).setStyle(coreLineStyle);
+              setPrimaryClass(bundle.coreLine, isPrimary);
+            }
             else bundle.coreLine = L.polyline([originPoint, corePoint], coreLineStyle).addTo(map);
             const coreMarkerStyle = {
               radius: 3.6,
@@ -333,9 +344,12 @@ export function createMapController({
               fillColor: color,
               fillOpacity: 0.96,
               interactive: false,
-              className: `milkyway-core-marker milkyway-core-marker-${origin}`,
+              className: `milkyway-core-marker milkyway-core-marker-${origin}${isPrimary ? " is-primary" : ""}`,
             };
-            if (bundle.coreMarker) bundle.coreMarker.setLatLng(corePoint).setStyle(coreMarkerStyle);
+            if (bundle.coreMarker) {
+              bundle.coreMarker.setLatLng(corePoint).setStyle(coreMarkerStyle);
+              setPrimaryClass(bundle.coreMarker, isPrimary);
+            }
             else bundle.coreMarker = L.circleMarker(corePoint, coreMarkerStyle).addTo(map);
           } else {
             removeLayer(bundle.coreLine);
@@ -357,10 +371,13 @@ export function createMapController({
               ? "12 7 2 7"
               : data.isAboveHorizon ? null : "7 8",
             interactive: false,
-            className: `celestial-direction-line celestial-direction-${targetId} ${origin}-origin-line`,
+            className: `celestial-direction-line celestial-direction-${targetId} ${origin}-origin-line${isPrimary ? " is-primary" : ""}`,
           };
         const layer = celestialDirectionLayers.get(key);
-        if (layer) layer.setLatLngs(coordinates).setStyle(style);
+        if (layer) {
+          layer.setLatLngs(coordinates).setStyle(style);
+          setPrimaryClass(layer, isPrimary);
+        }
         else celestialDirectionLayers.set(key, L.polyline(coordinates, style).addTo(map));
       });
       for (const [key, layer] of celestialDirectionLayers) {

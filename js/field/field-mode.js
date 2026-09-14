@@ -1,6 +1,6 @@
-import { subjectGeometry } from "../geometry/bearing.js?v=1.8.0";
-import { normalizeDegrees, signedAngleDifference } from "../geometry/angle.js?v=1.8.0";
-import { formatDistance } from "../utils/format.js?v=1.8.0";
+import { subjectGeometry } from "../geometry/bearing.js?v=1.9.0";
+import { normalizeDegrees, signedAngleDifference } from "../geometry/angle.js?v=1.9.0";
+import { formatDistance } from "../utils/format.js?v=1.9.0";
 
 export function headingRelativeCardinalOffsets(heading, radius = 76) {
   if (!Number.isFinite(Number(heading)) || !Number.isFinite(Number(radius))) return [];
@@ -63,6 +63,7 @@ export function bindFieldMode(store, showToast) {
   let heading = null;
   let wakeLock = null;
   let targetMode = "camera";
+  let sensorGeneration = 0;
 
   function renderTargetSwitch(state) {
     const hasSubject = Boolean(state.subjectLocation);
@@ -116,6 +117,7 @@ export function bindFieldMode(store, showToast) {
   }
 
   async function startSensors() {
+    const generation = ++sensorGeneration;
     if (!navigator.geolocation) return showToast("この端末では現在地を利用できません");
     if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
       try {
@@ -125,10 +127,12 @@ export function bindFieldMode(store, showToast) {
         console.warn(error);
       }
     }
+    if (!dialog.open || generation !== sensorGeneration) return;
     window.addEventListener("deviceorientationabsolute", handleOrientation);
     window.addEventListener("deviceorientation", handleOrientation);
     if (watchId != null) navigator.geolocation.clearWatch(watchId);
     watchId = navigator.geolocation.watchPosition((position) => {
+      if (!dialog.open || generation !== sensorGeneration) return;
       currentLocation = { latitude: position.coords.latitude, longitude: position.coords.longitude };
       const accuracy = Math.round(position.coords.accuracy);
       const guidance = gpsAccuracyGuidance(accuracy);
@@ -138,6 +142,7 @@ export function bindFieldMode(store, showToast) {
       startButton.textContent = "現在地を更新中";
       render();
     }, (error) => {
+      if (!dialog.open || generation !== sensorGeneration) return;
       showToast(error.message || "現在地を取得できませんでした");
       startButton.textContent = "現在地と方位を開始";
       accuracyGuidance.dataset.quality = "poor";
@@ -152,7 +157,9 @@ export function bindFieldMode(store, showToast) {
         await wakeLock.release();
         wakeLock = null;
       } else {
-        wakeLock = await navigator.wakeLock.request("screen");
+        const acquired = await navigator.wakeLock.request("screen");
+        if (!dialog.open) { await acquired.release(); return; }
+        wakeLock = acquired;
         wakeLock.addEventListener("release", () => {
           wakeLock = null;
           wakeButton.textContent = "画面点灯を維持";
@@ -166,10 +173,12 @@ export function bindFieldMode(store, showToast) {
     }
   }
 
-  document.querySelector("#field-button").addEventListener("click", () => {
+  function open() {
+    targetMode = "camera";
     render();
-    dialog.showModal();
-  });
+    if (!dialog.open) dialog.showModal();
+  }
+  document.querySelector("#field-button").addEventListener("click", open);
   document.querySelector("#field-close").addEventListener("click", () => dialog.close());
   cameraTargetButton.addEventListener("click", () => {
     targetMode = "camera";
@@ -183,6 +192,7 @@ export function bindFieldMode(store, showToast) {
   startButton.addEventListener("click", startSensors);
   wakeButton.addEventListener("click", toggleWakeLock);
   dialog.addEventListener("close", () => {
+    sensorGeneration++;
     if (watchId != null) navigator.geolocation.clearWatch(watchId);
     watchId = null;
     window.removeEventListener("deviceorientationabsolute", handleOrientation);
@@ -191,6 +201,21 @@ export function bindFieldMode(store, showToast) {
     wakeLock = null;
     wakeButton.textContent = "画面点灯を維持";
     wakeButton.setAttribute("aria-pressed", "false");
+    currentLocation = null;
+    heading = null;
+    startButton.textContent = "現在地と方位を開始";
+    headingOutput.textContent = "—";
+    targetOutput.textContent = "—";
+    distanceOutput.textContent = "—";
+    accuracyOutput.textContent = "—";
+    differenceOutput.textContent = "現在地と方位を開始してください";
+    distanceGuidance.textContent = "現在地を取得して目標までの距離を確認";
+    accuracyGuidance.textContent = "GPS精度を待っています";
+    accuracyGuidance.dataset.quality = "waiting";
+    compassRing.dataset.headingReady = "false";
+    compassRing.dataset.bearingReady = "false";
+    compassArrow.style.transform = "rotate(0deg)";
   });
   store.subscribe(() => dialog.open && render());
+  return { open };
 }

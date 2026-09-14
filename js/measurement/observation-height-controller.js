@@ -1,15 +1,15 @@
-import { subjectGeometry } from "../geometry/bearing.js?v=1.8.0";
-import { formatDistance } from "../utils/format.js?v=1.8.0";
+import { subjectGeometry } from "../geometry/bearing.js?v=1.9.0";
+import { formatDistance } from "../utils/format.js?v=1.9.0";
 import {
   calculateObservationHeight,
   calculateStructureHeight,
   OrientationStabilityTracker,
   orientationSampleFromEvent,
-} from "./observation-height-service.js?v=1.8.0";
+} from "./observation-height-service.js?v=1.9.0";
 import {
   cameraErrorMessage,
   ObservationCamera,
-} from "./observation-camera-service.js?v=1.8.0";
+} from "./observation-camera-service.js?v=1.9.0";
 
 const READY_ELEVATION_STATES = new Set(["ready", "manual"]);
 const isLocation = (value) => Number.isFinite(Number(value?.latitude)) && Number.isFinite(Number(value?.longitude));

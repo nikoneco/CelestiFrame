@@ -4,6 +4,7 @@ export function bindLightPollutionOverlay(getMapController, { tileUrl, dataYear 
   const status = document.querySelector("#light-pollution-status");
   const dataLabel = document.querySelector("#light-pollution-data-label");
   let enabled = false;
+  let savedSnapshot = null;
 
   function render({ error = false } = {}) {
     toggle.setAttribute("aria-checked", String(enabled));
@@ -33,12 +34,14 @@ export function bindLightPollutionOverlay(getMapController, { tileUrl, dataYear 
       dataYear,
       onLoad: () => {
         if (!enabled) return;
-        status.textContent = `光害の目安を表示中です。VNP46A4 ${dataYear}年次合成を基にした参考表示です`;
+        status.textContent = savedSnapshot
+          ? `保存した地点周辺の光害（${new Date(savedSnapshot.fetchedAt).toLocaleString("ja-JP")}取得・保存時の縮尺と拡大表示）`
+          : `光害の目安を表示中です。VNP46A4 ${dataYear}年次合成を基にした参考表示です`;
         render();
       },
       onError: () => {
         if (!enabled) return;
-        status.textContent = navigator.onLine ? "一部の光害タイルを読み込めません" : "オフラインでは光害レイヤーを表示できません";
+        status.textContent = navigator.onLine ? "一部の光害タイルを読み込めません" : "この範囲・縮尺の光害タイルは端末に保存されていません";
         render({ error: true });
       },
     });
@@ -51,5 +54,11 @@ export function bindLightPollutionOverlay(getMapController, { tileUrl, dataYear 
 
   dataLabel.textContent = `VNP46A4・${dataYear}`;
   render();
-  return { enable, disable, isEnabled: () => enabled };
+  return { enable, disable, isEnabled: () => enabled,
+    restoreSnapshot(snapshot) {
+      savedSnapshot = snapshot;
+      if (snapshot) enable();
+      else disable();
+    },
+  };
 }

@@ -15,8 +15,8 @@
     <link rel="icon" href="./assets/icon.svg?v=43" type="image/svg+xml">
     <link rel="apple-touch-icon" href="./assets/icons/app-180.png">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
-    <link rel="stylesheet" href="./tokens.css?v=1.8.0">
-    <link rel="stylesheet" href="./css/app.css?v=1.8.0">
+    <link rel="stylesheet" href="./tokens.css?v=1.9.0">
+    <link rel="stylesheet" href="./css/app.css?v=1.9.0">
   </head>
   <body>
     <div class="app-shell">
@@ -86,7 +86,7 @@
             <aside class="weather-overlay" id="weather-overlay" aria-label="地図レイヤー">
               <div class="weather-quick">
                 <button class="weather-toggle" id="weather-toggle" type="button" aria-expanded="false" aria-controls="weather-panel">
-                  <span class="ui-icon icon-cloud" aria-hidden="true"></span><strong>予報雲</strong><i class="ui-icon icon-chevron-down" aria-hidden="true"></i>
+                  <span class="ui-icon icon-cloud" aria-hidden="true"></span><strong>星景条件</strong><i class="ui-icon icon-chevron-down" aria-hidden="true"></i>
                 </button>
                 <button class="weather-layer-toggle" id="weather-layer-toggle" type="button" role="switch" aria-checked="false" aria-label="雲レイヤーを地図に表示"><span aria-hidden="true"></span></button>
                 <button class="light-pollution-toggle" id="light-pollution-toggle" type="button" role="switch" aria-checked="false" aria-describedby="light-pollution-status" aria-label="光害の目安を地図に表示">
@@ -95,8 +95,8 @@
               </div>
               <section class="weather-panel" id="weather-panel" hidden aria-live="polite">
                 <header>
-                  <div><strong>予報雲</strong></div>
-                  <button id="weather-panel-close" type="button" aria-label="予報雲パネルを閉じる"><span class="ui-icon icon-x" aria-hidden="true"></span></button>
+                  <div><strong>星景条件</strong></div>
+                  <button id="weather-panel-close" type="button" aria-label="星景条件パネルを閉じる"><span class="ui-icon icon-x" aria-hidden="true"></span></button>
                 </header>
                 <p class="weather-time" id="weather-time">撮影日時の予報</p>
                 <div class="weather-modes" role="group" aria-label="表示する雲の高さ">
@@ -110,12 +110,18 @@
                   <div><span id="weather-secondary-label">低層雲</span><output id="weather-low">—</output></div>
                   <div><span>視程</span><output id="weather-visibility">—</output></div>
                   <div><span>風 / 瞬間風速</span><output id="weather-wind">—</output><small>km/h</small></div>
+                  <div><span>気温</span><output id="weather-temperature">—</output></div>
+                  <div><span>相対湿度</span><output id="weather-humidity">—</output></div>
+                  <div><span>露点</span><output id="weather-dew-point">—</output></div>
+                  <div><span>気温 − 露点</span><output id="weather-dew-spread">—</output></div>
                 </div>
+                <p class="weather-moon-conditions" id="weather-moon-conditions"></p>
                 <footer>
                   <span id="weather-precipitation">降水 —</span>
                   <span id="weather-status">雲レイヤーを表示していません</span>
                 </footer>
                 <div class="weather-actions">
+                  <button id="weather-panel-layer-toggle" type="button" aria-pressed="false">雲レイヤーを表示</button>
                   <button id="weather-refresh" type="button">再取得</button>
                 </div>
                 <a class="weather-source" id="weather-source" href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo・予報値</a>
@@ -233,10 +239,11 @@
           <section class="deck-tab-panel celestial-panel" id="celestial-panel" role="tabpanel" aria-labelledby="deck-tab-celestial" hidden>
             <button class="target-selector-button" id="target-selector-button" type="button" aria-haspopup="dialog" aria-controls="target-selector-dialog">
               <span><b>撮影対象を選択</b></span>
-              <span class="target-selection-summary" id="target-selection-summary" aria-hidden="true"></span>
               <strong id="target-selection-count">1/5</strong>
               <i class="ui-icon icon-chevron-right" aria-hidden="true"></i>
             </button>
+            <div class="target-selection-summary" id="target-selection-summary" role="group" aria-label="撮影対象。タップして主対象を変更"></div>
+            <p class="target-primary-hint">チップをタップして主対象を変更。主対象の方向を強調します。</p>
 
           <div class="celestial-grid" id="celestial-grid">
             <article class="celestial-card celestial-card-moon" data-card="moon">
@@ -416,7 +423,7 @@
           </article>
 
             </div>
-          <p class="phase-note">Ver 1.8.0 - CelestiFrame by NikoNeco</p>
+          <p class="phase-note">Ver 1.9.0 - CelestiFrame by NikoNeco</p>
           </div>
         </section>
       </main>
@@ -545,11 +552,15 @@
           <button type="button" data-plan-sheet-close aria-label="その他の操作を閉じる"><span class="ui-icon icon-x" aria-hidden="true"></span></button>
         </header>
         <div class="plan-more-actions">
+          <button type="button" data-plan-more-action="field"><b>この計画で現地撮影</b><small>地点・日時・主対象を復元して現地モードへ</small><i class="ui-icon icon-compass" aria-hidden="true"></i></button>
+          <button type="button" data-plan-more-action="prepare-offline"><b>この計画をオフライン準備</b><small>標高・地形・光害・予報をこの端末に保存</small><i class="ui-icon icon-cloud" aria-hidden="true"></i></button>
           <button type="button" data-plan-more-action="favorite"><b>お気に入りに追加</b><small>大切な計画を一覧で目立たせる</small><i class="ui-icon icon-sparkles" aria-hidden="true"></i></button>
           <button type="button" data-plan-more-action="edit"><b>名前とメモを編集</b><small>保存済みの計画情報を更新する</small><i class="ui-icon icon-settings-2" aria-hidden="true"></i></button>
           <button type="button" data-plan-more-action="duplicate"><b>複製</b><small>同じ内容で新しい計画を作る</small><i class="ui-icon icon-copy" aria-hidden="true"></i></button>
           <button class="is-danger" type="button" data-plan-more-action="delete"><b>削除</b><small>この撮影計画を削除する</small><i class="ui-icon icon-trash-2" aria-hidden="true"></i></button>
         </div>
+        <div class="plan-offline-details" id="plan-offline-details" aria-live="polite"></div>
+        <p class="plan-offline-note">現地用データはこの端末だけに保存します。背景地図は含みません。光害は保存した地点周辺・縮尺の範囲です。予報は取得日時を確認してください。</p>
         <button class="plan-sheet-cancel" type="button" data-plan-sheet-close>閉じる</button>
       </section>
     </dialog>
@@ -771,8 +782,8 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
-    <script src="./js/vendor/suncalc.js?v=1.8.0"></script>
-    <script src="./js/vendor/astronomy-engine.min.js?v=1.8.0"></script>
-    <script type="module" src="./js/app.js?v=1.8.0"></script>
+    <script src="./js/vendor/suncalc.js?v=1.9.0"></script>
+    <script src="./js/vendor/astronomy-engine.min.js?v=1.9.0"></script>
+    <script type="module" src="./js/app.js?v=1.9.0"></script>
   </body>
 </html>

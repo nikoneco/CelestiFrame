@@ -1,4 +1,4 @@
-import { calculateMilkyWay } from "../astronomy/milky-way-service.js?v=1.8.0";
+import { calculateMilkyWay } from "../astronomy/milky-way-service.js?v=1.9.0";
 
 const MINUTES_PER_DAY = 1440;
 const SAMPLE_MINUTES = 10;

@@ -1,8 +1,8 @@
-import { degreesToDirection } from "../geometry/angle.js?v=1.8.0";
-import { calculateSunData } from "./sun-service.js?v=1.8.0";
-import { calculateMoonData } from "./moon-service.js?v=1.8.0";
-import { calculateMilkyWay, milkyWayInternals } from "./milky-way-service.js?v=1.8.0";
-import { getTarget } from "./target-catalog.js?v=1.8.0";
+import { degreesToDirection } from "../geometry/angle.js?v=1.9.0";
+import { calculateSunData } from "./sun-service.js?v=1.9.0";
+import { calculateMoonData } from "./moon-service.js?v=1.9.0";
+import { calculateMilkyWay, milkyWayInternals } from "./milky-way-service.js?v=1.9.0";
+import { getTarget } from "./target-catalog.js?v=1.9.0";
 
 function validateInput(date, location) {
   if (!(date instanceof Date) || Number.isNaN(date.getTime())) throw new Error("日時が正しくありません");

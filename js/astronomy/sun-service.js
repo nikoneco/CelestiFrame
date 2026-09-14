@@ -1,5 +1,5 @@
-import { degreesToDirection, normalizeDegrees } from "../geometry/angle.js?v=1.8.0";
-import { cachedEphemeris } from "./ephemeris-cache.js?v=1.8.0";
+import { degreesToDirection, normalizeDegrees } from "../geometry/angle.js?v=1.9.0";
+import { cachedEphemeris } from "./ephemeris-cache.js?v=1.9.0";
 
 const toDegrees = (radians) => radians * 180 / Math.PI;
 

@@ -4,7 +4,13 @@ import {
   MAX_SELECTED_TARGETS,
   getTarget,
   normalizeSelectedTargets,
-} from "../astronomy/target-catalog.js?v=1.8.0";
+} from "../astronomy/target-catalog.js?v=1.9.0";
+
+export function moveTargetToPrimary(selectedTargets, targetId) {
+  const selected = normalizeSelectedTargets(selectedTargets);
+  if (!selected.includes(targetId) || selected[0] === targetId) return selected;
+  return [targetId, ...selected.filter((selectedTargetId) => selectedTargetId !== targetId)];
+}
 
 export function bindTargetSelector(store, showToast) {
   const dialog = document.querySelector("#target-selector-dialog");
@@ -47,6 +53,7 @@ export function bindTargetSelector(store, showToast) {
     const selected = normalizeSelectedTargets(state.selectedTargets);
     const key = selected.join(",");
     if (key === lastSelectionKey) return;
+    const focusedTargetId = document.activeElement?.closest?.("[data-target-chip]")?.dataset.targetChip || null;
     lastSelectionKey = key;
     const atLimit = selected.length >= MAX_SELECTED_TARGETS;
     dialog.querySelectorAll('input[name="celestialTarget"]').forEach((input) => {
@@ -56,19 +63,43 @@ export function bindTargetSelector(store, showToast) {
       input.closest(".target-option").classList.toggle("is-selected", checked);
     });
     const labels = selected.map((targetId) => getTarget(targetId)?.shortLabel).filter(Boolean);
-    summary.replaceChildren(...selected.map((targetId) => {
+    summary.replaceChildren(...selected.map((targetId, index) => {
       const target = getTarget(targetId);
-      const chip = document.createElement("span");
+      const isPrimary = index === 0;
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = `target-selection-chip${isPrimary ? " is-primary" : ""}`;
+      chip.dataset.targetChip = targetId;
+      chip.setAttribute("aria-pressed", String(isPrimary));
+      chip.setAttribute("aria-label", isPrimary
+        ? `主対象：${target.label}`
+        : `${target.label}。タップして主対象に設定`);
+      chip.title = isPrimary ? "主対象" : "タップして主対象に設定";
       chip.style.setProperty("--target-color", target.color);
-      chip.textContent = target.shortLabel;
+      chip.textContent = isPrimary ? `主対象 · ${target.shortLabel}` : target.shortLabel;
       return chip;
     }));
     count.textContent = `${selected.length}/${MAX_SELECTED_TARGETS}`;
-    openButton.setAttribute("aria-label", `撮影対象を選択。現在${labels.join("、")}`);
+    openButton.setAttribute("aria-label", `撮影対象を選択。現在${labels.join("、")}。主対象は${labels[0]}`);
     feedback.textContent = atLimit
       ? `最大${MAX_SELECTED_TARGETS}対象です。別の対象へ替えるときは、選択中の対象を1つ外してください。`
       : `あと${MAX_SELECTED_TARGETS - selected.length}対象を選べます。`;
+    if (focusedTargetId) {
+      const focusedChip = [...summary.querySelectorAll("[data-target-chip]")]
+        .find((chip) => chip.dataset.targetChip === focusedTargetId);
+      focusedChip?.focus({ preventScroll: true });
+    }
   }
+
+  summary.addEventListener("click", (event) => {
+    const chip = event.target.closest?.("[data-target-chip]");
+    if (!chip || !summary.contains(chip)) return;
+    const targetId = chip.dataset.targetChip;
+    const selected = normalizeSelectedTargets(store.getState().selectedTargets);
+    const next = moveTargetToPrimary(selected, targetId);
+    if (next.join(",") === selected.join(",")) return;
+    store.setState((state) => ({ ...state, selectedTargets: next }));
+  });
 
   list.addEventListener("change", (event) => {
     const input = event.target.closest('input[name="celestialTarget"]');

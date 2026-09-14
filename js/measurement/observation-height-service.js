@@ -1,4 +1,4 @@
-import { EARTH_RADIUS_METERS } from "../geometry/target-altitude.js?v=1.8.0";
+import { EARTH_RADIUS_METERS } from "../geometry/target-altitude.js?v=1.9.0";
 
 export const SHORT_DISTANCE_THRESHOLD_METERS = 50;
 export const DEFAULT_REFRACTION_COEFFICIENT = 0.13;

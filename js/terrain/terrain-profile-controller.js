@@ -1,4 +1,4 @@
-import { fetchTerrainProfile } from "./terrain-profile.js?v=1.8.0";
+import { fetchTerrainProfile } from "./terrain-profile.js?v=1.9.0";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
@@ -29,8 +29,10 @@ export function bindTerrainProfile(store, getMapController, showToast) {
   const svg = document.querySelector("#terrain-profile-chart");
   let controller = null;
   let lastLocationKey = "";
+  let latestSnapshot = null;
 
   function reset() {
+    latestSnapshot = null;
     controller?.abort();
     controller = null;
     result.hidden = true;
@@ -54,6 +56,19 @@ export function bindTerrainProfile(store, getMapController, showToast) {
     sight.setAttribute("points", chartPoints(analysis.points, "sightlineMeters", min, max));
     svg.append(ground, sight);
     svg.setAttribute("aria-label", `地形断面。最低${Math.round(min)}m、最高${Math.round(max)}m`);
+  }
+
+  function showAnalysis(analysis, fetchedAt, saved = false) {
+    renderChart(analysis);
+    result.hidden = false;
+    result.dataset.result = analysis.isClear ? "clear" : "blocked";
+    status.textContent = analysis.isClear
+      ? `計算上は見通せます（最小余裕 ${Math.round(analysis.minimumClearanceMeters)} m）`
+      : `${(analysis.obstruction.distanceMeters / 1000).toFixed(1)} km先で約${Math.ceil(-analysis.minimumClearanceMeters)} m遮られる可能性`;
+    if (!analysis.isClear) getMapController()?.setTerrainObstruction(analysis.obstruction.location);
+    if (saved) status.textContent += ` ・保存データ ${new Date(fetchedAt).toLocaleString("ja-JP")}`;
+    latestSnapshot = { key: terrainProfileKey(store.getState()), analysis, fetchedAt };
+    button.textContent = "再計算";
   }
 
   store.subscribe((state) => {
@@ -91,17 +106,7 @@ export function bindTerrainProfile(store, getMapController, showToast) {
         },
       });
       if (pending !== controller || pending.signal.aborted) return;
-      renderChart(analysis);
-      result.hidden = false;
-      if (analysis.isClear) {
-        status.textContent = `計算上は見通せます（最小余裕 ${Math.round(analysis.minimumClearanceMeters)} m）`;
-        result.dataset.result = "clear";
-      } else {
-        const distanceKm = analysis.obstruction.distanceMeters / 1000;
-        status.textContent = `${distanceKm.toFixed(1)} km先で約${Math.ceil(-analysis.minimumClearanceMeters)} m遮られる可能性`;
-        result.dataset.result = "blocked";
-        getMapController()?.setTerrainObstruction(analysis.obstruction.location);
-      }
+      showAnalysis(analysis, new Date().toISOString());
     } catch (error) {
       if (pending === controller && error.name !== "AbortError") {
         console.error(error);
@@ -115,4 +120,13 @@ export function bindTerrainProfile(store, getMapController, showToast) {
       }
     }
   });
+  return {
+    getSnapshot: () => latestSnapshot && structuredClone(latestSnapshot),
+    restoreSnapshot(snapshot) {
+      reset();
+      if (!snapshot || snapshot.key !== terrainProfileKey(store.getState())) return false;
+      showAnalysis(snapshot.analysis, snapshot.fetchedAt, true);
+      return true;
+    },
+  };
 }
