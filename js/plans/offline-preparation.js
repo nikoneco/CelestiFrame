@@ -1,4 +1,4 @@
-import { createOfflineStore, offlineRecordKey } from "./offline-store.js?v=1.9.0";
+import { createOfflineStore, offlineRecordKey } from "./offline-store.js?v=1.9.1";
 
 export const OFFLINE_PARTS = Object.freeze([
   "elevation",

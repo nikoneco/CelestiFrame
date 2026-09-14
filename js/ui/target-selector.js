@@ -4,7 +4,7 @@ import {
   MAX_SELECTED_TARGETS,
   getTarget,
   normalizeSelectedTargets,
-} from "../astronomy/target-catalog.js?v=1.9.0";
+} from "../astronomy/target-catalog.js?v=1.9.1";
 
 export function moveTargetToPrimary(selectedTargets, targetId) {
   const selected = normalizeSelectedTargets(selectedTargets);

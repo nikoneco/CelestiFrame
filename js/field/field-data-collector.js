@@ -1,8 +1,8 @@
-import { fetchElevation, elevationLocationKey } from "../elevation/elevation-service.js?v=1.9.0";
-import { fetchTerrainProfile } from "../terrain/terrain-profile.js?v=1.9.0";
-import { terrainProfileKey } from "../terrain/terrain-profile-controller.js?v=1.9.0";
-import { fetchForecastGrid, toForecastHour, isForecastHour, isPastForecastHour } from "../weather/forecast-service.js?v=1.9.0";
-import { collectOfflineLight } from "../light-pollution/offline-light-pollution.js?v=1.9.0";
+import { fetchElevation, elevationLocationKey } from "../elevation/elevation-service.js?v=1.9.1";
+import { fetchTerrainProfile } from "../terrain/terrain-profile.js?v=1.9.1";
+import { terrainProfileKey } from "../terrain/terrain-profile-controller.js?v=1.9.1";
+import { fetchForecastGrid, toForecastHour, isForecastHour, isPastForecastHour } from "../weather/forecast-service.js?v=1.9.1";
+import { collectOfflineLight } from "../light-pollution/offline-light-pollution.js?v=1.9.1";
 
 export function createFieldDataCollector({ config, terrainController }) {
   return async function prepareParts(plan, { signal, onProgress = () => {}, onPart = async () => {} } = {}) {

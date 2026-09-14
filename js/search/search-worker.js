@@ -1,10 +1,10 @@
 self.window = self;
-importScripts("../vendor/suncalc.js?v=1.9.0", "../vendor/astronomy-engine.min.js?v=1.9.0", "./search-core.js?v=1.9.0");
+importScripts("../vendor/suncalc.js?v=1.9.1", "../vendor/astronomy-engine.min.js?v=1.9.1", "./search-core.js?v=1.9.1");
 
 self.addEventListener("message", async (event) => {
   try {
     const targetCalculator = !["sun", "moon"].includes(event.data.target)
-      ? (await import("../astronomy/target-service.js?v=1.9.0")).calculateTargetData
+      ? (await import("../astronomy/target-service.js?v=1.9.1")).calculateTargetData
       : null;
     const results = self.CelestiSearchCore.searchCandidates(
       event.data,

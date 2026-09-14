@@ -1,4 +1,4 @@
-import { normalizeSelectedTargets } from "../astronomy/target-catalog.js?v=1.9.0";
+import { normalizeSelectedTargets } from "../astronomy/target-catalog.js?v=1.9.1";
 
 export const PLAN_FILE_VERSION = 6;
 export const MAX_PLAN_IMPORT_BYTES = 5 * 1024 * 1024;

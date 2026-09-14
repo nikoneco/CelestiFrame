@@ -1,4 +1,4 @@
-import { normalizeSelectedTargets } from "./astronomy/target-catalog.js?v=1.9.0";
+import { normalizeSelectedTargets } from "./astronomy/target-catalog.js?v=1.9.1";
 
 const STORAGE_KEY = "celestiframe:state:v1";
 
@@ -146,4 +146,4 @@ export function createStore() {
     },
   };
 }
-import { safeStorage as localStorage } from "./utils/storage.js?v=1.9.0";
+import { safeStorage as localStorage } from "./utils/storage.js?v=1.9.1";

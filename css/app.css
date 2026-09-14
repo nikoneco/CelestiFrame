@@ -174,14 +174,14 @@ main { min-height: 100dvh; }
   vector-effect: non-scaling-stroke;
   pointer-events: none !important;
 }
-.leaflet-overlay-pane .celestial-direction-line.camera-origin-line.is-primary { stroke-width: 4; }
-.leaflet-overlay-pane .celestial-direction-line.subject-origin-line.is-primary { stroke-width: 3; }
+.leaflet-overlay-pane .celestial-direction-line.camera-origin-line.is-primary { stroke-width: 6; }
+.leaflet-overlay-pane .celestial-direction-line.subject-origin-line.is-primary { stroke-width: 5; }
 .leaflet-overlay-pane .milkyway-fan-camera.is-primary {
-  fill-opacity: calc((var(--milkyway-fan-base-opacity) + var(--milkyway-central-weight, 0) * var(--milkyway-fan-center-opacity)) * 1.15) !important;
+  fill-opacity: calc((var(--milkyway-fan-base-opacity) + var(--milkyway-central-weight, 0) * var(--milkyway-fan-center-opacity)) * 1.6) !important;
 }
 .leaflet-overlay-pane .milkyway-fan-subject.is-primary,
-.leaflet-overlay-pane .milkyway-core-line.is-primary { stroke-width: 3; }
-.leaflet-overlay-pane .milkyway-core-marker.is-primary { stroke-width: 2; }
+.leaflet-overlay-pane .milkyway-core-line.is-primary { stroke-width: 5; }
+.leaflet-overlay-pane .milkyway-core-marker.is-primary { stroke-width: 3; }
 
 .map-fallback {
   position: absolute;

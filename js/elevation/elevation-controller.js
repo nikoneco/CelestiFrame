@@ -1,4 +1,4 @@
-import { elevationLocationKey, fetchElevation } from "./elevation-service.js?v=1.9.0";
+import { elevationLocationKey, fetchElevation } from "./elevation-service.js?v=1.9.1";
 
 const LABELS = {
   loading: "取得中",

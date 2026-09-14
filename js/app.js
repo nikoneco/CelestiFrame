@@ -1,39 +1,39 @@
-import { createStore } from "./state.js?v=1.9.0";
-import { createMapController, focusCurrentLocation } from "./map/map-controller.js?v=1.9.0";
-import { bindPlaceSearch } from "./map/place-search.js?v=1.9.0";
-import { loadRuntimeConfig } from "./config/runtime-config.js?v=1.9.0";
-import { bindDateTimeControls } from "./ui/datetime-controls.js?v=1.9.0";
-import { bindSkyStateRail } from "./ui/sky-state-rail.js?v=1.9.0";
-import { normalizeThemePreference, resolveThemePreference, themeColor } from "./ui/theme.js?v=1.9.0";
-import { calculateSunData } from "./astronomy/sun-service.js?v=1.9.0";
-import { calculateMoonData } from "./astronomy/moon-service.js?v=1.9.0";
-import { calculateMilkyWay } from "./astronomy/milky-way-service.js?v=1.9.0";
-import { calculateSelectedTargets } from "./astronomy/target-service.js?v=1.9.0";
-import { targetLabelList } from "./astronomy/target-catalog.js?v=1.9.0";
-import { subjectGeometry } from "./geometry/bearing.js?v=1.9.0";
-import { signedAngleDifference } from "./geometry/angle.js?v=1.9.0";
-import { formatDistance } from "./utils/format.js?v=1.9.0";
-import { bindSearchControls } from "./search/search-controller.js?v=1.9.0";
-import { bindPlanManager } from "./plans/plan-manager.js?v=1.9.0";
-import { createPlanRepository } from "./plans/plan-repository.js?v=1.9.0";
-import { createPlanSyncCoordinator } from "./cloud/plan-sync.js?v=1.9.0";
-import { bindCloudAccount } from "./cloud/account-controller.js?v=1.9.0";
-import { parseSharedState } from "./plans/plan-data.js?v=1.9.0";
-import { calculateComposition, focalLengthForFill, SENSOR_PRESETS } from "./composition/composition.js?v=1.9.0";
-import { bindCompositionControls } from "./ui/composition-controls.js?v=1.9.0";
-import { bindElevationControls } from "./elevation/elevation-controller.js?v=1.9.0";
-import { apparentSolarAltitude, calculateTargetAltitude } from "./geometry/target-altitude.js?v=1.9.0";
-import { bindShootingPlanner } from "./planning/shooting-planner.js?v=1.9.0";
-import { bindTerrainProfile } from "./terrain/terrain-profile-controller.js?v=1.9.0";
-import { bindFieldMode } from "./field/field-mode.js?v=1.9.0";
-import { bindObservationHeightMeasurement } from "./measurement/observation-height-controller.js?v=1.9.0";
-import { bindWeatherOverlay } from "./weather/weather-controller.js?v=1.9.0";
-import { bindTargetSelector } from "./ui/target-selector.js?v=1.9.0";
-import { bindLightPollutionOverlay } from "./light-pollution/light-pollution-controller.js?v=1.9.0";
-import { bindPwaRuntime } from "./pwa/pwa-runtime.js?v=1.9.0";
-import { createOfflinePreparation } from "./plans/offline-preparation.js?v=1.9.0";
-import { createFieldDataCollector, stateWithOfflineElevation } from "./field/field-data-collector.js?v=1.9.0";
-import { restoreOfflineLight } from "./light-pollution/offline-light-pollution.js?v=1.9.0";
+import { createStore } from "./state.js?v=1.9.1";
+import { createMapController, focusCurrentLocation } from "./map/map-controller.js?v=1.9.1";
+import { bindPlaceSearch } from "./map/place-search.js?v=1.9.1";
+import { loadRuntimeConfig } from "./config/runtime-config.js?v=1.9.1";
+import { bindDateTimeControls } from "./ui/datetime-controls.js?v=1.9.1";
+import { bindSkyStateRail } from "./ui/sky-state-rail.js?v=1.9.1";
+import { normalizeThemePreference, resolveThemePreference, themeColor } from "./ui/theme.js?v=1.9.1";
+import { calculateSunData } from "./astronomy/sun-service.js?v=1.9.1";
+import { calculateMoonData } from "./astronomy/moon-service.js?v=1.9.1";
+import { calculateMilkyWay } from "./astronomy/milky-way-service.js?v=1.9.1";
+import { calculateSelectedTargets } from "./astronomy/target-service.js?v=1.9.1";
+import { targetLabelList } from "./astronomy/target-catalog.js?v=1.9.1";
+import { subjectGeometry } from "./geometry/bearing.js?v=1.9.1";
+import { signedAngleDifference } from "./geometry/angle.js?v=1.9.1";
+import { formatDistance } from "./utils/format.js?v=1.9.1";
+import { bindSearchControls } from "./search/search-controller.js?v=1.9.1";
+import { bindPlanManager } from "./plans/plan-manager.js?v=1.9.1";
+import { createPlanRepository } from "./plans/plan-repository.js?v=1.9.1";
+import { createPlanSyncCoordinator } from "./cloud/plan-sync.js?v=1.9.1";
+import { bindCloudAccount } from "./cloud/account-controller.js?v=1.9.1";
+import { parseSharedState } from "./plans/plan-data.js?v=1.9.1";
+import { calculateComposition, focalLengthForFill, SENSOR_PRESETS } from "./composition/composition.js?v=1.9.1";
+import { bindCompositionControls } from "./ui/composition-controls.js?v=1.9.1";
+import { bindElevationControls } from "./elevation/elevation-controller.js?v=1.9.1";
+import { apparentSolarAltitude, calculateTargetAltitude } from "./geometry/target-altitude.js?v=1.9.1";
+import { bindShootingPlanner } from "./planning/shooting-planner.js?v=1.9.1";
+import { bindTerrainProfile } from "./terrain/terrain-profile-controller.js?v=1.9.1";
+import { bindFieldMode } from "./field/field-mode.js?v=1.9.1";
+import { bindObservationHeightMeasurement } from "./measurement/observation-height-controller.js?v=1.9.1";
+import { bindWeatherOverlay } from "./weather/weather-controller.js?v=1.9.1";
+import { bindTargetSelector, moveTargetToPrimary } from "./ui/target-selector.js?v=1.9.1";
+import { bindLightPollutionOverlay } from "./light-pollution/light-pollution-controller.js?v=1.9.1";
+import { bindPwaRuntime } from "./pwa/pwa-runtime.js?v=1.9.1";
+import { createOfflinePreparation } from "./plans/offline-preparation.js?v=1.9.1";
+import { createFieldDataCollector, stateWithOfflineElevation } from "./field/field-data-collector.js?v=1.9.1";
+import { restoreOfflineLight } from "./light-pollution/offline-light-pollution.js?v=1.9.1";
 
 let toastTimer;
 registerServiceWorker();
@@ -60,7 +60,6 @@ let observationHeightController;
 const systemThemeQuery = window.matchMedia("(prefers-color-scheme: light)");
 let sharedState = null;
 let activeDeckTabId = localStorage.getItem(DECK_TAB_KEY) || "time-panel";
-let activeCelestialId = null;
 
 function setTopbarMenuOpen(open, { restoreFocus = false } = {}) {
   topbarMenu.hidden = !open;
@@ -332,9 +331,11 @@ function renderMilkyWay(state, calculatedData = null) {
 function renderStellarTargets(targetData) {
   const container = document.querySelector("#stellar-target-grid");
   const selected = new Set(targetData.map((data) => data.target.id));
-  container.querySelectorAll("[data-card]").forEach((card) => { if (!selected.has(card.dataset.card)) card.remove(); });
+  const existingCards = [...document.querySelectorAll("#celestial-grid .celestial-card-target[data-card]")];
+  existingCards.forEach((card) => { if (!selected.has(card.dataset.card)) card.remove(); });
+  const cardsByTargetId = new Map(existingCards.map((card) => [card.dataset.card, card]));
   targetData.filter((data) => !["sun", "moon", "milkyway"].includes(data.target.id)).forEach((data) => {
-    const existing = container.querySelector(`[data-card="${data.target.id}"]`);
+    const existing = cardsByTargetId.get(data.target.id);
     if (existing) {
       const stateLabel = existing.querySelector(".horizon-state");
       stateLabel.className = `horizon-state ${data.isAboveHorizon ? "is-above" : "is-below"}`;
@@ -385,6 +386,7 @@ function renderStellarTargets(targetData) {
     footer.textContent = data.target.kind === "planet" ? "現在の観測地点から見た計算位置" : "代表点の方位・高度";
     card.append(header, vectorKey, metrics, footer);
     container.append(card);
+    cardsByTargetId.set(data.target.id, card);
   });
 }
 
@@ -395,17 +397,15 @@ function syncCelestialCardDensity(state) {
   const container = document.querySelector("#celestial-grid");
   // DOM order follows the chips, including keyboard and screen reader order.
   cards.forEach((card) => container.append(card));
-  if (!cards.some((card) => card.dataset.card === activeCelestialId)) {
-    activeCelestialId = cards[0]?.dataset.card || null;
-  }
+  const primaryId = state.selectedTargets[0] || null;
   cards.forEach((card) => {
-    const detail = card.dataset.card === activeCelestialId;
+    const detail = card.dataset.card === primaryId;
     card.classList.toggle("is-detail", detail);
     card.classList.toggle("is-compact", !detail);
     card.setAttribute("aria-expanded", String(detail));
     if (detail) {
       card.removeAttribute("role");
-      card.removeAttribute("tabindex");
+      card.tabIndex = -1;
       card.removeAttribute("aria-label");
     } else {
       const label = card.querySelector("h2")?.textContent || "天体";
@@ -418,8 +418,15 @@ function syncCelestialCardDensity(state) {
 
 function activateCelestialCard(card) {
   if (!card?.classList.contains("is-compact")) return;
-  activeCelestialId = card.dataset.card;
-  syncCelestialCardDensity(store.getState());
+  const targetId = card.dataset.card;
+  const currentState = store.getState();
+  const nextSelectedTargets = moveTargetToPrimary(currentState.selectedTargets, targetId);
+  if (nextSelectedTargets.join(",") === currentState.selectedTargets.join(",")) return;
+  store.setState((state) => ({
+    ...state,
+    selectedTargets: moveTargetToPrimary(state.selectedTargets, targetId),
+  }));
+  card.focus({ preventScroll: true });
   card.scrollIntoView({ block: "nearest", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
 }
 
@@ -995,4 +1002,4 @@ async function registerServiceWorker() {
     console.warn("Service Worker registration failed", error);
   }
 }
-import { safeStorage as localStorage } from "./utils/storage.js?v=1.9.0";
+import { safeStorage as localStorage } from "./utils/storage.js?v=1.9.1";

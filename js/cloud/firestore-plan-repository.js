@@ -1,4 +1,4 @@
-import { normalizePlan } from "../plans/plan-data.js?v=1.9.0";
+import { normalizePlan } from "../plans/plan-data.js?v=1.9.1";
 
 const timestamp = (value) => Number.isFinite(Date.parse(value)) ? Date.parse(value) : 0;
 

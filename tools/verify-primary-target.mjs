@@ -46,6 +46,7 @@ const browser = await chromium.launch({
 });
 const context = await browser.newContext({
   viewport: { width: 1440, height: 1000 },
+  deviceScaleFactor: Number(process.env.QA_DPR || 1),
   timezoneId: "Asia/Tokyo",
   serviceWorkers: "block",
 });
@@ -134,6 +135,8 @@ async function assertTargetOrder(expected, label) {
   assert.deepEqual(await targetOrder(), expected, label);
   const state = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) || "null"), stateStorageKey);
   assert.deepEqual(state?.selectedTargets, expected, `${label}: localStorage order`);
+  assert.equal(await page.locator('#celestial-grid .celestial-card.is-detail:visible').getAttribute('data-card'), expected[0], `${label}: primary is the expanded card`);
+  assert.equal(await page.locator('#celestial-grid .celestial-card:visible').first().getAttribute('data-card'), expected[0], `${label}: primary is the first card`);
 }
 
 async function waitForStorageOrder(expected) {
@@ -248,7 +251,7 @@ function selectedTargetIdsFromState(ids) {
   return ids;
 }
 
-const results = { version, output, tileRequests: 0, originChecks: [], themeChecks: [], screenshots: [] };
+const results = { version, output, deviceScaleFactor: Number(process.env.QA_DPR || 1), tileRequests: 0, originChecks: [], themeChecks: [], screenshots: [] };
 
 try {
   await page.goto(String(baseUrl), { waitUntil: "domcontentloaded" });
@@ -299,7 +302,7 @@ try {
       assert.equal(snapshot.coreLines.filter((item) => item.classes.includes("is-primary")).length, 1, `${origin}/${inspectedOrigin}: primary Milky Way core line class`);
       assert.equal(snapshot.coreMarkers.filter((item) => item.classes.includes("is-primary")).length, 1, `${origin}/${inspectedOrigin}: primary Milky Way core marker class`);
       if (inspectedOrigin === "camera") {
-        assert.ok(snapshot.fans[0].fillOpacity > baseline[inspectedOrigin].fans[0].fillOpacity + 0.001, `${origin}/${inspectedOrigin}: primary fan is slightly emphasized`);
+        assert.ok(snapshot.fans[0].fillOpacity >= baseline[inspectedOrigin].fans[0].fillOpacity * 1.5, `${origin}/${inspectedOrigin}: primary fan has a clearly stronger fill`);
       } else {
         assert.ok(snapshot.fans[0].strokeWidth > baseline[inspectedOrigin].fans[0].strokeWidth + 0.1, `${origin}/${inspectedOrigin}: primary fan weight is slightly emphasized`);
       }
@@ -320,7 +323,7 @@ try {
   for (const origin of origins) {
     const jupiterPrimary = (await mapSnapshot(origin)).regular.find((item) => item.classes.includes("celestial-direction-jupiter"));
     assert.ok(jupiterPrimary.classes.includes("is-primary"), `${origin}: primary Jupiter line receives primary class`);
-    assert.ok(jupiterPrimary.strokeWidth > jupiterBaseline[origin].strokeWidth + 0.1, `${origin}: primary Jupiter line is slightly emphasized`);
+    assert.ok(jupiterPrimary.strokeWidth >= jupiterBaseline[origin].strokeWidth * 1.8, `${origin}: primary Jupiter line is visibly heavier`);
     const demotedMilkyWay = await mapSnapshot(origin);
     assert.equal(demotedMilkyWay.fans.some((item) => item.classes.includes("is-primary")), false, `${origin}: demoted Milky Way fan has no primary class`);
     assert.equal(demotedMilkyWay.coreLines[0].classes.includes("is-primary"), false, `${origin}: demoted Milky Way core has no primary class`);
@@ -336,6 +339,30 @@ try {
   await openCelestialPanel();
   await assertTargetOrder(["jupiter", "milkyway", "moon", "andromeda", "sun"], "saved order after reload");
   assert.equal(await page.locator("#sky-state-rail").getAttribute("data-tone"), "horizon", "saved primary survives reload");
+
+  // Opening a card and choosing a chip must update the same primary target.
+  for (const [target, action, expected] of [
+    ['moon', 'click', ['moon', 'jupiter', 'milkyway', 'andromeda', 'sun']],
+    ['sun', 'Enter', ['sun', 'moon', 'jupiter', 'milkyway', 'andromeda']],
+    ['milkyway', 'Space', ['milkyway', 'sun', 'moon', 'jupiter', 'andromeda']],
+  ]) {
+    const card = page.locator(`.celestial-card.is-compact[data-card="${target}"]`);
+    if (action === 'click') await card.click();
+    else { await card.focus(); await card.press(action); }
+    await waitForStorageOrder(expected);
+    await assertTargetOrder(expected, `card ${action}: ${target}`);
+    assert.equal(await page.locator('#target-selection-summary button[aria-pressed="true"]').getAttribute('data-target-chip'), target);
+    const snapshot = await mapSnapshot('camera');
+    if (target === 'milkyway') assert.ok(snapshot.fans.some(item => item.classes.includes('is-primary')));
+    else assert.ok(snapshot.regular.find(item => item.classes.includes(`celestial-direction-${target}`))?.classes.includes('is-primary'));
+  }
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await waitForApp();
+  await openCelestialPanel();
+  await assertTargetOrder(['milkyway', 'sun', 'moon', 'jupiter', 'andromeda'], 'card primary survives reload');
+  await promoteChip('jupiter');
+  await waitForStorageOrder(['jupiter', 'milkyway', 'sun', 'moon', 'andromeda']);
+  await assertTargetOrder(['jupiter', 'milkyway', 'sun', 'moon', 'andromeda'], 'chip also switches expanded card');
 
   for (const width of [1440, 390, 320]) {
     await page.setViewportSize({ width, height: width === 1440 ? 1000 : 844 });
