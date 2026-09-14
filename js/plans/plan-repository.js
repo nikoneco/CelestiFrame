@@ -141,4 +141,4 @@ export function createPlanRepository(initialOwner = GUEST_PLAN_OWNER) {
   };
   return repository;
 }
-import { normalizePlan } from "./plan-data.js?v=1.9.1";
+import { normalizePlan } from "./plan-data.js?v=1.9.2";

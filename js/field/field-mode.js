@@ -1,6 +1,6 @@
-import { subjectGeometry } from "../geometry/bearing.js?v=1.9.1";
-import { normalizeDegrees, signedAngleDifference } from "../geometry/angle.js?v=1.9.1";
-import { formatDistance } from "../utils/format.js?v=1.9.1";
+import { subjectGeometry } from "../geometry/bearing.js?v=1.9.2";
+import { normalizeDegrees, signedAngleDifference } from "../geometry/angle.js?v=1.9.2";
+import { formatDistance } from "../utils/format.js?v=1.9.2";
 
 export function headingRelativeCardinalOffsets(heading, radius = 76) {
   if (!Number.isFinite(Number(heading)) || !Number.isFinite(Number(radius))) return [];

@@ -1,4 +1,4 @@
-import { createLruCache } from "../utils/lru-cache.js?v=1.9.1";
+import { createLruCache } from "../utils/lru-cache.js?v=1.9.2";
 
 // Keep calculators (including test doubles) isolated, and bound long search sessions.
 const caches = new WeakMap();

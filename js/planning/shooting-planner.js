@@ -1,6 +1,6 @@
-import { calculateTargetData } from "../astronomy/target-service.js?v=1.9.1";
-import { getTarget } from "../astronomy/target-catalog.js?v=1.9.1";
-import { createShootingCandidates } from "./shooting-candidates.js?v=1.9.1";
+import { calculateTargetData } from "../astronomy/target-service.js?v=1.9.2";
+import { getTarget } from "../astronomy/target-catalog.js?v=1.9.2";
+import { createShootingCandidates } from "./shooting-candidates.js?v=1.9.2";
 
 function bodyData(body, date, location) {
   return calculateTargetData(body, date, location);

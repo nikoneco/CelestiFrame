@@ -1,5 +1,5 @@
-import { FIREBASE_CONFIG } from "../config/firebase-config.js?v=1.9.1";
-import { createFirestorePlanRepository } from "./firestore-plan-repository.js?v=1.9.1";
+import { FIREBASE_CONFIG } from "../config/firebase-config.js?v=1.9.2";
+import { createFirestorePlanRepository } from "./firestore-plan-repository.js?v=1.9.2";
 
 const SDK_VERSION = "12.16.0";
 const sdkUrl = (name) => `https://www.gstatic.com/firebasejs/${SDK_VERSION}/firebase-${name}.js`;

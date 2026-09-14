@@ -1,5 +1,5 @@
-import { destinationPoint } from "../geometry/destination.js?v=1.9.1";
-import { getTarget } from "../astronomy/target-catalog.js?v=1.9.1";
+import { destinationPoint } from "../geometry/destination.js?v=1.9.2";
+import { getTarget } from "../astronomy/target-catalog.js?v=1.9.2";
 
 // This is a visual scale for the schematic sky fan, not a physical observing
 // distance.  It is converted from pixels for the current Leaflet zoom so the

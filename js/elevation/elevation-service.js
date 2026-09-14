@@ -1,4 +1,4 @@
-import { createLruCache } from "../utils/lru-cache.js?v=1.9.1";
+import { createLruCache } from "../utils/lru-cache.js?v=1.9.2";
 
 const ENDPOINT = "https://cyberjapandata2.gsi.go.jp/general/dem/scripts/getelevation.php";
 const cache = createLruCache(200);

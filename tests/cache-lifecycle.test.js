@@ -3,6 +3,36 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import vm from "node:vm";
 
+test("installing a release bypasses fresh but older HTML and fonts in the HTTP cache", async () => {
+  const source = await readFile(new URL("../service-worker.js", import.meta.url), "utf8");
+  const handlers = {};
+  const installed = new Map();
+  class WorkerRequest extends Request {
+    constructor(url, options) { super(new URL(url, "https://app.invalid/"), options); }
+  }
+  vm.runInNewContext(source, {
+    self: { addEventListener: (event, handler) => { handlers[event] = handler; } },
+    caches: { open: async () => ({
+      addAll: async (requests) => {
+        for (const input of requests) {
+          const request = input instanceof Request ? input : new WorkerRequest(input);
+          // The browser may retain the previous deployment for its full max-age.
+          installed.set(new URL(request.url).pathname,
+            request.cache === "reload" ? "current-release" : "cached-previous-release");
+        }
+      },
+      put: async () => {},
+    }) },
+    fetch: async () => ({ ok: false }),
+    Request: WorkerRequest, URL, Set, AbortController, setTimeout, clearTimeout,
+  });
+  let completion;
+  handlers.install({ waitUntil: (promise) => { completion = promise; } });
+  await completion;
+  assert.equal(installed.get("/index.html"), "current-release");
+  assert.equal(installed.get("/assets/fonts/IBMPlexSansJP-Regular-ui.woff2"), "current-release");
+});
+
 test("activating CelestiFrame never deletes another application's origin-wide cache", async () => {
   const source = await readFile(new URL("../service-worker.js", import.meta.url), "utf8");
   const current = source.match(/const CACHE_VERSION = "([^"]+)"/)[1];

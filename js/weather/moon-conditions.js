@@ -1,6 +1,6 @@
-import { calculateMoonData } from "../astronomy/moon-service.js?v=1.9.1";
-import { calculateMilkyWay } from "../astronomy/milky-way-service.js?v=1.9.1";
-import { calculateTargetData } from "../astronomy/target-service.js?v=1.9.1";
+import { calculateMoonData } from "../astronomy/moon-service.js?v=1.9.2";
+import { calculateMilkyWay } from "../astronomy/milky-way-service.js?v=1.9.2";
+import { calculateTargetData } from "../astronomy/target-service.js?v=1.9.2";
 
 const RAD = Math.PI / 180;
 const DEG = 180 / Math.PI;

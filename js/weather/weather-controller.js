@@ -7,9 +7,9 @@ import {
   isPastForecastHour,
   normalizeForecastSnapshot,
   toForecastHour,
-} from "./forecast-service.js?v=1.9.1";
-import { calculateMoonConditions } from "./moon-conditions.js?v=1.9.1";
-import { createLruCache } from "../utils/lru-cache.js?v=1.9.1";
+} from "./forecast-service.js?v=1.9.2";
+import { calculateMoonConditions } from "./moon-conditions.js?v=1.9.2";
+import { createLruCache } from "../utils/lru-cache.js?v=1.9.2";
 
 const formatPercent = (value) => Number.isFinite(value) ? `${Math.round(value)}%` : "—";
 const formatNumber = (value) => Number.isFinite(value) ? String(Math.round(value)) : "—";
